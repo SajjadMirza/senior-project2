@@ -1,6 +1,8 @@
 # src
 
-add_executable(myapp main.cpp)
+file(GLOB MAIN_SRC "*.cpp")
+
+add_executable(myapp ${MAIN_SRC})
 
 add_custom_command(TARGET myapp POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}       

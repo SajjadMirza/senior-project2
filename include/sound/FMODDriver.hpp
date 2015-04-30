@@ -3,8 +3,8 @@
 
 #include <common.hpp>
 
-#include <fmod.hpp>
-#include <fmod_errors.h>
+#include <fmod/fmod.hpp>
+#include <fmod/fmod_errors.h>
 
 namespace sound {
     class FMODDriver {

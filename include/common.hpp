@@ -1,5 +1,6 @@
 #ifndef _COMMON_H
 #define _COMMON_H
+#define GL_GLEXT_PROTOTYPES
 
 // GLFW
 #include <GLFW/glfw3.h>
@@ -15,6 +16,7 @@
 // C++ headers
 #include <string>
 #include <iostream>
+#include <vector>
 
 // C headers
 #include <cstdlib>
