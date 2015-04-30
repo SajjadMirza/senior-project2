@@ -1,0 +1,9 @@
+*.o
+
+# lol emacs
+*~
+
+build/*
+install/*
+lib/*
+
