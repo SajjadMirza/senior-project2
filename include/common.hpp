@@ -13,7 +13,7 @@
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
-#include <GLSL.hpp>
+
 
 // C++ headers
 #include <string>
@@ -26,5 +26,13 @@
 #include <cassert>
 #include <cstring>
 
+// Sueda
+#include <GLSL.hpp>
+
+
+// type declarations
+
+typedef unsigned int uint;
+typedef unsigned long ulong;
 
 #endif

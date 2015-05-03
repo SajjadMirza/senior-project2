@@ -4,6 +4,8 @@
 
 
 // Internal headers
+#include <draw/Drawable.hpp>
+#include <Entity.hpp>
 #include <sound/FMODDriver.hpp>
 #include <resources.hpp>
 #include <Camera.hpp>
@@ -11,7 +13,7 @@
 
 /* globals */
 Camera *camera;
-
+draw::DrawableMap drawable_map;
 
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
@@ -42,6 +44,28 @@ void cursor_pos_callback(GLFWwindow *window, double x, double y) {
     camera->mouseMoved(std::floor(x), std::floor(y));
 }
 
+
+
+draw::Drawable *import_drawable(std::string file_name, uint *handle) {
+    uint orange_handle = resource::import_object(file_name);
+    if (orange_handle) {
+        std::cout << "successful import" << std::endl;
+    }
+    else {
+        std::cerr << "IMPORT FAILED" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    *handle = orange_handle;
+
+    return drawable_map[orange_handle];
+}
+
+draw::Drawable *import_drawable(std::string file_name) {
+    uint useless;
+    return import_drawable(file_name, &useless);
+}
+
 static void init_gl() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -60,14 +84,13 @@ int main(void)
     
     // test sound 
     sound_driver.testSound();
+    
 
-    if (!resource::import_object("resources/models/orange/Orange.dae")) {
-        std::cerr << "IMPORT FAILED" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    else {
-        std::cout << "successful import" << std::endl;
-    }
+    uint handle;
+    draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
+    Entity orange, orange2;
+    orange.attachDrawable(drawable_orange);
+    orange2.attachDrawable(drawable_orange);
 
     glfwSetErrorCallback(error_callback);
 
@@ -121,16 +144,33 @@ int main(void)
                 // Modelview space
 
                 // DRAW ALL THE THINGS
-                glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
+                //glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
 
                 // test triangle
                 glBegin(GL_TRIANGLES);
-                glColor3f(1.f, 0.f, 0.f);
-                glVertex3f(-0.6f, -0.4f, 0.f);
-                glColor3f(0.f, 1.f, 0.f);
-                glVertex3f(0.6f, -0.4f, 0.f);
-                glColor3f(0.f, 0.0f, 0.0f);
-                glVertex3f(0.f, 0.6f, 0.f);
+                
+                draw::Node *root = orange.getDrawable().root;
+// //                draw::Shape &s = root->meshes.at(0);
+
+                // std::cout << root->children.size() << std::endl;
+                // std::cout << root->children[0]->meshes.size() << std::endl;
+                draw::Shape &s = root->children.at(0)->meshes.at(1);
+                
+
+                for (int i = 0; i < s.indices.size(); i++) {
+                    uint index = s.indices[i];
+                    
+                    uint xi = 3*index;
+                    uint yi = 3*index + 1;
+                    uint zi = 3*index + 2;
+                    
+                    glColor3f(s.normals[xi], s.normals[yi], s.normals[zi]);
+                    glVertex3f(s.vertices[xi], s.vertices[yi], s.vertices[zi]);
+
+                    
+                }
+                
+
                 glEnd();
                 
 

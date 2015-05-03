@@ -3,9 +3,11 @@
 
 #include <common.hpp>
 
+#include <draw/Drawable.hpp>
+
 namespace resource {
 
-   bool import_object(const std::string& file);
+   uint import_object(const std::string& file);
 
 }
 #endif

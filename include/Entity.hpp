@@ -7,21 +7,25 @@
 
 class Entity {
 private:
-   Eigen::Vector3f pos;
-   Eigen::Matrix4f rot;
-   const draw::Drawable *drawable;
+    Eigen::Vector3f pos;
+    Eigen::Matrix4f rot;
+    const draw::Drawable *drawable;
 public:
-   Entity();
-   virtual ~Entity();
+    Entity();
+    virtual ~Entity();
+    
+    void attachDrawable(draw::Drawable *drawable);
+    void clearDrawable();
 
-   void attachDrawable(draw::Drawable *drawable);
-   void clearDrawable();
+    const draw::Drawable& getDrawable();
 
-   void setRotation(float angle, Eigen::Vector3f axis);
-   void setPosition(Eigen::Vector3f position);
+    void setRotation(float angle, Eigen::Vector3f axis);
+    void setPosition(Eigen::Vector3f position);
 
-   void move(Eigen::Vector3f translation);
-   void rotate(float angle, Eigen::Vector3f axis);
+    void move(Eigen::Vector3f translation);
+    void rotate(float angle, Eigen::Vector3f axis);
+
+    
 };
 
 #endif

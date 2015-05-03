@@ -3,9 +3,13 @@
 
 #include <common.hpp>
 
+#include <unordered_map>
+
 #include <draw/Shape.hpp>
 
 namespace draw {
+
+    
 
    /* this struct is a memory leak waiting to happen */
       struct Node {
@@ -28,6 +32,8 @@ namespace draw {
       ~Drawable(); // This should probably be implemented sometime....
 
    };
+
+    typedef std::unordered_map<uint, Drawable*> DrawableMap; 
 
 };
 #endif

@@ -13,6 +13,10 @@ void Entity::attachDrawable(draw::Drawable *drawable) {
    this->drawable = drawable;
 }
 
+const draw::Drawable& Entity::getDrawable() {
+    return *drawable;
+}
+
 void Entity::clearDrawable() {
    this->drawable = NULL;
 }
