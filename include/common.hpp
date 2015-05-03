@@ -13,6 +13,8 @@
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
+#include <GLSL.hpp>
+
 // C++ headers
 #include <string>
 #include <iostream>
