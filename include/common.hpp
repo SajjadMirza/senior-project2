@@ -28,7 +28,7 @@
 
 // Sueda
 #include <GLSL.hpp>
-
+#include <Program.hpp>
 
 // type declarations
 

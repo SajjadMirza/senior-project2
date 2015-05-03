@@ -15,6 +15,10 @@
 Camera *camera;
 draw::DrawableMap drawable_map;
 
+// TEMP ON DRAWING GPU
+Program prog;
+const uint old = 0;
+
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
 }
@@ -70,6 +74,16 @@ static void init_gl() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
+    /* Sample Creating a Program */
+    std::string header = "resources/shaders/";
+    
+	prog.setShaderNames(header + "simple_vert.glsl", header + "simple_frag.glsl");
+	prog.init();
+	prog.addUniform("P");
+	prog.addUniform("MV");
+	prog.addUniform("uColor");
+	prog.addAttribute("vertPos");
+	prog.addAttribute("vertNor");
 
     GLSL::checkVersion();
 }
@@ -127,58 +141,89 @@ int main(void)
         // P is the projection matrix
         // MV is the model-view matrix
         MatrixStack P, MV;
-
-        P.pushMatrix(); 
-        camera->applyProjectionMatrix(&P);
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadMatrixf(P.topMatrix().data());
-        {
-            // Projection space
-            MV.pushMatrix();
-            camera->applyViewMatrix(&MV);
-            glMatrixMode(GL_MODELVIEW);
+        
+        if (old) {
+            P.pushMatrix(); 
+            camera->applyProjectionMatrix(&P);
+            glMatrixMode(GL_PROJECTION);
             glPushMatrix();
-            glLoadMatrixf(MV.topMatrix().data());
+            glLoadMatrixf(P.topMatrix().data());
             {
-                // Modelview space
+                // Projection space
+                MV.pushMatrix();
+                camera->applyViewMatrix(&MV);
+                glMatrixMode(GL_MODELVIEW);
+                glPushMatrix();
+                glLoadMatrixf(MV.topMatrix().data());
+                {
+                    // Modelview space
 
-                // DRAW ALL THE THINGS
-                //glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
+                    // DRAW ALL THE THINGS
+                    //glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
 
-                // test triangle
-                glBegin(GL_TRIANGLES);
-                
-                draw::Node *root = orange.getDrawable().root;
-// //                draw::Shape &s = root->meshes.at(0);
-
-                // std::cout << root->children.size() << std::endl;
-                // std::cout << root->children[0]->meshes.size() << std::endl;
-                draw::Shape &s = root->children.at(0)->meshes.at(1);
-                
-
-                for (int i = 0; i < s.indices.size(); i++) {
-                    uint index = s.indices[i];
+                    // test triangle
+                    glBegin(GL_TRIANGLES);
                     
-                    uint xi = 3*index;
-                    uint yi = 3*index + 1;
-                    uint zi = 3*index + 2;
-                    
-                    glColor3f(s.normals[xi], s.normals[yi], s.normals[zi]);
-                    glVertex3f(s.vertices[xi], s.vertices[yi], s.vertices[zi]);
+                    draw::Node *root = orange.getDrawable().root;
+    // //                draw::Shape &s = root->meshes.at(0);
 
+                    // std::cout << root->children.size() << std::endl;
+                    // std::cout << root->children[0]->meshes.size() << std::endl;
+                    draw::Shape &s = root->children.at(0)->meshes.at(1);
                     
+
+                    for (int i = 0; i < s.indices.size(); i++) {
+                        uint index = s.indices[i];
+                        
+                        uint xi = 3*index;
+                        uint yi = 3*index + 1;
+                        uint zi = 3*index + 2;
+                        
+                        glColor3f(s.normals[xi], s.normals[yi], s.normals[zi]);
+                        glVertex3f(s.vertices[xi], s.vertices[yi], s.vertices[zi]);
+
+                        
+                    }
+                    
+
+                    glEnd();
+                    
+
+                    glPopMatrix();
                 }
-                
 
-                glEnd();
-                
-
+                glMatrixMode(GL_PROJECTION);
                 glPopMatrix();
             }
-
-            glMatrixMode(GL_PROJECTION);
-            glPopMatrix();
+        }
+        else {
+            // Apply camera transforms
+            P.pushMatrix();
+            camera->applyProjectionMatrix(&P);
+            MV.pushMatrix();
+            camera->applyViewMatrix(&MV);
+        
+            /* Beginning Sample Program */
+        	prog.bind(); 
+        	
+    		/* Send projection matrix */
+	        glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+       
+            MV.pushMatrix();
+                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
+                glUniform3f(prog.getUniform("uColor"), 1.0f, 1.0f, 0.0f);
+                
+                draw::Node *root = orange.getDrawable().root;
+                draw::Shape &s = root->children.at(0)->meshes.at(0);
+                
+                s.draw(prog.getAttribute("vertPos"), prog.getAttribute("vertNor"));
+            MV.popMatrix();
+        
+        	// Unbind the program
+	        prog.unbind();
+	        
+            MV.popMatrix();
+            P.popMatrix();
         }
 
         glfwSwapBuffers(window);

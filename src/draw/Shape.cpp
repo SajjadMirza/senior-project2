@@ -1,8 +1,5 @@
 #include <draw/Shape.hpp>
 
-
-
-
 namespace draw {
 
 
@@ -70,6 +67,38 @@ namespace draw {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         assert(glGetError() == GL_NO_ERROR);
+    	std::cout << "ver_buf " << ver_buf << std::endl;
+    	std::cout << "nor_buf " << nor_buf << std::endl;
+    }
+    
+    void Shape::draw(int h_vert, int h_nor) const {
+    	// Enable and bind verticies array for drawing
+	    GLSL::enableVertexAttribArray(h_vert);
+	    glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+	    glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    
+        // Enable and bind normal array for drawing
+	    GLSL::enableVertexAttribArray(h_nor);
+	    glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
+	    glVertexAttribPointer(h_nor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    
+    	// TODO: Enable and bind texcoord array (if it exists) for drawing
+    
+    	// Bind index array for drawing
+        int nIndices = indices.size();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+    
+        // Draw
+	    //glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
+    
+        // Disable and unbind
+
+        // TODO: Disable Texture Buffer
+    
+	    GLSL::disableVertexAttribArray(h_nor);
+	    GLSL::disableVertexAttribArray(h_vert);
+	    glBindBuffer(GL_ARRAY_BUFFER, 0);
+	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
 }

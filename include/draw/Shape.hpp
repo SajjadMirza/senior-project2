@@ -20,6 +20,7 @@ namespace draw {
         Shape();
         ~Shape();
         void init(const aiMesh& mesh);
+        void draw(int h_vert, int h_nor) const;
     };
 
 }
