@@ -77,14 +77,14 @@ static void init_gl() {
     /* Sample Creating a Program */
     std::string header = "resources/shaders/";
     
-	prog.setShaderNames(header + "simple_vert.glsl", header + "simple_frag.glsl");
-	prog.init();
-	prog.addUniform("P");
-	prog.addUniform("MV");
-	prog.addUniform("uColor");
-	prog.addAttribute("vertPos");
-	prog.addAttribute("vertNor");
-
+    prog.setShaderNames(header + "simple_vert.glsl", header + "simple_frag.glsl");
+    prog.init();
+    prog.addAttribute("vertPos");
+    prog.addAttribute("vertNor");
+    prog.addUniform("P");
+    prog.addUniform("MV");
+    prog.addUniform("uColor");
+    
     GLSL::checkVersion();
 }
 
@@ -204,10 +204,11 @@ int main(void)
             camera->applyViewMatrix(&MV);
         
             /* Beginning Sample Program */
-        	prog.bind(); 
-        	
-    		/* Send projection matrix */
-	        glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+            prog.bind(); 
+            
+            /* Send projection matrix */
+            //std::cout << "rawr " << prog.getUniform("P") << std::endl;
+            glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
        
             MV.pushMatrix();
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
@@ -219,9 +220,9 @@ int main(void)
                 s.draw(prog.getAttribute("vertPos"), prog.getAttribute("vertNor"));
             MV.popMatrix();
         
-        	// Unbind the program
-	        prog.unbind();
-	        
+            // Unbind the program
+            prog.unbind();
+            
             MV.popMatrix();
             P.popMatrix();
         }

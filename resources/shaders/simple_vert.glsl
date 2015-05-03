@@ -2,9 +2,9 @@
 
 in vec3 vertPos;
 in vec3 vertNor;
-in mat4 P;
-in mat4 MV;
-in vec3 uColor;
+uniform mat4 P;
+uniform mat4 MV;
+uniform vec3 uColor;
 out vec3 fragNor;
 
 void main()

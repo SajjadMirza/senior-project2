@@ -70,6 +70,7 @@ bool Program::init()
 	
 	GLSL::printError();
 	assert(glGetError() == GL_NO_ERROR);
+	
 	return true;
 }
 
@@ -85,12 +86,12 @@ void Program::unbind()
 
 void Program::addAttribute(const string &name)
 {
-	attributes[name] = GLSL::getAttribLocation(pid, name.c_str());
+    attributes[name] = GLSL::getAttribLocation(pid, name.c_str());
 }
 
 void Program::addUniform(const string &name)
 {
-	uniforms[name] = GLSL::getUniformLocation(pid, name.c_str());
+    uniforms[name] = GLSL::getUniformLocation(pid, name.c_str());
 }
 
 GLint Program::getAttribute(const string &name) const
