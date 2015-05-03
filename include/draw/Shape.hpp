@@ -19,7 +19,7 @@ namespace draw {
        
         Shape();
         ~Shape();
-        void init(const aiMesh& mesh);
+        void init(const aiMesh& mesh, const aiScene& scene);
         void draw(int h_vert, int h_nor) const;
     };
 

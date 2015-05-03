@@ -40,7 +40,7 @@ Node *deepcopy_assimp_tree(const aiNode *node, const aiScene *scene) {
    for (int i = 0; i < node->mNumMeshes; i++) {
       draw::Shape s;
       aiMesh *mesh = scene->mMeshes[i];
-      s.init(*mesh);
+      s.init(*mesh, *scene);
       n->meshes.push_back(s);
    }
 
