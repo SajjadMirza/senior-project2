@@ -98,13 +98,6 @@ int main(void)
     
     // test sound 
     sound_driver.testSound();
-    
-
-    uint handle;
-    draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
-    Entity orange, orange2;
-    orange.attachDrawable(drawable_orange);
-    orange2.attachDrawable(drawable_orange);
 
     glfwSetErrorCallback(error_callback);
 
@@ -126,6 +119,13 @@ int main(void)
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
+    
+    // init drawables
+    uint handle;
+    draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
+    Entity orange, orange2;
+    orange.attachDrawable(drawable_orange);
+    orange2.attachDrawable(drawable_orange);
 
     init_gl();
 

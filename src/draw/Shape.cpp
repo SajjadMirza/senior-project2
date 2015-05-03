@@ -89,7 +89,7 @@ namespace draw {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
     
         // Draw
-	    //glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
+	    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
     
         // Disable and unbind
 
