@@ -23,32 +23,52 @@ static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
-}
-
 static void resize_window(GLFWwindow *window, int w, int h) {
     glViewport(0, 0, w, h);
     // set the camera aspect ratio
     camera->setAspect((float)w / (float)h);
 }
 
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (action == GLFW_RELEASE) {
+        camera->mouseReleased();
+        return;
+    }
+    
     bool shift = mods & GLFW_MOD_SHIFT;
     bool ctrl = mods & GLFW_MOD_CONTROL;
     bool alt = mods & GLFW_MOD_ALT;
     double x, y;
     glfwGetCursorPos(window, &x, &y);
-   
-    camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);
+    
+    camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);\
 }
 
-void cursor_pos_callback(GLFWwindow *window, double x, double y) {
+static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
     camera->mouseMoved(std::floor(x), std::floor(y));
 }
 
-
+static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    switch (key) {
+    case GLFW_KEY_LEFT_SHIFT:
+    case GLFW_KEY_RIGHT_SHIFT:
+        if (action == GLFW_RELEASE) {
+            camera->modifierReleased();
+        }
+        break;
+    case GLFW_KEY_LEFT_CONTROL:
+    case GLFW_KEY_RIGHT_CONTROL:
+        if (action == GLFW_RELEASE) {
+            camera->modifierReleased();
+        }
+        break;
+    case GLFW_KEY_ESCAPE:
+        if (action == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, GL_TRUE);
+        }
+        break;
+    } // end of switch
+}
 
 draw::Drawable *import_drawable(std::string file_name, uint *handle) {
     uint orange_handle = resource::import_object(file_name);
