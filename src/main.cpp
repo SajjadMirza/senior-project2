@@ -17,7 +17,7 @@ draw::DrawableMap drawable_map;
 
 // TEMP ON DRAWING GPU
 Program prog;
-const uint old = 0;
+const uint old = 0; 
 
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;

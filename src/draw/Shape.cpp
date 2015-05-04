@@ -35,6 +35,20 @@ namespace draw {
     void Shape::init(const aiMesh& mesh, const aiScene& scene) {
         std::cout << "num textures in scene: " << scene.mNumTextures << std::endl;
 
+        flatten_array(&vertices, mesh.mVertices, mesh.mNumVertices);
+
+        glGenBuffers(1, &ver_buf);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+
+
+        flatten_array(&normals, mesh.mNormals, mesh.mNumVertices);
+
+        glGenBuffers(1, &nor_buf);
+        glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
+        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
+
+        // textures
 
         flatten_indices(&indices, mesh.mFaces, mesh.mNumFaces);
 

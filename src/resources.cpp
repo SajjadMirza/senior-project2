@@ -2,6 +2,9 @@
 
 #include <resources.hpp>
 
+
+
+
 extern draw::DrawableMap drawable_map;
 
 namespace resource {
