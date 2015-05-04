@@ -5,9 +5,14 @@
 
 #include <draw/Drawable.hpp>
 
+
+
 namespace resource {
+    
+    uint import_object(const std::string& file);
 
-   uint import_object(const std::string& file);
+    FIBITMAP* GenericLoader(const char* lpszPathName, int flag);
 
-}
+   
+};
 #endif

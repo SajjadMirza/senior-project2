@@ -3,6 +3,8 @@
 
 #include <common.hpp>
 
+#include <draw/Texture.hpp>
+
 namespace draw {
 
     class Shape {
@@ -19,7 +21,7 @@ namespace draw {
        
         Shape();
         ~Shape();
-        void init(const aiMesh& mesh, const aiScene& scene);
+        void init(const TexTable &textures, const aiMesh& mesh, const aiScene& scene);
         void draw(int h_vert, int h_nor) const;
     };
 

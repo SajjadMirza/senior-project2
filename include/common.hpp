@@ -13,7 +13,8 @@
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
-
+// FreeImage
+#include <FreeImagePlus.h>
 
 // C++ headers
 #include <string>
@@ -34,5 +35,6 @@
 
 typedef unsigned int uint;
 typedef unsigned long ulong;
+typedef unsigned char uchar;
 
 #endif

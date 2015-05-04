@@ -32,7 +32,7 @@ namespace draw {
 
     Shape::~Shape() {}
 
-    void Shape::init(const aiMesh& mesh, const aiScene& scene) {
+    void Shape::init(const TexTable &textures, const aiMesh& mesh, const aiScene& scene) {
         std::cout << "num textures in scene: " << scene.mNumTextures << std::endl;
 
         flatten_array(&vertices, mesh.mVertices, mesh.mNumVertices);
@@ -49,6 +49,13 @@ namespace draw {
         glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
 
         // textures
+        // TODO DON'T FORGET UVs
+        aiMaterial *mat = scene.mMaterials[mesh.mMaterialIndex];
+        aiString filename;
+        mat->GetTexture(aiTextureType_DIFFUSE, 0, &filename);
+        std::string name(filename.C_Str());
+        
+        tex_buf = textures.at(name).tid;
 
         flatten_indices(&indices, mesh.mFaces, mesh.mNumFaces);
 

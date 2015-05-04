@@ -114,6 +114,7 @@ int main(void)
     GLFWwindow* window;
     sound::FMODDriver sound_driver;
 
+
     camera = new Camera;
     
     // test sound 
@@ -141,11 +142,14 @@ int main(void)
     glfwSetCursorPosCallback(window, cursor_pos_callback);
     
     // init drawables
+    FreeImage_Initialise();
+    std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
     draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
     Entity orange, orange2;
     orange.attachDrawable(drawable_orange);
     orange2.attachDrawable(drawable_orange);
+    FreeImage_DeInitialise();
 
     init_gl();
 

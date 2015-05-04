@@ -14,7 +14,7 @@ add_subdirectory(sound)
 add_subdirectory(draw)
 
 
-target_link_libraries(myapp ${ASSIMP} sound draw glfw ${GLFW_LIBRARIES} ${IRRKLANG_LIBRARY} ${FMOD} ${Boost_LIBRARIES})
+target_link_libraries(myapp ${ASSIMP} sound draw glfw ${GLFW_LIBRARIES} ${IRRKLANG_LIBRARY} ${FMOD} ${Boost_LIBRARIES} ${FREEIMG})
 
 install(TARGETS myapp DESTINATION bin) 
 

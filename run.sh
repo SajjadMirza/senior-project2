@@ -11,11 +11,11 @@ LD_PRELOAD=""
 
 for i in ${FILES[@]}
 do
-    echo "$i"
+#    echo "$i"
     LD_PRELOAD="$LD_PRELOAD $i"
 done
 
-echo "$LD_PRELOAD"
+#echo "$LD_PRELOAD"
 
 export LD_PRELOAD
 
