@@ -101,9 +101,11 @@ static void init_gl() {
     prog.init();
     prog.addAttribute("vertPos");
     prog.addAttribute("vertNor");
+    prog.addAttribute("vertTex");
     prog.addUniform("P");
     prog.addUniform("MV");
     prog.addUniform("uColor");
+    prog.addUniform("texture0");
     
     GLSL::checkVersion();
 }
@@ -241,7 +243,10 @@ int main(void)
                 draw::Node *root = orange.getDrawable().root;
                 draw::Shape &s = root->children.at(0)->meshes.at(0);
                 
-                s.draw(prog.getAttribute("vertPos"), prog.getAttribute("vertNor"));
+                s.draw(prog.getAttribute("vertPos"),
+                       prog.getAttribute("vertNor"),
+                       prog.getAttribute("vertTex"),
+                       prog.getUniform("texture0"));
             MV.popMatrix();
         
             // Unbind the program
