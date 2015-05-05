@@ -8,3 +8,5 @@ install/*
 lib/*
 
 .nfs*
+
+*.pdf

@@ -97,14 +97,13 @@ static void init_gl() {
     /* Sample Creating a Program */
     std::string header = "resources/shaders/";
     
-    prog.setShaderNames(header + "simple_vert.glsl", header + "simple_frag.glsl");
+    prog.setShaderNames(header + "text_vert.glsl", header + "text_frag.glsl");
     prog.init();
     prog.addAttribute("vertPos");
     prog.addAttribute("vertNor");
     prog.addAttribute("vertTex");
     prog.addUniform("P");
     prog.addUniform("MV");
-    prog.addUniform("uColor");
     prog.addUniform("texture0");
     
     GLSL::checkVersion();
@@ -152,6 +151,8 @@ int main(void)
     orange.attachDrawable(drawable_orange);
     orange2.attachDrawable(drawable_orange);
     FreeImage_DeInitialise();
+//    assert(0 && __FILE__ && __LINE__);
+
 
     init_gl();
 
@@ -191,13 +192,16 @@ int main(void)
                     glBegin(GL_TRIANGLES);
                     
                     draw::Node *root = orange.getDrawable().root;
-    // //                draw::Shape &s = root->meshes.at(0);
+                    std::cout << root->meshes.size() << std::endl;
+                    draw::Shape &s = root->meshes.at(0);
 
-                    // std::cout << root->children.size() << std::endl;
-                    // std::cout << root->children[0]->meshes.size() << std::endl;
-                    draw::Shape &s = root->children.at(0)->meshes.at(1);
+                    std::cout << root->children.size() << std::endl;
+// //                     // std::cout << root->children[0]->meshes.size() << std::endl;
+// // //                    draw::Shape &s = root->children.at(0)->meshes.at(0);
+// // //                    draw::Shape &s = root->meshe
+
                     
-
+                    assert(0 && __FILE__ && __LINE__);
                     for (int i = 0; i < s.indices.size(); i++) {
                         uint index = s.indices[i];
                         
@@ -235,10 +239,11 @@ int main(void)
             /* Send projection matrix */
             //std::cout << "rawr " << prog.getUniform("P") << std::endl;
             glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-       
+
+            orange.getDrawable().draw(&prog, &P, &MV, camera);
+            /*
             MV.pushMatrix();
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
-                glUniform3f(prog.getUniform("uColor"), 1.0f, 1.0f, 0.0f);
                 
                 draw::Node *root = orange.getDrawable().root;
                 draw::Shape &s = root->children.at(0)->meshes.at(0);
@@ -248,6 +253,7 @@ int main(void)
                        prog.getAttribute("vertTex"),
                        prog.getUniform("texture0"));
             MV.popMatrix();
+            */
         
             // Unbind the program
             prog.unbind();

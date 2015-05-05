@@ -9,8 +9,9 @@ out vec4 out_color;
 
 void main()
 {
-	vec3 lightPos = vec3(0.0, 0.0, 0.0); // in camera space
+	vec3 lightPos = vec3(0.0, 2.0, 0.0); // in camera space
 	vec3 tex = texture2D(texture0, fragTex.st).rgb;
+
 	vec3 n = normalize(fragNor);
 	vec3 l = normalize(lightPos - fragPos);
 	vec3 v = -normalize(fragPos);

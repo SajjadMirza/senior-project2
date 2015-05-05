@@ -13,7 +13,7 @@ void Entity::attachDrawable(draw::Drawable *drawable) {
    this->drawable = drawable;
 }
 
-const draw::Drawable& Entity::getDrawable() {
+draw::Drawable& Entity::getDrawable() {
     return *drawable;
 }
 

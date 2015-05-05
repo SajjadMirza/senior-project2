@@ -8,6 +8,9 @@
 
 #include <draw/Shape.hpp>
 
+#include <MatrixStack.hpp>
+#include <Camera.hpp>
+
 namespace draw {
 
     
@@ -31,6 +34,8 @@ namespace draw {
         TexTable textures;
         Drawable(const aiScene *scene, std::string& dir);
         ~Drawable(); // This should probably be implemented sometime....
+
+        void draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam);
 
     };
 
