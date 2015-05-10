@@ -30,6 +30,7 @@ public:
     void applyViewMatrix(MatrixStack *MV) const;
     Eigen::Vector2f rotations;
     Eigen::Vector3f translations;
+    void move(char c);
 	
 private:
     float aspect;

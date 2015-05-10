@@ -19,6 +19,21 @@ draw::DrawableMap drawable_map;
 Program prog;
 const uint old = 0; 
 
+static void bufferMovement(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera->move('w');
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera->move('a');
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera->move('s');
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera->move('d');
+    }
+}
+
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
 }
@@ -261,6 +276,8 @@ int main(void)
             MV.popMatrix();
             P.popMatrix();
         }
+
+    	bufferMovement(window);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
