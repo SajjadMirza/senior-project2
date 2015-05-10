@@ -8,7 +8,7 @@ Camera::Camera() :
     rotations(0.0, 0.0),
     translations(0.0f, 0.0f, -5.0f),
     rfactor(0.005f),
-    tfactor(0.05f),
+    tfactor(0.1f),
     sfactor(0.005f)
 {
 }

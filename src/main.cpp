@@ -106,7 +106,7 @@ draw::Drawable *import_drawable(std::string file_name) {
 }
 
 static void init_gl() {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 1.0f, 0.25f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
     /* Sample Creating a Program */
@@ -161,7 +161,7 @@ int main(void)
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-    draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
+    draw::Drawable *drawable_orange = import_drawable("resources/models/sf_house/sf_house.dae", &handle);
     Entity orange, orange2;
     orange.attachDrawable(drawable_orange);
     orange2.attachDrawable(drawable_orange);

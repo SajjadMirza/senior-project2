@@ -27,6 +27,14 @@ namespace draw {
         ~Texture() {}
     };
 
+    struct TexturePackage {
+        std::string diffuse;
+        std::string specular;
+        std::string normal;
+        std::string displacement;
+        std::string occlusion;
+    };
+
     typedef std::unordered_map<std::string, Texture> TexTable;
 };
 

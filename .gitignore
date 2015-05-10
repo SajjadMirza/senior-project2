@@ -10,3 +10,5 @@ lib/*
 .nfs*
 
 *.pdf
+
+resources/models/sf_house/*
