@@ -185,9 +185,18 @@ int main(void)
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
     draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
-    Entity orange, orange2;
+    Entity orange;
     orange.attachDrawable(drawable_orange);
-    orange2.attachDrawable(drawable_orange);
+
+    uint c_handle;
+    draw::Drawable *drawable_cat = import_drawable("resources/models/cat/cat.obj", &c_handle);
+    Entity cat;
+    cat.attachDrawable(drawable_cat);
+
+    uint f_handle;
+    draw::Drawable *drawable_flame = import_drawable("resources/models/Firefly_Flamethrower/Firefly_Flamethrower.dae", &f_handle);
+    Entity flame;
+    flame.attachDrawable(drawable_flame);
 
     // draw plane
     uint p_handle;
@@ -284,7 +293,25 @@ int main(void)
             /* Send projection matrix */
             //std::cout << "rawr " << prog.getUniform("P") << std::endl;
             glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-            orange.getDrawable().draw(&prog, &P, &MV, camera);
+            
+            MV.pushMatrix();
+                MV.translate(Eigen::Vector3f(0.0f, 0.0f, -3.0f));
+                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
+                orange.getDrawable().draw(&prog, &P, &MV, camera);
+            MV.popMatrix();
+
+            MV.pushMatrix();
+                MV.translate(Eigen::Vector3f(2.0f, 0.0f, -3.0f));
+                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
+                cat.getDrawable().draw(&prog, &P, &MV, camera);
+            MV.popMatrix();
+
+            MV.pushMatrix();
+                MV.translate(Eigen::Vector3f(-4.0f, 0.0f, -3.0f));
+                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
+                flame.getDrawable().draw(&prog, &P, &MV, camera);
+            MV.popMatrix();
+
             dWalls(&plane, &prog, &P, &MV);
             
 
