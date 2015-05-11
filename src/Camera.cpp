@@ -6,7 +6,7 @@ Camera::Camera() :
     znear(0.1f),
     zfar(1000.0f),
     rotations(0.0, 0.0),
-    translations(0.0f, 0.0f, -5.0f),
+    translations(0.0f, 0.0f, 0.0f),
     rfactor(0.005f),
     tfactor(0.05f),
     sfactor(0.005f)

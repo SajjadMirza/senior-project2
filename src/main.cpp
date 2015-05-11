@@ -18,6 +18,8 @@ draw::DrawableMap drawable_map;
 // TEMP ON DRAWING GPU
 Program prog;
 const uint old = 0; 
+const uint init_w = 640;
+const uint init_h = 480;
 
 static void bufferMovement(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -31,6 +33,22 @@ static void bufferMovement(GLFWwindow *window) {
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         camera->move('d');
+    }
+}
+
+// TODO: Get rid of this and make own geometry
+static void dWalls(Entity *plane, Program *prog, MatrixStack *P, MatrixStack *MV) {
+    const int size = 4;
+    const float dir_change = 0.714f;
+    const float mid = 0.3575f;
+
+    for (int z = size; z >= -size; --z) {
+        for (int x = size; x >= -size; --x) {
+            plane->getDrawable().draw_no_tex_wall(prog, P, MV, camera, Eigen::Vector3f(x*-dir_change-mid, -mid-dir_change, -dir_change * z), Eigen::Vector3f(0, 1, 0));                
+            if (z == size || x == size || x == -size || z == -size) {
+                plane->getDrawable().draw_no_tex_wall(prog, P, MV, camera, Eigen::Vector3f(x*-dir_change-mid, -mid, -dir_change * z), Eigen::Vector3f(1, 0, 0));
+            }
+        }
     }
 }
 
@@ -109,6 +127,9 @@ static void init_gl() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
+    glViewport(0, 0, init_w, init_h);
+    camera->setAspect((float)init_w / (float)init_h);
+
     /* Sample Creating a Program */
     std::string header = "resources/shaders/";
     
@@ -119,6 +140,8 @@ static void init_gl() {
     prog.addAttribute("vertTex");
     prog.addUniform("P");
     prog.addUniform("MV");
+    prog.addUniform("mode");
+    prog.addUniform("color");
     prog.addUniform("texture0");
     
     GLSL::checkVersion();
@@ -165,6 +188,13 @@ int main(void)
     Entity orange, orange2;
     orange.attachDrawable(drawable_orange);
     orange2.attachDrawable(drawable_orange);
+
+    // draw plane
+    uint p_handle;
+    draw::Drawable *drawable_plane = import_drawable("resources/models/plane/cube.obj", &p_handle);
+    Entity plane;
+    plane.attachDrawable(drawable_plane);
+
     FreeImage_DeInitialise();
 //    assert(0 && __FILE__ && __LINE__);
 
@@ -254,8 +284,19 @@ int main(void)
             /* Send projection matrix */
             //std::cout << "rawr " << prog.getUniform("P") << std::endl;
             glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-
             orange.getDrawable().draw(&prog, &P, &MV, camera);
+            dWalls(&plane, &prog, &P, &MV);
+            
+
+            /*for (int i = 0; i < 3; ++i) {
+                plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
+                plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*-0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
+            }*/
+
+            //plane.getDrawable().draw_no_tex_wall(&prog, &P, &MV, camera, Eigen::Vector3f(0.0f, 0.0f, -5.0f), Eigen::Vector3f(0, 0, 0));
+
+
+
             /*
             MV.pushMatrix();
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());

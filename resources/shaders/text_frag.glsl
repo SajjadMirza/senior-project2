@@ -4,13 +4,26 @@ in vec3 fragPos; // in camera space
 in vec3 fragNor; // in camera space
 in vec2 fragTex;
 uniform sampler2D texture0;
+uniform int  mode;
+uniform vec3 color;
 
 out vec4 out_color;
 
 void main()
 {
 	vec3 lightPos = vec3(0.0, 2.0, 0.0); // in camera space
-	vec3 tex = texture2D(texture0, fragTex.st).rgb;
+	vec3 tex;
+
+	switch(mode) {
+		case 't':
+			tex = texture2D(texture0, fragTex.st).rgb;
+			break;
+		case 'c':
+			tex = color;
+			break;
+		default:
+			tex = vec3(0.0, 0.0, 1.0);
+	}
 
 	vec3 n = normalize(fragNor);
 	vec3 l = normalize(lightPos - fragPos);

@@ -25,6 +25,7 @@ namespace draw {
         Shape();
         ~Shape();
         void init(const TexTable &textures, const aiMesh& mesh, const aiScene& scene);
+        void draw(int h_vert, int h_nor) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const;
     };
 
