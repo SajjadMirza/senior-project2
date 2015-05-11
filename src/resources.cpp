@@ -65,6 +65,67 @@ namespace resource {
         }
         return NULL;
     }
+    
 
+    /*
+      Returns the number of configuration objects loaded.
+      Return value is negative if an error occured while loading the objects,
+      zero if no objects were found at all.
+      
+     */
+    int load_model_configs(std::vector<ModelConfig> *configs, const std::string &path) {
+        int ret = 0;
+
+        std::vector<YAML::Node> documents = YAML::LoadAllFromFile(path);
+
+        if (documents.empty()) {
+            return 0;
+        }
+
+        configs->reserve(documents.size());
+        
+        for (auto it = documents.begin(); it != documents.end(); it++) {
+            const YAML::Node &doc = *it;
+            ModelConfig conf;
+            conf.model = doc["model"].as<std::string>();
+            conf.file = doc["file"].as<std::string>();
+            conf.directory = doc["directory"].as<std::string>();
+            conf.format = doc["format"].as<std::string>();
+
+            if (doc["textures"]) {
+                YAML::Node tex = doc["textures"];
+                std::string key;
+                key = "diffuse";
+                if (tex[key]) {
+                    conf.textures.diffuse = tex[key].as<std::string>();
+                }
+
+                key = "normal";
+                if (tex[key]) {
+                    conf.textures.normal = tex[key].as<std::string>();
+                }
+                
+                key = "displacement";
+                if (tex[key]) {
+                    conf.textures.displacement = tex[key].as<std::string>();
+                }
+
+                key = "occlusion";
+                if (tex[key]) {
+                    conf.textures.occlusion = tex[key].as<std::string>();
+                }
+
+                key = "shadow";
+                if (tex[key]) {
+                    conf.textures.shadow = tex[key].as<std::string>();
+                }
+
+                key = "light";
+                if (tex[key]) {
+                    conf.textures.light = tex[key].as<std::string>();
+                }
+            }
+        }
+    }
 
 }

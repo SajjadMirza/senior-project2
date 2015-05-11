@@ -14,6 +14,8 @@ include_directories(lib/include)
 find_library(FMOD NAMES fmod fmodL PATHS lib/bin/fmod)
 find_library(ASSIMP NAMES assimp PATHS lib/bin/assimp)
 find_library(FREEIMG NAMES freeimageplus PATHS lib/bin/freeimageplus)
+find_library(YAMLCPP NAMES yaml-cpp PATHS lib/bin/yaml-cpp)
+set(EXTERNAL_LIBS ${FMOD} ${ASSIMP} ${FREEIMG} ${YAMLCPP})
 
 set(BOOST_ROOT .)
 set(BOOST_INCLUDEDIR ./lib/include)
@@ -23,9 +25,11 @@ set(Boost_DEBUG OFF)
 message("hello from boost")
 find_package(Boost 1.50 COMPONENTS system filesystem REQUIRED)
 message("hello from boost 2")
+set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${Boost_LIBRARIES})
 
 add_subdirectory(glfw)
 include_directories(glfw/include)
+set(EXTERNAL_LIBS ${EXTERNAL_LIBS} glfw ${GLFW_LIBRARIES})
 
 
 add_subdirectory(src)

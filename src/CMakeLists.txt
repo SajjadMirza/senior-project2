@@ -12,9 +12,11 @@ add_custom_command(TARGET myapp POST_BUILD
 
 add_subdirectory(sound)
 add_subdirectory(draw)
+set(INTERNAL_LIBS sound draw)
 
 
-target_link_libraries(myapp ${ASSIMP} sound draw glfw ${GLFW_LIBRARIES} ${IRRKLANG_LIBRARY} ${FMOD} ${Boost_LIBRARIES} ${FREEIMG})
+
+target_link_libraries(myapp ${INTERNAL_LIBS} ${EXTERNAL_LIBS})
 
 install(TARGETS myapp DESTINATION bin) 
 
