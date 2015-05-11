@@ -9,7 +9,8 @@ Camera::Camera() :
     translations(0.0f, 0.0f, -5.0f),
     rfactor(0.005f),
     tfactor(0.1f),
-    sfactor(0.005f)
+    sfactor(0.005f),
+    state(Camera::NOTHING)
 {
 }
 
