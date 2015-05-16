@@ -12,6 +12,7 @@ private:
     draw::Drawable *drawable;
 public:
     Entity();
+    Entity(draw::Drawable *d);
     virtual ~Entity();
     
     void attachDrawable(draw::Drawable *drawable);

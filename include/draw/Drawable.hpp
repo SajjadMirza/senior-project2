@@ -36,7 +36,7 @@ namespace draw {
         ~Drawable(); // This should probably be implemented sometime....
 
         void draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam);
-
+        void draw_no_tex_wall(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, Eigen::Vector3f trans, Eigen::Vector3f col);
     };
 
     typedef std::unordered_map<uint, Drawable*> DrawableMap; 

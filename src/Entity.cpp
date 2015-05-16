@@ -1,6 +1,13 @@
 #include <Entity.hpp>
 
-Entity::Entity() : pos(0, 0, 0), rot(Eigen::Matrix4f::Identity()), drawable(NULL) {}
+Entity::Entity() : pos(0, 0, 0), 
+                   rot(Eigen::Matrix4f::Identity()),
+                   drawable(NULL) {}
+
+Entity::Entity(draw::Drawable *d) : pos(0, 0, 0),
+                                   rot(Eigen::Matrix4f::Identity()),
+                                    drawable(d) {}
+
 Entity::~Entity() {}
 
 void Entity::setRotation(float angle, Eigen::Vector3f axis) {}

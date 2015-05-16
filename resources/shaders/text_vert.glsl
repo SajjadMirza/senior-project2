@@ -1,4 +1,4 @@
-#version 450
+#version 130
 
 in vec3 vertPos;
 in vec3 vertNor;
@@ -11,9 +11,9 @@ out vec2 fragTex;
 
 void main()
 {
-	vec4 posCam = MV * vec4(vertPos, 1.0f);
-	gl_Position = P * posCam;
-	fragPos = posCam.xyz;
-	fragNor = (MV * vec4(vertNor, 0.0)).xyz;
-	fragTex = vertTex;
+    vec4 posCam = MV * vec4(vertPos, 1.0f);
+    gl_Position = P * posCam;
+    fragPos = posCam.xyz;
+    fragNor = (MV * vec4(vertNor, 0.0)).xyz;
+    fragTex = vertTex;
 }
