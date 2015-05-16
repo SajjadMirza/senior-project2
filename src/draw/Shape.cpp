@@ -43,6 +43,48 @@ namespace draw {
 
     Shape::~Shape() {}
 
+    void Shape::init(const TextureBundle &textures, const aiMesh &mesh) {
+        // copy vertex coordinates
+        flatten_array(&vertices, mesh.mVertices, mesh.mNumVertices);
+        glGenBuffers(1, &ver_buf);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), 
+                     &vertices[0], GL_STATIC_DRAW);
+
+        // copy vertex normal vectors
+        flatten_array(&normals, mesh.mNormals, mesh.mNumVertices);
+        glGenBuffers(1, &nor_buf);
+        glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
+        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float),
+                     &normals[0], GL_STATIC_DRAW);
+
+        // copy textures
+        if (textures.diffuse) {
+            tex_id_diffuse = textures.diffuse->tid;
+        }
+        
+        // copy uv coordinates
+        flatten_array2D(&uvs, mesh.mTextureCoords[0], mesh.mNumVertices);
+        glGenBuffers(1, &uv_buf);
+        glBindBuffer(GL_ARRAY_BUFFER, uv_buf);
+        glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), &uvs[0],
+                     GL_STATIC_DRAW);
+
+        // copy indices
+        flatten_indices(&indices, mesh.mFaces, mesh.mNumFaces);
+        glGenBuffers(1, &ind_buf);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint),
+                     &indices[0], GL_STATIC_DRAW);
+
+        // unbind buffers
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        // check for errors
+        assert(glGetError() == GL_NO_ERROR);
+    }
+
     void Shape::init(const TexTable &textures, const aiMesh& mesh, const aiScene& scene) {
         std::cout << "num textures in scene: " << scene.mNumTextures << std::endl;
 

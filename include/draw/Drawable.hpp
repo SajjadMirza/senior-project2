@@ -10,10 +10,9 @@
 
 #include <MatrixStack.hpp>
 #include <Camera.hpp>
+#include <ModelConfig.hpp>
 
 namespace draw {
-
-    
 
     /* this struct is a memory leak waiting to happen */
     struct Node {
@@ -21,8 +20,6 @@ namespace draw {
         std::vector<Shape> meshes;
         std::vector<Node*> children;
     };
-      
-      
 
     /*
       This class doesn't expose the internal hierarchy of the nodes.
@@ -31,7 +28,10 @@ namespace draw {
     class Drawable {
     public:
         Node *root;
+        TextureBundle texs;
         TexTable textures;
+
+        Drawable(const ModelConfig &config);
         Drawable(const aiScene *scene, std::string& dir);
         ~Drawable(); // This should probably be implemented sometime....
 

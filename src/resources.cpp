@@ -7,6 +7,9 @@
 
 extern draw::DrawableMap drawable_map;
 
+
+
+
 namespace resource {
     
     static uint drawable_counter = 0;
@@ -72,7 +75,7 @@ namespace resource {
       Return value is negative if an error occured while loading the objects,
       zero if no objects were found at all.
       
-     */
+    */
     int load_model_configs(std::vector<ModelConfig> *configs, const std::string &path) {
         int ret = 0;
 
@@ -125,7 +128,74 @@ namespace resource {
                     conf.textures.light = tex[key].as<std::string>();
                 }
             }
+
+            configs->push_back(conf);
+            ++ret;
         }
+
+        return ret;
     }
+
+    void tex_image(GLint internalFormat, GLsizei width, GLsizei height,
+                   GLenum format, const void *data) {
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     internalFormat,
+                     width,
+                     height,
+                     0,
+                     format,
+                     GL_UNSIGNED_BYTE,
+                     data);
+    }
+    
+    void rgb_tex_image(GLsizei width, GLsizei height, const void *data) {
+        tex_image(GL_RGB, width, height, GL_BGR, data);
+    }
+
+    void rgba_tex_image(GLsizei width, GLsizei height, const void *data) {
+        tex_image(GL_RGBA, width, height, GL_BGRA, data);
+    }
+
+    void load_texture_from_file(const std::string &path, GLuint *tid_ptr) {
+        FIBITMAP *img = resource::GenericLoader(path.c_str(), 0);
+        uint bit_depth = FreeImage_GetBPP(img);
+        BYTE *img_data = FreeImage_GetBits(img);
+
+        glGenTextures(1, tid_ptr);
+        glBindTexture(GL_TEXTURE_2D, *tid_ptr);
+
+        int width = FreeImage_GetWidth(img);
+        int height = FreeImage_GetHeight(img);
+
+        if (bit_depth == RGB_BITS) {
+            rgb_tex_image(width, height, img_data);
+        }
+        else if (bit_depth == RGBA_BITS) {
+            rgba_tex_image(width, height, img_data);
+        }
+        else {
+            std::cerr << "WARNING: " << path << " HAS INVALID BIT DEPTH: "
+                      << bit_depth << std::endl;
+            rgb_tex_image(width, height, img_data);
+        }
+
+        // When MAGnifying the image (no bigger mipmap available),
+        // use LINEAR filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // When MINifying the image, use a LINEAR blend of two mipmaps,
+        // each filtered LINEARLY too
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        GL_LINEAR_MIPMAP_LINEAR);
+        // Generate mipmaps, by the way.
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        FreeImage_Unload(img);
+
+        std::cout << "done loading texture" << std::endl;
+    }
+
 
 }

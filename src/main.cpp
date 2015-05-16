@@ -10,6 +10,7 @@
 #include <resources.hpp>
 #include <Camera.hpp>
 #include <MatrixStack.hpp>
+#include <ModelConfig.hpp>
 
 /* globals */
 Camera *camera;
@@ -147,6 +148,18 @@ static void init_gl() {
     GLSL::checkVersion();
 }
 
+static const std::string model_config_file = "resources/models.yaml";
+
+static void init_entities(std::vector<Entity> *entities) {
+    std::vector<ModelConfig> configs;
+    resource::load_model_configs(&configs, model_config_file);
+    
+    for (auto it = configs.begin(); it != configs.end(); it++) {
+        draw::Drawable *drawable = new draw::Drawable(*it);
+        entities->push_back(Entity(drawable));
+    }
+}
+
 
 int main(void)
 {
@@ -184,7 +197,9 @@ int main(void)
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-
+    std::vector<Entity> entities;
+    init_entities(&entities);
+/*
     draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
     Entity orange;
 
@@ -200,11 +215,15 @@ int main(void)
     Entity flame;
     flame.attachDrawable(drawable_flame);
 
+
+
     // draw plane
     uint p_handle;
     draw::Drawable *drawable_plane = import_drawable("resources/models/plane/cube.obj", &p_handle);
     Entity plane;
     plane.attachDrawable(drawable_plane);
+
+*/
 
     FreeImage_DeInitialise();
 //    assert(0 && __FILE__ && __LINE__);
@@ -246,7 +265,7 @@ int main(void)
 
                     // test triangle
                     glBegin(GL_TRIANGLES);
-                    
+                    /*
                     draw::Node *root = orange.getDrawable().root;
                     std::cout << root->meshes.size() << std::endl;
                     draw::Shape &s = root->meshes.at(0);
@@ -270,7 +289,7 @@ int main(void)
 
                         
                     }
-                    
+                    */
 
                     glEnd();
                     
@@ -295,26 +314,17 @@ int main(void)
             /* Send projection matrix */
             //std::cout << "rawr " << prog.getUniform("P") << std::endl;
             glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-            
-            MV.pushMatrix();
+
+            for (auto it = entities.begin(); it != entities.end(); it++) {
+                MV.pushMatrix();
                 MV.translate(Eigen::Vector3f(0.0f, 0.0f, -3.0f));
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
-                orange.getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-
-            MV.pushMatrix();
-                MV.translate(Eigen::Vector3f(2.0f, 0.0f, -3.0f));
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
-                cat.getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-
-            MV.pushMatrix();
-                MV.translate(Eigen::Vector3f(-4.0f, 0.0f, -3.0f));
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
-                flame.getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-
-            dWalls(&plane, &prog, &P, &MV);
+                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
+                                   MV.topMatrix().data());
+                it->getDrawable().draw(&prog, &P, &MV, camera);
+                MV.popMatrix();
+            }
+            
+            //dWalls(&plane, &prog, &P, &MV);
             
 
             /*for (int i = 0; i < 3; ++i) {

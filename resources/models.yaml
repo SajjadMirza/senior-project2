@@ -8,4 +8,11 @@ format: dae
 textures:
   diffuse: Color.jpg
   normal: Normal.jpg
+---
+model: tree
+file: Tree1.3ds
+directory: resources/models/tree1_3ds
+format: 3ds
+textures:
+  diffuse: bark_loo.jpg
 ...

@@ -4,6 +4,7 @@
 #include <common.hpp>
 
 #include <unordered_map>
+#include <boost/optional.hpp>
 
 namespace draw {
     enum TexType {
@@ -34,6 +35,17 @@ namespace draw {
         std::string displacement;
         std::string occlusion;
     };
+    
+
+    struct TextureBundle {
+        boost::optional<Texture> diffuse;
+        boost::optional<Texture> normal;
+        boost::optional<Texture> displacement;
+        boost::optional<Texture> occlusion;
+        boost::optional<Texture> shadow;
+        boost::optional<Texture> light;
+    };
+      
 
     typedef std::unordered_map<std::string, Texture> TexTable;
 };

@@ -7,6 +7,7 @@
 #include <resources.hpp>
 
 
+
 using draw::Node;
 
 void assimp_to_eigen_matrix(Eigen::Matrix4f *dst, const aiMatrix4x4 &src) {
@@ -44,7 +45,7 @@ Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *
     for (int i = 0; i < node->mNumMeshes; i++) {
         draw::Shape s;
         aiMesh *mesh = scene->mMeshes[i];
-        s.init(parent_drawable->textures, *mesh, *scene);
+        s.init(parent_drawable->texs, *mesh);
         n->meshes.push_back(s);
     }
 
@@ -59,9 +60,6 @@ Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *
     return n;
 
 }
-
-static const uint RGB_BITS = 24, RGBA_BITS = 32;
-static const uint RGB_CHANNELS = 3, RGBA_CHANNELS = 4;
 
 static void print(std::string type, int count) {
     std::cout << "type " << type << " has " << count << " textures" << std::endl;
@@ -85,6 +83,36 @@ static void print_texture_type_counts(const aiMaterial *mat) {
 
 namespace draw {
 
+    Drawable::Drawable(const ModelConfig &config) {
+        // load textures to Drawable
+        const ModelTextureConfig &texconf = config.textures;
+        if (!texconf.diffuse.empty()) {
+            Texture dt;
+            dt.filename = texconf.diffuse;
+            dt.type = TexType::DIFFUSE;
+            resource::load_texture_from_file(config.directory+"/"+texconf.diffuse,
+                                             &dt.tid);
+            texs.diffuse = dt;
+        }
+
+        // load Assimp scene from file
+        Assimp::Importer importer;
+        const aiScene *scene = importer.ReadFile(config.directory+"/"+config.file,
+                                                 aiProcess_CalcTangentSpace | 
+                                                 aiProcess_Triangulate |
+                                                 aiProcess_JoinIdenticalVertices |
+                                                 aiProcess_SortByPType);
+        if (!scene) {
+            // do some error
+            std::cerr << "NO SCENE FOUND! ABORT!" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+
+        // copy Assimp scene structure to Drawable
+        const aiNode *rootAiNode = scene->mRootNode;
+        root = deepcopy_assimp_tree(this, rootAiNode, scene);
+    }
+    
     
     Drawable::Drawable(const aiScene *scene, std::string& dir) {
         /* copy the aiScene scene tree into our own scene graph */

@@ -3,6 +3,9 @@
 #define GL_GLEXT_PROTOTYPES
 
 // GLFW
+/* External headers. */
+
+// GLFW and also OpenGL
 #include <GLFW/glfw3.h>
 
 // Eigen
@@ -27,14 +30,24 @@
 #include <cassert>
 #include <cstring>
 
+/* Global declarations. */
+
+// constants
+#include <constants.hpp>
+
+// type declarations
+typedef unsigned int uint;
+typedef unsigned long ulong;
+typedef unsigned char uchar;
+
+
+/* Internal headers. */
+
 // Sueda
 #include <GLSL.hpp>
 #include <Program.hpp>
 
-// type declarations
 
-typedef unsigned int uint;
-typedef unsigned long ulong;
-typedef unsigned char uchar;
+
 
 #endif

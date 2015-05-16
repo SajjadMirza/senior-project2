@@ -1,3 +1,6 @@
+#ifndef _MODELCONFIG_HPP
+#define _MODELCONFIG_HPP
+
 #include <common.hpp>
 
 struct ModelTextureConfig {
@@ -18,3 +21,5 @@ struct ModelConfig {
     ModelTextureConfig textures;
     
 };
+
+#endif
