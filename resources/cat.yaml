@@ -1,0 +1,9 @@
+---
+model: cat
+file: cat.obj
+directory: resources/models/cat
+format: obj
+textures:
+  diffuse: cat_diff.tga
+  normal: cat_norm.tga
+...

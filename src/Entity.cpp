@@ -1,4 +1,5 @@
 #include <Entity.hpp>
+#include <algorithm>
 
 Entity::Entity() : pos(0, 0, 0), 
                    rot(Eigen::Matrix4f::Identity()),
@@ -10,11 +11,16 @@ Entity::Entity(draw::Drawable *d) : pos(0, 0, 0),
 
 Entity::~Entity() {}
 
-void Entity::setRotation(float angle, Eigen::Vector3f axis) {}
-void Entity::setPosition(Eigen::Vector3f position) {} 
+void Entity::setRotation(float angle, Eigen::Vector3f axis) {
+    assert(0);
+}
 
-void Entity::move(Eigen::Vector3f translation) {} 
-void Entity::rotate(float angle, Eigen::Vector3f axis) {}
+void Entity::setPosition(Eigen::Vector3f position) {
+    pos = position;
+} 
+
+void Entity::move(Eigen::Vector3f translation) {assert(0);} 
+void Entity::rotate(float angle, Eigen::Vector3f axis) {assert(0);}
 
 void Entity::attachDrawable(draw::Drawable *drawable) {
    this->drawable = drawable;
@@ -26,4 +32,142 @@ draw::Drawable& Entity::getDrawable() {
 
 void Entity::clearDrawable() {
    this->drawable = NULL;
+}
+
+static const float y_filter_range = 0.25;
+
+
+
+bool Entity::collides(const Camera &cam) {
+    float cam_rad = cam.collisionRadius();
+    Eigen::Vector3f delta = -getCenterWorld() - cam.translations;
+
+    std::cout << std::abs(delta.norm()) << std::endl;
+
+    return std::abs(delta.norm()) < cam_rad + this->radius;
+}
+
+static Eigen::Vector3f modelspace_center(const draw::Shape *s) {
+    Eigen::Vector3f c(0,0,0);
+
+    for (auto it = s->indices.begin(); it != s->indices.end(); it++) {
+        uint ix = *it++;
+        uint iy = *it++;
+        uint iz = *it;
+        float x = s->vertices[ix];
+        float y = s->vertices[iy];
+        float z = s->vertices[iz];
+        Eigen::Vector3f v(x,y,z);
+        c+= v;
+    }
+
+    int num_v = s->indices.size() / 3;
+    c = c/num_v;
+
+    return c;
+}
+
+static float modelspace_radius(const draw::Shape *s, Eigen::Vector3f c) {
+    float r = 0;
+
+    for (auto it = s->indices.begin(); it != s->indices.end(); it++) {
+        uint ix = *it++;
+        uint iy = *it++;
+        uint iz = *it;
+        float x = s->vertices[ix];
+        float y = s->vertices[iy];
+        float z = s->vertices[iz];
+        Eigen::Vector3f v(x,y,z);
+        r = std::max(r, (v - c).norm());
+    }
+
+    return r;
+}
+
+void Entity::calculate_center_and_radius() {
+    // find the first mesh
+    const draw::Shape *shape = drawable->find_first_shape();
+
+    center = modelspace_center(shape);
+    radius = modelspace_radius(shape, center);
+/*
+    center = Eigen::Vector3f(0,0,0);
+    
+    for (auto it = shape->indices.begin(); it != shape->indices.end(); it++) {
+        uint ix = *it++;
+        uint iy = *it++;
+        uint iz = *it;
+        float x = shape->vertices[ix];
+        float y = shape->vertices[iy];
+        float z = shape->vertices[iz];
+        Eigen::Vector4f vertex(x,y,z, 1);
+        Eigen::RowVector4f pos_row(pos(0), pos(1), pos(2), 1);
+        Eigen::Vector4f pos_col(pos(0), pos(1), pos(2), 1);
+        //Eigen::Vector4f temp = rot  * vertex;
+
+        Eigen::Matrix4f new_pos = (Eigen::Matrix4f::Identity());
+        new_pos(0,3) = pos_col(0);
+        new_pos(1,3) = pos_col(1);
+        new_pos(2,3) = pos_col(2);
+
+        Eigen::Vector4f world_space_vertex = vertex.transpose() * (rot * new_pos);
+        Eigen::Vector3f world_vec3 = world_space_vertex.head<3>();
+        float world_y = world_space_vertex(1);
+        
+        if (world_y < current_y + y_filter_range &&
+            world_y > current_y - y_filter_range) {
+            center += world_vec3;
+        }
+
+        center = center / (shape->indices.size() / 3);
+
+//        std::cout << drawable->name + " " << center << std::endl;
+
+    }
+*/
+
+
+/*    for (auto it = shape->indices.begin(); it != shape->indices.end(); it++) {
+        uint ix = *it++;
+        uint iy = *it++;
+        uint iz = *it;
+        float x = shape->vertices[ix];
+        float y = shape->vertices[iy];
+        float z = shape->vertices[iz];
+        Eigen::Vector4f vertex(x,y,z, 1);
+        Eigen::RowVector4f pos_row(pos(0), pos(1), pos(2), 1);
+        Eigen::Vector4f pos_col(pos(0), pos(1), pos(2), 1);
+        //Eigen::Vector4f temp = rot  * vertex;
+
+        Eigen::Matrix4f new_pos = (Eigen::Matrix4f::Identity());
+        new_pos(0,3) = pos_col(0);
+        new_pos(1,3) = pos_col(1);
+        new_pos(2,3) = pos_col(2);
+
+        Eigen::Vector4f world_space_vertex = vertex.transpose() * (rot * new_pos);
+        Eigen::Vector3f world_vec3 = world_space_vertex.head<3>();
+        float world_y = world_space_vertex(1);
+        
+        if (world_y < current_y + y_filter_range &&
+            world_y > current_y - y_filter_range) {
+            radius = std::max<float>(radius,
+                                     (world_vec3 - center).norm());
+        }
+        }*/
+}
+
+float Entity::getRadius() {
+    return radius;
+}
+
+Eigen::Vector3f Entity::getCenterWorld() {
+    Eigen::Matrix4f tmat(Eigen::Matrix4f::Identity());
+    for (int i = 0; i < 3; i++) {
+        tmat(i,3) = pos(i);
+    }
+
+    Eigen::Vector4f c4(center(0), center(1), center(2), 1);
+    Eigen::Vector3f result = (tmat * c4).head<3>();
+
+    return result;
 }

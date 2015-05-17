@@ -8,8 +8,6 @@
 #include <ModelConfig.hpp>
 
 
-
-
 namespace resource {
 
     const std::string menu_music_path = "resources/sounds/Ode_to_Joy.ogg";
@@ -22,4 +20,6 @@ namespace resource {
 
     void load_texture_from_file(const std::string &path, GLuint *tid_ptr);
 };
+
+
 #endif

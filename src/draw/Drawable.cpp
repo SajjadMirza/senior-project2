@@ -84,6 +84,7 @@ static void print_texture_type_counts(const aiMaterial *mat) {
 namespace draw {
 
     Drawable::Drawable(const ModelConfig &config) {
+        name = config.model;
         // load textures to Drawable
         const ModelTextureConfig &texconf = config.textures;
         if (!texconf.diffuse.empty()) {
@@ -254,5 +255,25 @@ namespace draw {
 
     void Drawable::draw_no_tex_wall(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, Eigen::Vector3f trans, Eigen::Vector3f col) {
         draw_node_no_tex(root, prog, P, MV, cam, trans, col);
+    }
+
+    static Shape *find_first(Node *n) {
+        if (n->meshes.empty()) {
+            for (Node *child : n->children) {
+                Shape *s = find_first(child);
+                if (s)
+                    return s;
+            }
+
+            return NULL;
+        }
+        else {
+            return &n->meshes.at(0);
+        }
+    }
+
+    const Shape *Drawable::find_first_shape() {
+        Shape *s = find_first(root);
+        return s;
     }
 };

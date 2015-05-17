@@ -5,6 +5,8 @@
 
 #include <MatrixStack.hpp>
 
+static const float camera_default_collision_radius = 0.5;
+
 class Camera
 {
 public:
@@ -31,6 +33,8 @@ public:
     Eigen::Vector2f rotations;
     Eigen::Vector3f translations;
     void move(char c);
+
+    float collisionRadius() const { return camera_default_collision_radius; } 
 	
 private:
     float aspect;

@@ -30,10 +30,13 @@ namespace draw {
         Node *root;
         TextureBundle texs;
         TexTable textures;
+        std::string name;
 
         Drawable(const ModelConfig &config);
         Drawable(const aiScene *scene, std::string& dir);
         ~Drawable(); // This should probably be implemented sometime....
+
+        const Shape *find_first_shape();
 
         void draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam);
         void draw_no_tex_wall(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, Eigen::Vector3f trans, Eigen::Vector3f col);

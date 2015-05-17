@@ -148,7 +148,7 @@ static void init_gl() {
     GLSL::checkVersion();
 }
 
-static const std::string model_config_file = "resources/models.yaml";
+static const std::string model_config_file = "resources/cat.yaml";
 
 static void init_entities(std::vector<Entity> *entities) {
     std::vector<ModelConfig> configs;
@@ -156,7 +156,10 @@ static void init_entities(std::vector<Entity> *entities) {
     
     for (auto it = configs.begin(); it != configs.end(); it++) {
         draw::Drawable *drawable = new draw::Drawable(*it);
-        entities->push_back(Entity(drawable));
+        Entity e(drawable);
+        e.calculate_center_and_radius();
+        e.setPosition(Eigen::Vector3f(0,0,-3));
+        entities->push_back(e);
     }
 }
 
@@ -231,6 +234,8 @@ int main(void)
 
     init_gl();
 
+    ulong num_collisions = 0;
+
     while (!glfwWindowShouldClose(window)) {
         float ratio;
         int width, height;
@@ -239,6 +244,8 @@ int main(void)
 
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+//        std::cout << cam
 
         // P is the projection matrix
         // MV is the model-view matrix
@@ -317,9 +324,12 @@ int main(void)
 
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
-                MV.translate(Eigen::Vector3f(0.0f, 0.0f, -3.0f));
+                MV.translate(it->getPosition());
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                    MV.topMatrix().data());
+                if (it->collides(*camera)) {
+                    std::cout << "COLLISION " << ++num_collisions << std::endl;
+                }
                 it->getDrawable().draw(&prog, &P, &MV, camera);
                 MV.popMatrix();
             }
