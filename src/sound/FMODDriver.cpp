@@ -1,10 +1,11 @@
 #include <sound/FMODDriver.hpp>
+#include <resources.hpp>
 
-const char *sound_test = "resources/sounds/redflag.mp3";
+
 
 namespace sound {
 
-   
+    const char *sound_test = resource::menu_music_path.c_str();
 
     FMODDriver::FMODDriver() {
         FMOD_RESULT result;

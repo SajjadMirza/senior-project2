@@ -11,6 +11,8 @@
 
 
 namespace resource {
+
+    const std::string menu_music_path = "resources/sounds/Ode_to_Joy.ogg";
     
     uint import_object(const std::string& file);
 
