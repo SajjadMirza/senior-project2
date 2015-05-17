@@ -15,4 +15,12 @@ directory: resources/models/tree1_3ds
 format: 3ds
 textures:
   diffuse: bark_loo.jpg
+---
+model: cat
+file: cat.obj
+directory: resources/models/cat
+format: obj
+textures:
+  diffuse: cat_diff.tga
+  normal: cat_norm.tga
 ...
