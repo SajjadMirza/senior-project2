@@ -31,9 +31,11 @@ public:
     void rotate(float angle, Eigen::Vector3f axis);
 
     void calculate_center_and_radius();
-    float getRadius();
-    Eigen::Vector3f getCenterWorld();
-    bool collides(const Camera &cam);
+    void setCenter(Eigen::Vector3f c) { center = c; }
+    void setRadius(float r) { radius = r; }
+    float getRadius() const;
+    Eigen::Vector3f getCenterWorld() const;
+    
 };
 
 #endif

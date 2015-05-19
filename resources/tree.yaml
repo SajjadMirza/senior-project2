@@ -1,0 +1,11 @@
+---
+model: tree
+file: Tree1.3ds
+directory: resources/models/tree1_3ds
+format: 3ds
+textures:
+  diffuse: bark_loo.jpg
+overrides:
+  radius: 0.5
+  center: position
+...

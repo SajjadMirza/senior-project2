@@ -38,45 +38,34 @@ static const float y_filter_range = 0.25;
 
 
 
-bool Entity::collides(const Camera &cam) {
-    float cam_rad = cam.collisionRadius();
-    Eigen::Vector3f delta = -getCenterWorld() - cam.translations;
 
-    std::cout << std::abs(delta.norm()) << std::endl;
-
-    return std::abs(delta.norm()) < cam_rad + this->radius;
-}
 
 static Eigen::Vector3f modelspace_center(const draw::Shape *s) {
     Eigen::Vector3f c(0,0,0);
 
-    for (auto it = s->indices.begin(); it != s->indices.end(); it++) {
-        uint ix = *it++;
-        uint iy = *it++;
-        uint iz = *it;
-        float x = s->vertices[ix];
-        float y = s->vertices[iy];
-        float z = s->vertices[iz];
+    for (auto it = s->vertices.begin(); it != s->vertices.end(); it++) {
+        float x = *it++;
+        float y = *it++;
+        float z = *it;
         Eigen::Vector3f v(x,y,z);
         c+= v;
+        std::cout << z << std::endl;
     }
 
-    int num_v = s->indices.size() / 3;
+    int num_v = s->vertices.size() / 3;
     c = c/num_v;
 
+    std::cout << "modelspace center = " << c << std::endl;
     return c;
 }
 
 static float modelspace_radius(const draw::Shape *s, Eigen::Vector3f c) {
     float r = 0;
 
-    for (auto it = s->indices.begin(); it != s->indices.end(); it++) {
-        uint ix = *it++;
-        uint iy = *it++;
-        uint iz = *it;
-        float x = s->vertices[ix];
-        float y = s->vertices[iy];
-        float z = s->vertices[iz];
+    for (auto it = s->vertices.begin(); it != s->vertices.end(); it++) {
+        float x = *it++;
+        float y = *it++;
+        float z = *it;
         Eigen::Vector3f v(x,y,z);
         r = std::max(r, (v - c).norm());
     }
@@ -151,16 +140,16 @@ void Entity::calculate_center_and_radius() {
         if (world_y < current_y + y_filter_range &&
             world_y > current_y - y_filter_range) {
             radius = std::max<float>(radius,
-                                     (world_vec3 - center).norm());
+\                                     (world_vec3 - center).norm());
         }
         }*/
 }
 
-float Entity::getRadius() {
+float Entity::getRadius() const {
     return radius;
 }
 
-Eigen::Vector3f Entity::getCenterWorld() {
+Eigen::Vector3f Entity::getCenterWorld() const {
     Eigen::Matrix4f tmat(Eigen::Matrix4f::Identity());
     for (int i = 0; i < 3; i++) {
         tmat(i,3) = pos(i);

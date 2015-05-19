@@ -1,0 +1,11 @@
+---
+# required information
+model: orange
+file: Orange.dae
+directory: resources/models/orange
+format: dae
+# optional information
+textures:
+  diffuse: Color.jpg
+  normal: Normal.jpg
+...

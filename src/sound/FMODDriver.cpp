@@ -1,11 +1,10 @@
 #include <sound/FMODDriver.hpp>
-#include <resources.hpp>
 
 
 
 namespace sound {
 
-    const char *sound_test = resource::menu_music_path.c_str();
+    const char *sound_test = "resources/sounds/Ode_to_Joy.ogg";
 
     FMODDriver::FMODDriver() {
         FMOD_RESULT result;

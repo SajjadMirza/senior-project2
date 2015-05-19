@@ -95,6 +95,16 @@ namespace resource {
             conf.directory = doc["directory"].as<std::string>();
             conf.format = doc["format"].as<std::string>();
 
+            if (doc["overrides"]) {
+                YAML::Node overrides = doc["overrides"];
+                if (overrides["radius"]) {
+                    conf.radius_override = overrides["radius"].as<float>();
+                }
+                if (overrides["radius"]) {
+                    conf.use_position_center_override = true;
+                }
+            }
+
             if (doc["textures"]) {
                 YAML::Node tex = doc["textures"];
                 std::string key;

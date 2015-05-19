@@ -22,18 +22,18 @@ const uint old = 0;
 const uint init_w = 640;
 const uint init_h = 480;
 
-static void bufferMovement(GLFWwindow *window) {
+static void bufferMovement(GLFWwindow *window, const std::vector<Entity> entities) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera->move('w');
+        camera->move('w', entities);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera->move('a');
+        camera->move('a', entities);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera->move('s');
+        camera->move('s', entities);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera->move('d');
+        camera->move('d', entities);
     }
 }
 
@@ -148,7 +148,7 @@ static void init_gl() {
     GLSL::checkVersion();
 }
 
-static const std::string model_config_file = "resources/cat.yaml";
+static const std::string model_config_file = "resources/tree.yaml";
 
 static void init_entities(std::vector<Entity> *entities) {
     std::vector<ModelConfig> configs;
@@ -158,7 +158,14 @@ static void init_entities(std::vector<Entity> *entities) {
         draw::Drawable *drawable = new draw::Drawable(*it);
         Entity e(drawable);
         e.calculate_center_and_radius();
-        e.setPosition(Eigen::Vector3f(0,0,-3));
+        e.setPosition(Eigen::Vector3f(0,0,-5));
+        if (it->radius_override) {
+            std::cout << "radius override detected" << std::endl;
+            e.setRadius(it->radius_override.get());
+        }
+        if (it->use_position_center_override) {
+            e.setCenter(Eigen::Vector3f(0,0,0));
+        }
         entities->push_back(e);
     }
 }
@@ -325,11 +332,9 @@ int main(void)
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
                 MV.translate(it->getPosition());
+             
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                    MV.topMatrix().data());
-                if (it->collides(*camera)) {
-                    std::cout << "COLLISION " << ++num_collisions << std::endl;
-                }
                 it->getDrawable().draw(&prog, &P, &MV, camera);
                 MV.popMatrix();
             }
@@ -367,7 +372,7 @@ int main(void)
             P.popMatrix();
         }
 
-    	bufferMovement(window);
+    	bufferMovement(window, entities);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

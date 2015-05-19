@@ -72,12 +72,13 @@ void Camera::applyViewMatrix(MatrixStack *MV) const
     MV->translate(translations);
 }
 
-void Camera::move(char c) {
+void Camera::move(char c, const std::vector<Entity> entities) {
     Eigen::Quaternionf q1;
-	Eigen::Vector3f axis1(0.0f, 1.0f, 0.0f);
-	q1 = Eigen::AngleAxisf(rotations(0), axis1); 
-	Eigen::Matrix4f R1 = Eigen::Matrix4f::Identity();
-	R1.block<3,3>(0,0) = q1.toRotationMatrix();
+    Eigen::Vector3f axis1(0.0f, 1.0f, 0.0f);
+    q1 = Eigen::AngleAxisf(rotations(0), axis1); 
+    Eigen::Matrix4f R1 = Eigen::Matrix4f::Identity();
+    R1.block<3,3>(0,0) = q1.toRotationMatrix();
+    Eigen::Vector3f last_valid_location = translations;
     
     if (c == 's') { //w
     	Eigen::Vector3f point(0.0f, 0.0f, 1.0f);
@@ -107,4 +108,26 @@ void Camera::move(char c) {
         translations(0) += (point(0) * tfactor);     
         translations(2) -= (point(2) * tfactor);  
     }
+
+    for (auto it = entities.begin(); it != entities.end(); it++) {
+        if (this->collides(*it)) {
+            translations = last_valid_location;
+        }
+    }
+}
+
+bool Camera::collides(const Entity &e) {
+    float cam_rad = collisionRadius();
+    Eigen::Vector3f their_pos = e.getCenterWorld();
+    Eigen::Vector3f our_pos = translations;
+    their_pos(1) = 0;
+    our_pos(1) = 0;
+    Eigen::Vector3f delta = -their_pos - our_pos;
+    std::cout << "object pos" << std::endl;
+    std::cout << their_pos << std::endl;
+    std::cout << "cam pos" << std::endl;
+    std::cout << our_pos << std::endl;
+    std::cout << " dist = " << std::abs(delta.norm()) << std::endl;
+
+    return std::abs(delta.norm()) < cam_rad + e.getRadius();
 }

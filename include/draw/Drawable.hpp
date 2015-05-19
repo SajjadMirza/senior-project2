@@ -9,8 +9,12 @@
 #include <draw/Shape.hpp>
 
 #include <MatrixStack.hpp>
-#include <Camera.hpp>
+
+
+
 #include <ModelConfig.hpp>
+
+class Camera; // forward declaration
 
 namespace draw {
 
