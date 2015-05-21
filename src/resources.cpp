@@ -105,6 +105,32 @@ namespace resource {
                 }
             }
 
+            if (doc["transforms"]) {
+                
+                if (doc["transforms"]["rotations"]) {
+                    YAML::Node rots = doc["transforms"]["rotations"];
+                    float xdeg = rots["xaxis"] ? rots["xaxis"].as<float>() : 0;
+                    float ydeg = rots["yaxis"] ? rots["yaxis"].as<float>() : 0;
+                    float zdeg = rots["zaxis"] ? rots["zaxis"].as<float>() : 0;
+
+                    conf.transforms.xrot = xdeg;
+                    conf.transforms.yrot = ydeg;
+                    conf.transforms.zrot = zdeg;
+                }
+                
+                if (doc["transforms"]["translations"]) {
+                    YAML::Node trans = doc["transforms"]["translations"];
+                    float xpos = trans["xaxis"] ? trans["xaxis"].as<float>() : 0;
+                    float ypos = trans["yaxis"] ? trans["yaxis"].as<float>() : 0;
+                    float zpos = trans["zaxis"] ? trans["zaxis"].as<float>() : 0;
+
+                    conf.transforms.xpos = xpos;
+                    conf.transforms.ypos = ypos;
+                    conf.transforms.zpos = zpos;
+                }
+            }
+            
+
             if (doc["textures"]) {
                 YAML::Node tex = doc["textures"];
                 std::string key;

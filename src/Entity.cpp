@@ -15,9 +15,18 @@ void Entity::setRotation(float angle, Eigen::Vector3f axis) {
     assert(0);
 }
 
+void Entity::setRotationMatrix(Eigen::Matrix4f mat) {
+    rot = mat;
+}
+
 void Entity::setPosition(Eigen::Vector3f position) {
     pos = position;
-} 
+}
+
+
+const Eigen::Matrix4f& Entity::getRotation() const {
+    return rot;
+}
 
 void Entity::move(Eigen::Vector3f translation) {assert(0);} 
 void Entity::rotate(float angle, Eigen::Vector3f axis) {assert(0);}

@@ -14,6 +14,18 @@ struct ModelTextureConfig {
     std::string light;
 };
 
+struct TransformConfig {
+    // rotations in degrees
+    float xrot = 0;
+    float yrot = 0;
+    float zrot = 0;
+
+    float xpos = 0;
+    float ypos = 0;
+    float zpos = 0;
+};
+
+
 struct ModelConfig {
     std::string model;
     std::string file;
@@ -22,7 +34,7 @@ struct ModelConfig {
     boost::optional<float> radius_override;
     bool use_position_center_override = false;
     ModelTextureConfig textures;
-    
+    TransformConfig transforms;
 };
 
 #endif

@@ -22,6 +22,11 @@ const uint old = 0;
 const uint init_w = 640;
 const uint init_h = 480;
 
+float deg_to_rad(float deg) {
+    float rad = (M_PI / 180.0f) * deg;
+    return rad;
+}
+
 static void bufferMovement(GLFWwindow *window, const std::vector<Entity> entities) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera->move('w', entities);
@@ -159,13 +164,60 @@ static void init_entities(std::vector<Entity> *entities) {
         Entity e(drawable);
         e.calculate_center_and_radius();
         e.setPosition(Eigen::Vector3f(0,0,-5));
+        
         if (it->radius_override) {
             std::cout << "radius override detected" << std::endl;
             e.setRadius(it->radius_override.get());
         }
+        
         if (it->use_position_center_override) {
             e.setCenter(Eigen::Vector3f(0,0,0));
         }
+
+        Eigen::Matrix4f rot = Eigen::Matrix4f::Identity();
+        Eigen::Quaternionf qrot = Eigen::Quaternionf::Identity();
+        
+        if (it->transforms.xrot != 0.0f) {
+            Eigen::Quaternionf q;
+            float angle = deg_to_rad(it->transforms.xrot);
+            q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitX());
+            qrot = q * qrot;
+        }
+
+        if (it->transforms.yrot != 0.0f) {
+            Eigen::Quaternionf q;
+            float angle = deg_to_rad(it->transforms.yrot);
+            q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitY());
+            qrot = q * qrot;
+        }
+
+        if (it->transforms.zrot != 0.0f) {
+            std::cout << "multiplied by z rotation" << std::endl;
+            Eigen::Quaternionf q;
+            float angle = deg_to_rad(it->transforms.zrot);
+            q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitZ());
+            qrot = q * qrot;
+        }
+
+        rot.block<3,3>(0,0) = qrot.toRotationMatrix();
+        e.setRotationMatrix(rot);
+
+        Eigen::Vector3f pos(0,0,0);
+
+        if (it->transforms.xpos != 0.0f) {
+            pos(0) = it->transforms.xpos;
+        }
+
+        if (it->transforms.ypos != 0.0f) {
+            pos(1) = it->transforms.ypos;
+        }
+
+        if (it->transforms.zpos != 0.0f) {
+            pos(2) = it->transforms.zpos;
+        }
+
+        e.setPosition(pos);
+        
         entities->push_back(e);
     }
 }
@@ -331,6 +383,7 @@ int main(void)
 
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
+                MV.multMatrix(it->getRotation());
                 MV.translate(it->getPosition());
              
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,

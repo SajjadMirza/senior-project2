@@ -8,4 +8,10 @@ textures:
 overrides:
   radius: 0.5
   center: position
+transforms:
+  rotations:
+    zaxis: 180.0
+  translations:
+    yaxis: 1.0
+    zaxis: -4.0
 ...

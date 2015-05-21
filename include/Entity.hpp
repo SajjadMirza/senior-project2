@@ -23,6 +23,7 @@ public:
     draw::Drawable& getDrawable();
 
     void setRotation(float angle, Eigen::Vector3f axis);
+    void setRotationMatrix(Eigen::Matrix4f mat);
     void setPosition(Eigen::Vector3f position);
 
     Eigen::Vector3f getPosition() { return pos; }
@@ -35,7 +36,8 @@ public:
     void setRadius(float r) { radius = r; }
     float getRadius() const;
     Eigen::Vector3f getCenterWorld() const;
-    
+
+    const Eigen::Matrix4f& getRotation() const;
 };
 
 #endif
