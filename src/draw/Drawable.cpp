@@ -259,10 +259,13 @@ namespace draw {
 
     static Shape *find_first(Node *n) {
         if (n->meshes.empty()) {
-            for (Node *child : n->children) {
+            for (auto it = n->children.begin(); it != n->children.end(); it++) {
+                Node *child = *it;
                 Shape *s = find_first(child);
-                if (s)
+                if (s) {
                     return s;
+                }
+
             }
 
             return NULL;
