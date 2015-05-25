@@ -28,7 +28,7 @@ namespace sound {
     
     void FMODDriver::testSound() {
         FMOD::Sound *audio;
-        system->createSound(sound_test, FMOD_DEFAULT, 0, &audio);
+        system->createSound(sound_test, FMOD_LOOP_NORMAL, 0, &audio);
 
         FMOD::Channel *channel;
         system->playSound(audio, NULL, false, &channel);
