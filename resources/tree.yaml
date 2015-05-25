@@ -13,5 +13,5 @@ transforms:
     zaxis: 180.0
   translations:
     yaxis: 1.0
-    zaxis: -4.0
+    zaxis: 4.0
 ...
