@@ -16,13 +16,23 @@ struct ModelTextureConfig {
 
 struct TransformConfig {
     // rotations in degrees
-    float xrot = 0;
-    float yrot = 0;
-    float zrot = 0;
+    float xrot;
+    float yrot;
+    float zrot;
 
-    float xpos = 0;
-    float ypos = 0;
-    float zpos = 0;
+    float xpos;
+    float ypos;
+    float zpos;
+
+    TransformConfig() {
+        xrot = 0;
+        yrot = 0;
+        zrot = 0;
+
+        xpos = 0;
+        ypos = 0;
+        zpos = 0;
+    }
 };
 
 
@@ -32,9 +42,13 @@ struct ModelConfig {
     std::string directory;
     std::string format;
     boost::optional<float> radius_override;
-    bool use_position_center_override = false;
+    bool use_position_center_override;
     ModelTextureConfig textures;
     TransformConfig transforms;
+    
+    ModelConfig() {
+        use_position_center_override = false;
+    }
 };
 
 #endif
