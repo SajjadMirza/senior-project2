@@ -80,7 +80,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     double x, y;
     glfwGetCursorPos(window, &x, &y);
     
-    camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);\
+    camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);
 }
 
 static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
@@ -198,8 +198,7 @@ static void init_entities(std::vector<Entity> *entities) {
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitZ());
             qrot = q * qrot;
         }
-
-        rot.block<3,3>(0,0) = qrot.toRotationMatrix();
+        rot.topLeftCorner<3,3>() = qrot.toRotationMatrix();
         e.setRotationMatrix(rot);
 
         Eigen::Vector3f pos(0,0,0);
@@ -375,8 +374,9 @@ int main(void)
             camera->applyViewMatrix(&MV);
         
             /* Beginning Sample Program */
-            prog.bind(); 
-            
+            prog.bind();
+
+
             /* Send projection matrix */
             //std::cout << "rawr " << prog.getUniform("P") << std::endl;
             glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());

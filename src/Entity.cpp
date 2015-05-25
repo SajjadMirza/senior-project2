@@ -58,7 +58,7 @@ static Eigen::Vector3f modelspace_center(const draw::Shape *s) {
         float z = *it;
         Eigen::Vector3f v(x,y,z);
         c+= v;
-        std::cout << z << std::endl;
+//        std::cout << z << std::endl;
     }
 
     int num_v = s->vertices.size() / 3;
