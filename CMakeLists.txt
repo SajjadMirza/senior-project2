@@ -5,8 +5,10 @@ project (Tutorial)
 
 # variables
 set(GCC_CXX_STANDARD_LEVEL "-std=c++0x")
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_CXX_STANDARD_LEVEL}")
+set(INSTALL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/install")
+set(CMAKE_INSTALL_PREFIX "${INSTALL_DIR}")
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 include_directories(include)
 include_directories(lib/include)
@@ -31,8 +33,12 @@ add_subdirectory(glfw)
 include_directories(glfw/include)
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} glfw ${GLFW_LIBRARIES})
 
+install(DIRECTORY resources DESTINATION "${INSTALL_DIR}")
+#install(FILES README.md DESTINATION bin)
 
 add_subdirectory(src)
+
+
 
 
 

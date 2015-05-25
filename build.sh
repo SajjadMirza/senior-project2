@@ -1,8 +1,10 @@
 #!/bin/bash
 
-mkdir build
-cd build
+BUILD_DIR=clibuild
 
-cmake .. -DCMAKE_INSTALL_PREFIX=../install
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+
+cmake .. 
 make
 make install

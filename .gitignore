@@ -3,12 +3,17 @@
 # lol emacs
 *~
 
+clibuild/*
 build/*
 install/*
 lib/*
+tmp/*
+
 
 .nfs*
 
 *.pdf
 
 resources/models/sf_house/*
+
+.idea/*
