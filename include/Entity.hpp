@@ -13,6 +13,7 @@ private:
     Eigen::Vector3f center;
     draw::Drawable *drawable;
 public:
+    uint id;
     Entity();
     Entity(draw::Drawable *d);
     virtual ~Entity();

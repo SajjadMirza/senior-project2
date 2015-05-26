@@ -3,6 +3,7 @@
 in vec3 fragPos; // in camera space
 in vec3 fragNor; // in camera space
 in vec2 fragTex;
+in vec3 lightPos;
 uniform sampler2D texture0;
 uniform int  mode;
 uniform vec3 color;
@@ -13,7 +14,6 @@ void main()
 {
     int texture_mode = 116;
     int color_mode = 99;
-    vec3 lightPos = vec3(0.0, 2.0, 0.0); // in camera space
     vec3 tex;
 
     if (mode == texture_mode) {

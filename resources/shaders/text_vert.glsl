@@ -8,9 +8,12 @@ uniform mat4 MV;
 out vec3 fragPos;
 out vec3 fragNor;
 out vec2 fragTex;
+out vec3 lightPos;
 
 void main()
 {
+    vec4 light = MV * vec4(0.0, 20.0, 0.0, 1.0);
+    lightPos = light.xyz;
     vec4 posCam = MV * vec4(vertPos, 1.0f);
     gl_Position = P * posCam;
     fragPos = posCam.xyz;

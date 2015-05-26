@@ -18,6 +18,7 @@ draw::DrawableMap drawable_map;
 
 // TEMP ON DRAWING GPU
 Program prog;
+Program color_prog;
 const uint old = 0; 
 const uint init_w = 640;
 const uint init_h = 480;
@@ -68,19 +69,36 @@ static void resize_window(GLFWwindow *window, int w, int h) {
     camera->setAspect((float)w / (float)h);
 }
 
+static Eigen::Vector3f selection_coords;
+static bool selection_flag = false;
+
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if (action == GLFW_RELEASE) {
+    if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
         camera->mouseReleased();
         return;
     }
-    
-    bool shift = mods & GLFW_MOD_SHIFT;
-    bool ctrl = mods & GLFW_MOD_CONTROL;
-    bool alt = mods & GLFW_MOD_ALT;
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
-    
-    camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);
+
+    if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_RIGHT) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        selection_coords(0) = xpos;
+        selection_coords(1) = ypos;
+        std::cout << "right click at" << xpos << " " << ypos << std::endl;
+        selection_flag = true;
+        camera->mouseReleased();
+        return;
+    }
+
+    if (action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT) {
+        bool shift = mods & GLFW_MOD_SHIFT;
+        bool ctrl = mods & GLFW_MOD_CONTROL;
+        bool alt = mods & GLFW_MOD_ALT;
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
+
+        camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);
+    }
+
 }
 
 static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
@@ -130,7 +148,7 @@ draw::Drawable *import_drawable(std::string file_name) {
 }
 
 static void init_gl() {
-    glClearColor(0.0f, 1.0f, 0.25f, 1.0f);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glEnable(GL_DEPTH_TEST);
 
     glViewport(0, 0, init_w, init_h);
@@ -149,11 +167,41 @@ static void init_gl() {
     prog.addUniform("mode");
     prog.addUniform("color");
     prog.addUniform("texture0");
-    
+
+    color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
+    color_prog.init();
+    color_prog.addAttribute("vertPos");
+    color_prog.addUniform("P");
+    color_prog.addUniform("MV");
+    color_prog.addUniform("uColor");
+
     GLSL::checkVersion();
 }
 
 static const std::string model_config_file = "resources/tree.yaml";
+
+static int unique_color_index = 0;
+
+static uint getUniqueColor(int index) {
+    const int num_channels = 3;
+    char r,g,b;
+    r = g = b = 20;
+
+    if (index % num_channels == 0) {
+        r += 5*index;
+    }
+    else if (index % num_channels == 1) {
+        g += 5*index;
+    }
+    else {
+        b += 5*index;
+    }
+    int color = 0;
+    color = (r << 16) | (g << 8) | b;
+    return color;
+ }
+
+static unsigned int entity_uid_counter = 1;
 
 static void init_entities(std::vector<Entity> *entities) {
     std::vector<ModelConfig> configs;
@@ -164,6 +212,7 @@ static void init_entities(std::vector<Entity> *entities) {
         Entity e(drawable);
         e.calculate_center_and_radius();
         e.setPosition(Eigen::Vector3f(0,0,-5));
+        e.id = entity_uid_counter++;
         
         if (it->radius_override) {
             std::cout << "radius override detected" << std::endl;
@@ -260,31 +309,7 @@ int main(void)
     uint handle;
     std::vector<Entity> entities;
     init_entities(&entities);
-/*
-    draw::Drawable *drawable_orange = import_drawable("resources/models/orange/Orange.dae", &handle);
-    Entity orange;
 
-    orange.attachDrawable(drawable_orange);
-
-    uint c_handle;
-    draw::Drawable *drawable_cat = import_drawable("resources/models/cat/cat.obj", &c_handle);
-    Entity cat;
-    cat.attachDrawable(drawable_cat);
-
-    uint f_handle;
-    draw::Drawable *drawable_flame = import_drawable("resources/models/Firefly_Flamethrower/Firefly_Flamethrower.dae", &f_handle);
-    Entity flame;
-    flame.attachDrawable(drawable_flame);
-
-
-
-    // draw plane
-    uint p_handle;
-    draw::Drawable *drawable_plane = import_drawable("resources/models/plane/cube.obj", &p_handle);
-    Entity plane;
-    plane.attachDrawable(drawable_plane);
-
-*/
 
     FreeImage_DeInitialise();
 //    assert(0 && __FILE__ && __LINE__);
@@ -308,122 +333,93 @@ int main(void)
         // P is the projection matrix
         // MV is the model-view matrix
         MatrixStack P, MV;
-        
-        if (old) {
-            P.pushMatrix(); 
-            camera->applyProjectionMatrix(&P);
-            glMatrixMode(GL_PROJECTION);
-            glPushMatrix();
-            glLoadMatrixf(P.topMatrix().data());
-            {
-                // Projection space
-                MV.pushMatrix();
-                camera->applyViewMatrix(&MV);
-                glMatrixMode(GL_MODELVIEW);
-                glPushMatrix();
-                glLoadMatrixf(MV.topMatrix().data());
-                {
-                    // Modelview space
 
-                    // DRAW ALL THE THINGS
-                    //glRotatef((float) glfwGetTime() * 50.f, 0.f, 0.f, 1.f);
 
-                    // test triangle
-                    glBegin(GL_TRIANGLES);
-                    /*
-                    draw::Node *root = orange.getDrawable().root;
-                    std::cout << root->meshes.size() << std::endl;
-                    draw::Shape &s = root->meshes.at(0);
+        // Apply camera transforms
+        P.pushMatrix();
+        camera->applyProjectionMatrix(&P);
+        MV.pushMatrix();
+        camera->applyViewMatrix(&MV);
 
-                    std::cout << root->children.size() << std::endl;
-// //                     // std::cout << root->children[0]->meshes.size() << std::endl;
-// // //                    draw::Shape &s = root->children.at(0)->meshes.at(0);
-// // //                    draw::Shape &s = root->meshe
+        /* Beginning color picking program */
+        color_prog.bind();
 
-                    
-                    assert(0 && __FILE__ && __LINE__);
-                    for (int i = 0; i < s.indices.size(); i++) {
-                        uint index = s.indices[i];
-                        
-                        uint xi = 3*index;
-                        uint yi = 3*index + 1;
-                        uint zi = 3*index + 2;
-                        
-                        glColor3f(s.normals[xi], s.normals[yi], s.normals[zi]);
-                        glVertex3f(s.vertices[xi], s.vertices[yi], s.vertices[zi]);
+        glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
 
-                        
-                    }
-                    */
-
-                    glEnd();
-                    
-
-                    glPopMatrix();
-                }
-
-                glMatrixMode(GL_PROJECTION);
-                glPopMatrix();
-            }
-        }
-        else {
-            // Apply camera transforms
-            P.pushMatrix();
-            camera->applyProjectionMatrix(&P);
+        for (auto it = entities.begin(); it != entities.end(); it++) {
             MV.pushMatrix();
-            camera->applyViewMatrix(&MV);
-        
-            /* Beginning Sample Program */
-            prog.bind();
+            MV.multMatrix(it->getRotation());
+            MV.translate(it->getPosition());
+            Eigen::Vector3f entity_color;
+            uint id = it->id;
+            entity_color(0) = (id & 0xFF);
+            entity_color(1) = (id & 0xFF00) >> 8;
+            entity_color(2) = (id & 0xFF0000) >> 16;
+            entity_color = entity_color / 255.0f;
+            glUniform3fv(color_prog.getUniform("uColor"), 1, entity_color.data());
 
-
-            /* Send projection matrix */
-            //std::cout << "rawr " << prog.getUniform("P") << std::endl;
-            glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-
-            for (auto it = entities.begin(); it != entities.end(); it++) {
-                MV.pushMatrix();
-                MV.multMatrix(it->getRotation());
-                MV.translate(it->getPosition());
-             
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                                   MV.topMatrix().data());
-                it->getDrawable().draw(&prog, &P, &MV, camera);
-                MV.popMatrix();
-            }
-            
-            //dWalls(&plane, &prog, &P, &MV);
-            
-
-            /*for (int i = 0; i < 3; ++i) {
-                plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
-                plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*-0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
-            }*/
-
-            //plane.getDrawable().draw_no_tex_wall(&prog, &P, &MV, camera, Eigen::Vector3f(0.0f, 0.0f, -5.0f), Eigen::Vector3f(0, 0, 0));
-
-
-
-            /*
-            MV.pushMatrix();
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE, MV.topMatrix().data());
-                
-                draw::Node *root = orange.getDrawable().root;
-                draw::Shape &s = root->children.at(0)->meshes.at(0);
-                
-                s.draw(prog.getAttribute("vertPos"),
-                       prog.getAttribute("vertNor"),
-                       prog.getAttribute("vertTex"),
-                       prog.getUniform("texture0"));
+            glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
+                               MV.topMatrix().data());
+            it->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
-            */
-        
-            // Unbind the program
-            prog.unbind();
-            
-            MV.popMatrix();
-            P.popMatrix();
         }
+
+        if (selection_flag) {
+            glFlush();
+            glFinish();
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            unsigned char data[4];
+            int x = std::floor(selection_coords(0)), y = std::floor(selection_coords(1));
+            glReadPixels(x,y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
+            std::cout << "picked: " << pickedID << std::endl;
+            selection_flag = false;
+        }
+
+
+
+
+        color_prog.unbind();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        /* Beginning Sample Program */
+        prog.bind();
+
+
+        /* Send projection matrix */
+        //std::cout << "rawr " << prog.getUniform("P") << std::endl;
+        glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+
+        for (auto it = entities.begin(); it != entities.end(); it++) {
+            MV.pushMatrix();
+            MV.multMatrix(it->getRotation());
+            MV.translate(it->getPosition());
+
+            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
+                               MV.topMatrix().data());
+            it->getDrawable().draw(&prog, &P, &MV, camera);
+            MV.popMatrix();
+        }
+
+        //dWalls(&plane, &prog, &P, &MV);
+
+
+        /*for (int i = 0; i < 3; ++i) {
+            plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
+            plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*-0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
+        }*/
+
+        //plane.getDrawable().draw_no_tex_wall(&prog, &P, &MV, camera, Eigen::Vector3f(0.0f, 0.0f, -5.0f), Eigen::Vector3f(0, 0, 0));
+
+        // Unbind the program
+        prog.unbind();
+
+
+
+
+        MV.popMatrix();
+        P.popMatrix();
 
     	bufferMovement(window, entities);
 
