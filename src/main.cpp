@@ -155,7 +155,7 @@ static void init_gl() {
     prog.addUniform("mode");
     prog.addUniform("color");
     prog.addUniform("texture0");
-    prog.addUniform("lightPos");
+    prog.addUniform("uLightPos");
 
     color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
     color_prog.init();
@@ -384,7 +384,7 @@ int main(void)
 
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-        glUniform3fv(color_prog.getUniform("lightPos"), 1, light_pos.data());
+        glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
             MV.pushMatrix();
