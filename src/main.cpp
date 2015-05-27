@@ -11,6 +11,7 @@
 #include <Camera.hpp>
 #include <MatrixStack.hpp>
 #include <ModelConfig.hpp>
+#include <Map.hpp>
 
 /* globals */
 Camera *camera;
@@ -19,9 +20,11 @@ draw::DrawableMap drawable_map;
 // TEMP ON DRAWING GPU
 Program prog;
 Program color_prog;
-const uint old = 0; 
 const uint init_w = 640;
 const uint init_h = 480;
+
+const uint map_cols = 44;
+const uint map_rows = 45;
 
 float deg_to_rad(float deg) {
     float rad = (M_PI / 180.0f) * deg;
@@ -270,11 +273,12 @@ static void init_entities(std::vector<Entity> *entities) {
     }
 }
 
-
 int main(void)
 {
     GLFWwindow* window;
     sound::FMODDriver sound_driver;
+    Map map(map_cols, map_rows);
+    map.loadMapFromFile("resources/maps/our_map.txt");
 
 
     camera = new Camera;
@@ -312,7 +316,6 @@ int main(void)
 
 
     FreeImage_DeInitialise();
-//    assert(0 && __FILE__ && __LINE__);
 
 
     init_gl();
@@ -328,8 +331,6 @@ int main(void)
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//        std::cout << cam
-
         // P is the projection matrix
         // MV is the model-view matrix
         MatrixStack P, MV;
@@ -341,54 +342,56 @@ int main(void)
         MV.pushMatrix();
         camera->applyViewMatrix(&MV);
 
-        /* Beginning color picking program */
-        color_prog.bind();
-
-        glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-
-        for (auto it = entities.begin(); it != entities.end(); it++) {
-            MV.pushMatrix();
-            MV.multMatrix(it->getRotation());
-            MV.translate(it->getPosition());
-            Eigen::Vector3f entity_color;
-            uint id = it->id;
-            entity_color(0) = (id & 0xFF);
-            entity_color(1) = (id & 0xFF00) >> 8;
-            entity_color(2) = (id & 0xFF0000) >> 16;
-            entity_color = entity_color / 255.0f;
-            glUniform3fv(color_prog.getUniform("uColor"), 1, entity_color.data());
-
-            glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
-                               MV.topMatrix().data());
-            it->getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-        }
+        
+        
 
         if (selection_flag) {
+            /* Beginning color picking program */
+            color_prog.bind();
+
+            glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+            
+            for (auto it = entities.begin(); it != entities.end(); it++) {
+                MV.pushMatrix();
+                MV.multMatrix(it->getRotation());
+                MV.translate(it->getPosition());
+                Eigen::Vector3f entity_color;
+                uint id = it->id;
+                entity_color(0) = (id & 0xFF);
+                entity_color(1) = (id & 0xFF00) >> 8;
+                entity_color(2) = (id & 0xFF0000) >> 16;
+                entity_color = entity_color / 255.0f;
+                glUniform3fv(color_prog.getUniform("uColor"), 1, entity_color.data());
+
+                glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
+                                   MV.topMatrix().data());
+                it->getDrawable().draw(&prog, &P, &MV, camera);
+                MV.popMatrix();
+            }
+
+            // Force the driver to draw onto the buffer
             glFlush();
             glFinish();
+
+            // Read the desired pixel from the buffer
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             unsigned char data[4];
             int x = std::floor(selection_coords(0)), y = std::floor(selection_coords(1));
             glReadPixels(x,y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
             uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
             std::cout << "picked: " << pickedID << std::endl;
+            
+            color_prog.unbind();
             selection_flag = false;
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
 
-
-
-        color_prog.unbind();
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        /* Beginning Sample Program */
+        /* Beginning main render path */
         prog.bind();
 
 
         /* Send projection matrix */
-        //std::cout << "rawr " << prog.getUniform("P") << std::endl;
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
@@ -402,21 +405,8 @@ int main(void)
             MV.popMatrix();
         }
 
-        //dWalls(&plane, &prog, &P, &MV);
-
-
-        /*for (int i = 0; i < 3; ++i) {
-            plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
-            plane.getDrawable().draw_no_tex_wall2(&prog, &P, &MV, camera, Eigen::Vector3f(i*-0.714f-0.3575f, 0.0f, -2.5f), Eigen::Vector3f(0, 0, 0));
-        }*/
-
-        //plane.getDrawable().draw_no_tex_wall(&prog, &P, &MV, camera, Eigen::Vector3f(0.0f, 0.0f, -5.0f), Eigen::Vector3f(0, 0, 0));
-
         // Unbind the program
         prog.unbind();
-
-
-
 
         MV.popMatrix();
         P.popMatrix();
