@@ -221,40 +221,8 @@ namespace draw {
         MV->popMatrix();
     }
 
-    static Eigen::Matrix4f wallTransform() {
-        Eigen::Matrix4f ret = Eigen::Matrix4f::Identity();
-        ret(0,0) = 2.5f;
-        ret(1,1) = 2.5f;
-        ret(2,2) = 2.5f;
-
-        return ret;
-    }
-
-    static void draw_node_no_tex(Node *current, Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, Eigen::Vector3f trans, Eigen::Vector3f col) {
-        MV->pushMatrix();
-        MV->multMatrix(current->transform);
-        MV->multMatrix(wallTransform());
-        MV->translate(trans);
-        glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, MV->topMatrix().data());
-        glUniform1i(prog->getUniform("mode"), 'c'); 
-        glUniform3f(prog->getUniform("color"), col(0), col(1), col(2)); 
-        for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
-            it->draw(prog->getAttribute("vertPos"),
-                     prog->getAttribute("vertNor"));
-        }
-
-        for (auto it = current->children.begin(); it != current->children.end(); it++) {
-            draw_node_no_tex(*it, prog, P, MV, cam, trans, col);
-        }
-        MV->popMatrix();
-    }
-
     void Drawable::draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam) {
         draw_node(root, prog, P, MV, cam);
-    }
-
-    void Drawable::draw_no_tex_wall(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, Eigen::Vector3f trans, Eigen::Vector3f col) {
-        draw_node_no_tex(root, prog, P, MV, cam, trans, col);
     }
 
     static Shape *find_first(Node *n) {

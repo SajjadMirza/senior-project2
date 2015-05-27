@@ -43,7 +43,6 @@ namespace draw {
         const Shape *find_first_shape();
 
         void draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam);
-        void draw_no_tex_wall(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, Eigen::Vector3f trans, Eigen::Vector3f col);
     };
 
     typedef std::unordered_map<uint, Drawable*> DrawableMap; 

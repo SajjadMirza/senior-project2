@@ -46,22 +46,6 @@ static void bufferMovement(GLFWwindow *window, const std::vector<Entity> entitie
     }
 }
 
-// TODO: Get rid of this and make own geometry
-static void dWalls(Entity *plane, Program *prog, MatrixStack *P, MatrixStack *MV) {
-    const int size = 4;
-    const float dir_change = 0.714f;
-    const float mid = 0.3575f;
-
-    for (int z = size; z >= -size; --z) {
-        for (int x = size; x >= -size; --x) {
-            plane->getDrawable().draw_no_tex_wall(prog, P, MV, camera, Eigen::Vector3f(x*-dir_change-mid, -mid-dir_change, -dir_change * z), Eigen::Vector3f(0, 1, 0));                
-            if (z == size || x == size || x == -size || z == -size) {
-                plane->getDrawable().draw_no_tex_wall(prog, P, MV, camera, Eigen::Vector3f(x*-dir_change-mid, -mid, -dir_change * z), Eigen::Vector3f(1, 0, 0));
-            }
-        }
-    }
-}
-
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
 }

@@ -85,28 +85,28 @@ void Camera::move(char c, const std::vector<Entity> entities) {
     	point = R1.block<3,3>(0,0) * point;
     	
         translations(0) += (point(0) * tfactor);       
-        translations(2) += (point(2) * tfactor);       
+        translations(2) -= (point(2) * tfactor);       
     }
     if (c == 'd') { //w
     	Eigen::Vector3f point(-1.0f, 0.0f, 0.0f);
     	point = R1.block<3,3>(0,0) * point;
     	
         translations(0) += (point(0) * tfactor);     
-        translations(2) += (point(2) * tfactor);         
+        translations(2) -= (point(2) * tfactor);         
     }
     if (c == 'w') {
     	Eigen::Vector3f point(0.0f, 0.0f, -1.0f);
     	point = R1.block<3,3>(0,0) * point;
     	
         translations(0) += (point(0) * tfactor);       
-        translations(2) += (point(2) * tfactor); 
+        translations(2) -= (point(2) * tfactor); 
     }
     if (c == 'a') {
     	Eigen::Vector3f point(1.0f, 0.0f, 0.0f);
     	point = R1.block<3,3>(0,0) * point;      
     	
         translations(0) += (point(0) * tfactor);     
-        translations(2) += (point(2) * tfactor);  
+        translations(2) -= (point(2) * tfactor);  
     }
 
     for (auto it = entities.begin(); it != entities.end(); it++) {

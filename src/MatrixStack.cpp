@@ -40,7 +40,7 @@ void MatrixStack::translate(const Eigen::Vector3f &trans)
 	Eigen::Matrix4f E = Eigen::Matrix4f::Identity();
 	E(0,3) = trans(0);
 	E(1,3) = trans(1);
-	E(2,3) = -trans(2);
+	E(2,3) = trans(2);
 	top *= E;
 }
 
