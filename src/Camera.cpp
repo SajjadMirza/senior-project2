@@ -6,7 +6,7 @@ Camera::Camera() :
     znear(0.1f),
     zfar(1000.0f),
     rotations(0.0, 0.0),
-    translations(0.0f, 0.0f, 0.0f),
+    translations(0.0f, -3.0f, 0.0f),
     rfactor(0.005f),
     tfactor(0.05f),
     sfactor(0.005f),
@@ -117,6 +117,7 @@ void Camera::move(char c, const std::vector<Entity> entities) {
 }
 
 bool Camera::collides(const Entity &e) {
+    return false;
     float cam_rad = collisionRadius();
     Eigen::Vector3f their_pos = e.getCenterWorld();
     Eigen::Vector3f our_pos = translations;

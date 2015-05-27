@@ -16,6 +16,8 @@ namespace resource {
 
     FIBITMAP* GenericLoader(const char* lpszPathName, int flag);
 
+    int load_config(ModelConfig *config, const std::string &path);
+
     int load_model_configs(std::vector<ModelConfig> *configs, const std::string &path);
 
     void load_texture_from_file(const std::string &path, GLuint *tid_ptr);

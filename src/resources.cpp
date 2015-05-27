@@ -68,6 +68,99 @@ namespace resource {
         }
         return NULL;
     }
+
+    int load_config(ModelConfig *config, const std::string &path) {
+        std::vector<YAML::Node> documents = YAML::LoadAllFromFile(path);
+
+        if (documents.empty()) {
+            return -1;
+        }
+        
+        const YAML::Node &doc = documents[0];
+        ModelConfig conf;
+        conf.model = doc["model"].as<std::string>();
+        conf.file = doc["file"].as<std::string>();
+        conf.directory = doc["directory"].as<std::string>();
+        conf.format = doc["format"].as<std::string>();
+
+        if (doc["overrides"]) {
+            YAML::Node overrides = doc["overrides"];
+            if (overrides["radius"]) {
+                conf.radius_override = overrides["radius"].as<float>();
+            }
+            if (overrides["radius"]) {
+                conf.use_position_center_override = true;
+            }
+        }
+
+        if (doc["transforms"]) {
+                
+            if (doc["transforms"]["rotations"]) {
+                YAML::Node rots = doc["transforms"]["rotations"];
+                float xdeg = rots["xaxis"] ? rots["xaxis"].as<float>() : 0;
+                float ydeg = rots["yaxis"] ? rots["yaxis"].as<float>() : 0;
+                float zdeg = rots["zaxis"] ? rots["zaxis"].as<float>() : 0;
+
+                conf.transforms.xrot = xdeg;
+                conf.transforms.yrot = ydeg;
+                conf.transforms.zrot = zdeg;
+            }
+                
+            if (doc["transforms"]["translations"]) {
+                YAML::Node trans = doc["transforms"]["translations"];
+                float xpos = trans["xaxis"] ? trans["xaxis"].as<float>() : 0;
+                float ypos = trans["yaxis"] ? trans["yaxis"].as<float>() : 0;
+                float zpos = trans["zaxis"] ? trans["zaxis"].as<float>() : 0;
+
+                conf.transforms.xpos = xpos;
+                conf.transforms.ypos = ypos;
+                conf.transforms.zpos = zpos;
+            }
+
+            if (doc["transforms"]["scale"]) {
+                conf.transforms.scale = doc["transforms"]["scale"].as<float>();
+            }
+                
+        }
+            
+
+        if (doc["textures"]) {
+            YAML::Node tex = doc["textures"];
+            std::string key;
+            key = "diffuse";
+            if (tex[key]) {
+                conf.textures.diffuse = tex[key].as<std::string>();
+            }
+
+            key = "normal";
+            if (tex[key]) {
+                conf.textures.normal = tex[key].as<std::string>();
+            }
+                
+            key = "displacement";
+            if (tex[key]) {
+                conf.textures.displacement = tex[key].as<std::string>();
+            }
+
+            key = "occlusion";
+            if (tex[key]) {
+                conf.textures.occlusion = tex[key].as<std::string>();
+            }
+
+            key = "shadow";
+            if (tex[key]) {
+                conf.textures.shadow = tex[key].as<std::string>();
+            }
+
+            key = "light";
+            if (tex[key]) {
+                conf.textures.light = tex[key].as<std::string>();
+            }
+        }
+
+        *config = conf;
+        return 0;
+    }
     
 
     /*
@@ -128,6 +221,11 @@ namespace resource {
                     conf.transforms.ypos = ypos;
                     conf.transforms.zpos = zpos;
                 }
+
+                if (doc["transforms"]["scale"]) {
+                    conf.transforms.scale = doc["transforms"]["scale"].as<float>();
+                }
+                
             }
             
 
