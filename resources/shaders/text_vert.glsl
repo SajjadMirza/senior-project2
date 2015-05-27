@@ -5,6 +5,7 @@ in vec3 vertNor;
 in vec2 vertTex;
 uniform mat4 P;
 uniform mat4 MV;
+uniform vec3 lightPos;
 out vec3 fragPos;
 out vec3 fragNor;
 out vec2 fragTex;

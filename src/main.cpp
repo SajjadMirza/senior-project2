@@ -16,6 +16,7 @@
 /* globals */
 Camera *camera;
 draw::DrawableMap drawable_map;
+Eigen::Vector3f light_pos(0.0, 20.0, 0.0);
 
 // TEMP ON DRAWING GPU
 Program prog;
@@ -154,6 +155,7 @@ static void init_gl() {
     prog.addUniform("mode");
     prog.addUniform("color");
     prog.addUniform("texture0");
+    prog.addUniform("lightPos");
 
     color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
     color_prog.init();
@@ -334,7 +336,7 @@ int main(void)
             color_prog.bind();
 
             glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-            
+
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
                 MV.multMatrix(it->getRotation());
@@ -377,6 +379,7 @@ int main(void)
 
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+        glUniform3fv(color_prog.getUniform("lightPos"), 1, light_pos.data());
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
             MV.pushMatrix();
