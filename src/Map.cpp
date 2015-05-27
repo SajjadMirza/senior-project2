@@ -97,3 +97,14 @@ int Map::loadMapFromFile(std::string filename) {
     
     return 0;
 }
+
+CellType Map::getTypeForCell(uint col, uint row) const {
+    return grid[col][row].type;
+}
+
+uint Map::getColumns() const {
+    return columns;
+}
+uint Map::getRows() const {
+    return rows;
+}

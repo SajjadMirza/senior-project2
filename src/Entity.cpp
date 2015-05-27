@@ -28,8 +28,13 @@ const Eigen::Matrix4f& Entity::getRotation() const {
     return rot;
 }
 
-void Entity::move(Eigen::Vector3f translation) {assert(0);} 
-void Entity::rotate(float angle, Eigen::Vector3f axis) {assert(0);}
+void Entity::move(Eigen::Vector3f translation) {
+    pos += translation;
+}
+
+void Entity::rotate(float angle, Eigen::Vector3f axis) {
+    assert(0);
+}
 
 void Entity::attachDrawable(draw::Drawable *drawable) {
    this->drawable = drawable;

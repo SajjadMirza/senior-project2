@@ -36,6 +36,10 @@ public:
     ~Map();
 
     int loadMapFromFile(std::string filename);
+
+    CellType getTypeForCell(uint col, uint row) const;
+    uint getColumns() const;
+    uint getRows() const;
 };
 
 #undef MAP_DIM // 
