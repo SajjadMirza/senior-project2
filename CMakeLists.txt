@@ -13,12 +13,14 @@ set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(include)
 include_directories(lib/include)
+include_directories(lib/include/freetype)
 
 find_library(FMOD NAMES fmod fmodL PATHS lib/bin/fmod)
 find_library(ASSIMP NAMES assimp PATHS lib/bin/assimp)
 find_library(FREEIMG NAMES freeimageplus PATHS lib/bin/freeimageplus)
 find_library(YAMLCPP NAMES yaml-cpp PATHS lib/bin/yaml-cpp)
-set(EXTERNAL_LIBS ${FMOD} ${ASSIMP} ${FREEIMG} ${YAMLCPP})
+find_library(FREETYPE NAMES freetype PATHS lib/bin/freetype)
+set(EXTERNAL_LIBS ${FMOD} ${ASSIMP} ${FREEIMG} ${YAMLCPP} ${FREETYPE})
 
 set(BOOST_ROOT .)
 set(BOOST_INCLUDEDIR ./lib/include)

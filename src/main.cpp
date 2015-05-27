@@ -14,12 +14,19 @@
 #include <ModelConfig.hpp>
 #include <Map.hpp>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 /* globals */
 Camera * camera;
 Camera *fp_camera = new Camera();
 OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
 Eigen::Vector3f light_pos(0.0, 20.0, 0.0);
+
+/* FPS counter */
+double lastTime = glfwGetTime();
+int nbFrames = 0;
 
 // TEMP ON DRAWING GPU
 Program prog;
@@ -47,6 +54,17 @@ static void bufferMovement(GLFWwindow *window, const std::vector<Entity> entitie
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         camera->move('d', entities);
+    }
+}
+
+static void findFPS() {
+    double currentTime = glfwGetTime();
+    ++nbFrames;
+    if ( currentTime - lastTime >= 1.0 ) {
+        //std::cout << 1000.0/double(nbFrames) << " ms/frame" << std::endl;
+        std::cout << double(nbFrames) << " frames/sec" << std::endl;
+        nbFrames = 0;
+        lastTime += currentTime - lastTime;
     }
 }
 
@@ -345,9 +363,6 @@ int main(void)
         MV.pushMatrix();
         camera->applyViewMatrix(&MV);
 
-        
-        
-
         if (selection_flag) {
             /* Beginning color picking program */
             color_prog.bind();
@@ -416,6 +431,7 @@ int main(void)
         P.popMatrix();
 
     	bufferMovement(window, entities);
+        findFPS();        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
