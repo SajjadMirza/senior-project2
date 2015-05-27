@@ -223,9 +223,49 @@ static uint getUniqueColor(int index) {
 
 static unsigned int entity_uid_counter = 1;
 
-static void init_floors(std::vector<Entity> *floors) {
+static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, const Map &map, CellType type) {
+    draw::Drawable *drawable = new draw::Drawable(config);
+    uint cols = map.getColumns();
+    uint rows = map.getRows();
+
+    Eigen::Vector3f pos(0,0,0);
+
+    if (config.transforms.xpos != 0.0f) {
+        pos(0) = config.transforms.xpos;
+    }
+
+    if (config.transforms.ypos != 0.0f) {
+        pos(1) = config.transforms.ypos;
+    }
+
+    if (config.transforms.zpos != 0.0f) {
+        pos(2) = config.transforms.zpos;
+    }
+
+    for (int i = 0; i < cols; i++) {
+        for (int j = 0; j < rows; j++) {
+            if (map.getTypeForCell(i, j) == type) {
+                Entity e(drawable);
+                e.setCenter(Eigen::Vector3f(0,0,0));
+                e.setRadius(0);
+                e.setPosition(pos);
+                e.move(Eigen::Vector3f(i, 0, j));
+                cubes->push_back(e);
+            }
+        }
+    }
+}
+
+static void init_floors(std::vector<Entity> *floors, const Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
+    gen_cubes(floors, config, map, HALLWAY);
+}
+
+static void init_walls(std::vector<Entity> *walls, const Map &map) {
+    ModelConfig config;
+    resource::load_config(&config, "resources/wall.yaml");
+    gen_cubes(walls, config, map, WALL);
 }
 
 static void init_entities(std::vector<Entity> *entities) {
@@ -236,7 +276,7 @@ static void init_entities(std::vector<Entity> *entities) {
         draw::Drawable *drawable = new draw::Drawable(*it);
         Entity e(drawable);
         e.calculate_center_and_radius();
-        e.setPosition(Eigen::Vector3f(0,0,-5));
+//        e.setPosition(Eigen::Vector3f(0,0,-5));
         e.id = entity_uid_counter++;
         
         if (it->radius_override) {
@@ -299,8 +339,7 @@ int main(void)
 {
     GLFWwindow* window;
     sound::FMODDriver sound_driver;
-    Map map(map_cols, map_rows);
-    map.loadMapFromFile("resources/maps/our_map.txt");
+    
 
     camera = fp_camera;
 
@@ -335,6 +374,12 @@ int main(void)
     std::vector<Entity> entities;
     init_entities(&entities);
 
+    Map map(map_cols, map_rows);
+    map.loadMapFromFile("resources/maps/our_map.txt");
+    std::vector<Entity> floors;
+    init_floors(&floors, map);
+    std::vector<Entity> walls;
+    init_walls(&walls, map);
 
     FreeImage_DeInitialise();
 
@@ -364,6 +409,7 @@ int main(void)
         camera->applyViewMatrix(&MV);
 
         if (selection_flag) {
+            std::cout << "selection flag set" << std::endl;
             /* Beginning color picking program */
             color_prog.bind();
 
@@ -423,6 +469,27 @@ int main(void)
             it->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
+
+        for (auto it = floors.begin(); it != floors.end(); it++) {
+            MV.pushMatrix();
+            MV.translate(it->getPosition());
+
+            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
+                               MV.topMatrix().data());
+            it->getDrawable().draw(&prog, &P, &MV, camera);
+            MV.popMatrix();
+        }
+
+        for (auto it = walls.begin(); it != walls.end(); it++) {
+            MV.pushMatrix();
+            MV.translate(it->getPosition());
+
+            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
+                               MV.topMatrix().data());
+            it->getDrawable().draw(&prog, &P, &MV, camera);
+            MV.popMatrix();
+        }
+
 
         // Unbind the program
         prog.unbind();

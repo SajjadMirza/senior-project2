@@ -1,0 +1,15 @@
+---
+model: cube
+file: cube.obj
+directory: resources/models/cube
+format: obj
+textures:
+  diffuse:
+    cavewall01.dds
+transforms:
+  translations:
+    xaxis: -0.5
+    zaxis: 0.5
+    yaxis: -0.1
+  scale: 20.0  
+...
