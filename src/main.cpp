@@ -9,12 +9,15 @@
 #include <sound/FMODDriver.hpp>
 #include <resources.hpp>
 #include <Camera.hpp>
+#include <OverviewCamera.hpp>
 #include <MatrixStack.hpp>
 #include <ModelConfig.hpp>
 #include <Map.hpp>
 
 /* globals */
-Camera *camera;
+Camera * camera;
+Camera *fp_camera = new Camera();
+OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
 Eigen::Vector3f light_pos(0.0, 20.0, 0.0);
 
@@ -105,6 +108,16 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_RIGHT_CONTROL:
         if (action == GLFW_RELEASE) {
             camera->modifierReleased();
+        }
+        break;
+    case GLFW_KEY_M:
+        if (action == GLFW_RELEASE) {
+            if (camera == fp_camera) {
+                camera = ov_camera;
+            }
+            else {
+                camera = fp_camera;
+            }
         }
         break;
     case GLFW_KEY_ESCAPE:
@@ -271,9 +284,8 @@ int main(void)
     Map map(map_cols, map_rows);
     map.loadMapFromFile("resources/maps/our_map.txt");
 
+    camera = fp_camera;
 
-    camera = new Camera;
-    
     // test sound 
     sound_driver.testSound();
 
