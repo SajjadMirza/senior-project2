@@ -24,6 +24,8 @@ struct TransformConfig {
     float ypos;
     float zpos;
 
+    float scale;
+
     TransformConfig() {
         xrot = 0;
         yrot = 0;
@@ -32,6 +34,8 @@ struct TransformConfig {
         xpos = 0;
         ypos = 0;
         zpos = 0;
+
+        scale = 0;
     }
 };
 

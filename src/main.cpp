@@ -190,6 +190,11 @@ static uint getUniqueColor(int index) {
 
 static unsigned int entity_uid_counter = 1;
 
+static void init_floors(std::vector<Entity> *floors) {
+    ModelConfig config;
+    resource::load_config(&config, "resources/floor.yaml");
+}
+
 static void init_entities(std::vector<Entity> *entities) {
     std::vector<ModelConfig> configs;
     resource::load_model_configs(&configs, model_config_file);

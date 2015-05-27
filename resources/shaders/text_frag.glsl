@@ -46,5 +46,5 @@ void main()
     vec3 colorD = max(dot(l, n), 0.0) * tex;
     vec3 colorS = pow(max(dot(h, n), 0.0), 200) * tex;
     vec3 color = colorD + colorS;
-    out_color = vec4(color, 1.0);
+    out_color = vec4(tex, 1.0);
 }

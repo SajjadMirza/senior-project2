@@ -5,6 +5,7 @@
 
 const char hallway_marker = '#';
 const char empty_marker = ' ';
+const char sentinel = '.';
 
 MapCell::MapCell() : type(EMPTY) {
 }
@@ -65,19 +66,24 @@ int Map::loadMapFromFile(std::string filename) {
     if (!mapfile) {
         return -1;
     }
-
+    
+    bool done = false;
     int row = 0;
-    while (mapfile) {
+    while (mapfile && !done) {
         std::string line;
         std::getline(mapfile, line);
         std::cout << row << std::endl;
-        for (int col = 0; col < columns; col++) {
-            std::cout << col << " ";
+        
+        for (int col = 0; col < columns && !done; col++) {
+//            std::cout << col << " ";
             switch (line.at(col)) {
             case hallway_marker:
                 grid[col][row].type = HALLWAY;
                 break;
             case empty_marker:
+                break;
+            case sentinel:
+                done = true;
                 break;
             default:
                 break;
