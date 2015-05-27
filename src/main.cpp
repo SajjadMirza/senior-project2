@@ -9,13 +9,17 @@
 #include <sound/FMODDriver.hpp>
 #include <resources.hpp>
 #include <Camera.hpp>
+#include <OverviewCamera.hpp>
 #include <MatrixStack.hpp>
 #include <ModelConfig.hpp>
 #include <Map.hpp>
 
 /* globals */
-Camera *camera;
+Camera * camera;
+Camera *fp_camera = new Camera();
+OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
+Eigen::Vector3f light_pos(0.0, 20.0, 0.0);
 
 // TEMP ON DRAWING GPU
 Program prog;
@@ -106,6 +110,16 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             camera->modifierReleased();
         }
         break;
+    case GLFW_KEY_M:
+        if (action == GLFW_RELEASE) {
+            if (camera == fp_camera) {
+                camera = ov_camera;
+            }
+            else {
+                camera = fp_camera;
+            }
+        }
+        break;
     case GLFW_KEY_ESCAPE:
         if (action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GL_TRUE);
@@ -154,6 +168,7 @@ static void init_gl() {
     prog.addUniform("mode");
     prog.addUniform("color");
     prog.addUniform("texture0");
+    prog.addUniform("uLightPos");
 
     color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
     color_prog.init();
@@ -308,9 +323,8 @@ int main(void)
     sound::FMODDriver sound_driver;
     
 
+    camera = fp_camera;
 
-    camera = new Camera;
-    
     // test sound 
     sound_driver.testSound();
 
@@ -385,7 +399,7 @@ int main(void)
             color_prog.bind();
 
             glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-            
+
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
                 MV.multMatrix(it->getRotation());
@@ -428,6 +442,7 @@ int main(void)
 
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+        glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
             MV.pushMatrix();

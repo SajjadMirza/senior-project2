@@ -25,10 +25,10 @@ public:
     void setRotationFactor(float f) { rfactor = f; };
     void setTranslationFactor(float f) { tfactor = f; };
     void setScaleFactor(float f) { sfactor = f; };
-    void mouseReleased();
-    void modifierReleased();
-    void mouseClicked(int x, int y, bool shift, bool ctrl, bool alt);
-    void mouseMoved(int x, int y);
+    virtual void mouseReleased();
+    virtual void modifierReleased();
+    virtual void mouseClicked(int x, int y, bool shift, bool ctrl, bool alt);
+    virtual void mouseMoved(int x, int y);
     void applyProjectionMatrix(MatrixStack *P) const;
     void applyViewMatrix(MatrixStack *MV) const;
     Eigen::Vector2f rotations;
@@ -39,7 +39,7 @@ public:
 
     bool collides(const Entity &e);
 	
-private:
+protected:
     float aspect;
     float fovy;
     float znear;
