@@ -12,6 +12,7 @@ transforms:
   rotations:
     zaxis: 180.0
   translations:
-    yaxis: 1.0
-    zaxis: -4.0
+    xaxis: 4.0
+    yaxis: -1.0
+    zaxis: 25.0
 ...

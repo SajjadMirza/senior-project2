@@ -27,6 +27,7 @@ public:
 	
     // glTranslate(): Right multiplies the top matrix by a translation matrix
     void translate(const Eigen::Vector3f &trans);
+    void worldTranslate(const Eigen::Vector3f &trans, const Eigen::Matrix4f &matrix);
     // glScale(): Right multiplies the top matrix by a scaling matrix
     void scale(const Eigen::Vector3f &scale);
     // glScale(): Right multiplies the top matrix by a scaling matrix
@@ -55,6 +56,7 @@ public:
 	
 private:
     std::stack<Eigen::Matrix4f> mstack;
+    bool flipped;
 	
 };
 

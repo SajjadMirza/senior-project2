@@ -33,7 +33,7 @@ void main()
         vec3 h = normalize(l + v);
         vec3 colorD = max(dot(l, n), 0.0) * tex;
         vec3 colorS = pow(max(dot(h, n), 0.0), 200) * tex;
-        vec3 color = colorD + colorS;
+        vec3 col = colorD + colorS;
         out_color = vec4(tex, 1.0);
   }
   else {

@@ -480,8 +480,7 @@ int main(void)
         for (auto it = entities.begin(); it != entities.end(); it++) {
             MV.pushMatrix();
             MV.multMatrix(it->getRotation());
-            MV.translate(it->getPosition());
-
+            MV.worldTranslate(it->getPosition(), it->getRotation());
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
             it->getDrawable().draw(&prog, &P, &MV, camera);
@@ -490,7 +489,7 @@ int main(void)
 
         for (auto it = floors.begin(); it != floors.end(); it++) {
             MV.pushMatrix();
-            MV.translate(it->getPosition());
+            MV.worldTranslate(it->getPosition(), it->getRotation());
 
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
@@ -500,7 +499,7 @@ int main(void)
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
             MV.pushMatrix();
-            MV.translate(it->getPosition());
+            MV.worldTranslate(it->getPosition(), it->getRotation());
 
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
