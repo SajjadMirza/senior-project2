@@ -6,6 +6,7 @@
 // define BOOST_DISABLE_ASSERTS in production
 #include <boost/multi_array.hpp>
 #include <Entity.hpp>
+#include <memory>
 
 #define MAP_DIM 2
 
@@ -15,11 +16,11 @@ enum CellType {
     HALLWAY,
     WALL,
     EMPTY,
-};
+ };
 
 struct MapCell {
     CellType type;
-    Entity *component;
+    std::shared_ptr<Entity> component;
     MapCell();
     ~MapCell();
 };
@@ -40,11 +41,13 @@ public:
     int loadMapFromFile(std::string filename);
 
     CellType getTypeForCell(uint col, uint row) const;
-    void setMapComponentForCell(uint col, uint row, Entity *map_component);
     Entity *getMapComponentForCell(uint col, uint row) const;
     std::vector<Entity*> getNearbyWalls(uint col, uint row) const;
     uint getColumns() const;
     uint getRows() const;
+
+    MapCell& get(uint col, uint row);
+    const MapCell& cget(uint col, uint row) const;
 };
 
 #undef MAP_DIM // 

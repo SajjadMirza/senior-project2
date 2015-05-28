@@ -14,6 +14,8 @@
 #include <MatrixStack.hpp>
 #include <ModelConfig.hpp>
 #include <Map.hpp>
+#include <memory>
+#include <utility>
 
 draw::Text text("testfont.ttf", 24);
 
@@ -241,7 +243,7 @@ static uint getUniqueColor(int index) {
 
 static unsigned int entity_uid_counter = 1;
 
-static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, Map &map, CellType type) {
+static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, Map &map, CellType type) {
     draw::Drawable *drawable = new draw::Drawable(config);
     uint cols = map.getColumns();
     uint rows = map.getRows();
@@ -263,27 +265,29 @@ static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, Map
     for (int i = 0; i < cols; i++) {
         for (int j = 0; j < rows; j++) {
             if (map.getTypeForCell(i, j) == type) {
-                Entity e(drawable);
+                MapCell &cell = map.get(i, j);
+                std::unique_ptr<Entity> temp(new Entity(drawable));
+                cell.component = std::move(temp); // constructor
+                Entity &e = *cell.component.get();
                 e.setCenter(Eigen::Vector3f(0,0,0));
                 e.setRadius(0);
                 e.setPosition(pos);
                 e.move(Eigen::Vector3f(i, 0, j));
                 e.generateBoundingBox();
                 e.setUseBoundingBox(true);
-                cubes->push_back(e);
-                map.setMapComponentForCell(i,j, &(cubes->back()));
+                cubes->push_back(cell.component.get());
             }
         }
     }
 }
 
-static void init_floors(std::vector<Entity> *floors, Map &map) {
+static void init_floors(std::vector<Entity*> *floors, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
     gen_cubes(floors, config, map, HALLWAY);
 }
 
-static void init_walls(std::vector<Entity> *walls, Map &map) {
+static void init_walls(std::vector<Entity*> *walls, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
@@ -397,9 +401,9 @@ int main(void)
 
     Map map(map_cols, map_rows);
     map.loadMapFromFile("resources/maps/our_map.txt");
-    std::vector<Entity> floors;
+    std::vector<Entity*> floors;
     init_floors(&floors, map);
-    std::vector<Entity> walls;
+    std::vector<Entity*> walls;
     init_walls(&walls, map);
 
     FreeImage_DeInitialise();
@@ -503,24 +507,26 @@ int main(void)
         glUniform1i(prog.getUniform("uRedder"), 0);
 
         for (auto it = floors.begin(); it != floors.end(); it++) {
+            Entity *fl = *it;
             MV.pushMatrix();
-            MV.worldTranslate(it->getPosition(), it->getRotation());
+            MV.worldTranslate(fl->getPosition(), fl->getRotation());
 
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
-            it->getDrawable().draw(&prog, &P, &MV, camera);
+            fl->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
 
 
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
+            Entity *wall = *it;
             MV.pushMatrix();
-            MV.worldTranslate(it->getPosition(), it->getRotation());
+            MV.worldTranslate(wall->getPosition(), wall->getRotation());
 
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
-            it->getDrawable().draw(&prog, &P, &MV, camera);
+            wall->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
         draw_text(*window);
