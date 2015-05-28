@@ -38,6 +38,7 @@ void main()
         else {
             n = normalize(fragNor);
         }
+        float light_distance = distance(lightPos, fragPos);
         vec3 l = normalize(lightPos - fragPos);
         vec3 v = -normalize(fragPos);
         vec3 h = normalize(l + v);
@@ -48,7 +49,8 @@ void main()
             colorA = vec3(0.3, 0, 0);
         }
 
-        vec3 col = colorD + colorS;// + colorA;
+        vec3 col = (colorD + colorS) /** (1.0 / (0.5 * light_distance))*/ + colorA;
+        // col = clamp(col, 0.0, 1.0)
         out_color = vec4(col, 1.0);
   }
   else {

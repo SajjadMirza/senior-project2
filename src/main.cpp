@@ -24,7 +24,7 @@ Camera * camera;
 Camera *fp_camera = new Camera();
 OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
-Eigen::Vector3f light_pos(0.0, 13, 0.0);
+Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
 
 bool highlight = false;
 
@@ -495,6 +495,8 @@ int main(void)
 
         /* Beginning main render path */
         prog.bind();
+
+        std::cout << "RAWR " << light_pos << std::endl << std::endl;
 
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
