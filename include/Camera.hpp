@@ -6,7 +6,7 @@
 #include <Entity.hpp>
 #include <MatrixStack.hpp>
 
-static const float camera_default_collision_radius = 0.2;
+static const float camera_default_collision_radius = 0.15;
 
 class Camera
 {

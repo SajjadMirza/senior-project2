@@ -24,7 +24,9 @@ Camera * camera;
 Camera *fp_camera = new Camera();
 OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
-Eigen::Vector3f light_pos(0.0, 20.0, 0.0);
+Eigen::Vector3f light_pos(0.0, 13, 0.0);
+
+bool highlight = false;
 
 /* FPS counter */
 double lastTime = glfwGetTime();
@@ -147,6 +149,16 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             }
             else {
                 camera = fp_camera;
+            }
+        }
+        break;
+    case GLFW_KEY_N:
+        if (action == GLFW_RELEASE) {
+            if (highlight == false) {
+                highlight = true;
+            }
+            else {
+                highlight = false;
             }
         }
         break;
@@ -509,6 +521,12 @@ int main(void)
         glUniform1i(prog.getUniform("uRedder"), 0);
 
         for (auto it = floors.begin(); it != floors.end(); it++) {
+            if ((*it)->selected == true) {
+                glUniform1i(prog.getUniform("uRedder"), 1);
+            }
+            else {
+                glUniform1i(prog.getUniform("uRedder"), 0);
+            }
             Entity *fl = *it;
             MV.pushMatrix();
             MV.worldTranslate(fl->getPosition(), fl->getRotation());
@@ -518,10 +536,15 @@ int main(void)
             fl->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
-
-
+        glUniform1i(prog.getUniform("uRedder"), 0);
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
+            if ((*it)->selected == true) {
+                glUniform1i(prog.getUniform("uRedder"), 1);
+            }
+            else {
+                glUniform1i(prog.getUniform("uRedder"), 0);
+            }
             Entity *wall = *it;
             MV.pushMatrix();
             MV.worldTranslate(wall->getPosition(), wall->getRotation());
@@ -531,6 +554,8 @@ int main(void)
             wall->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
+        glUniform1i(prog.getUniform("uRedder"), 0);
+
         draw_text(*window);
 
         // Unbind the program
@@ -539,13 +564,30 @@ int main(void)
         MV.popMatrix();
         P.popMatrix();
 
-        Eigen::Vector3f campos = -camera->translations;
-        uint col = std::round(campos(0)), row = std::round(campos(2));
-        std::cout << col << " " << row << std::endl;
-        std::vector<Entity*> local_walls =
-            map.getNearbyWalls(col, row);
-        std::cout << local_walls.size() << std::endl;
-    	bufferMovement(window, entities, local_walls);
+        if (camera == fp_camera) {
+            Eigen::Vector3f campos = -camera->translations;
+            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
+
+            light_pos(0) = campos(0);
+            light_pos(2) = campos(2);
+
+            std::cout << col << " " << row << std::endl;
+            std::cout << campos(0) << " " << campos(2) << std::endl;
+            std::vector<Entity*> local_walls =
+                map.getNearbyWalls(col, row);
+            std::cout << local_walls.size() << std::endl;
+
+            MapCell& ref = map.get(col, row);
+
+            if (highlight) {
+                ref.component->selected = true;
+            }
+            bufferMovement(window, entities, local_walls);
+        }
+        else {
+            bufferMovement(window, entities, std::vector<Entity *>());
+        }
+
         findFPS();        
 
         glfwSwapBuffers(window);
