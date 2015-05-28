@@ -42,7 +42,9 @@ float deg_to_rad(float deg) {
     return rad;
 }
 
-static void bufferMovement(GLFWwindow *window, const std::vector<Entity> &entities, const std::vector<Entity> &walls) {
+static void bufferMovement(GLFWwindow *window,
+                           const std::vector<Entity> &entities,
+                           const std::vector<Entity*> &walls) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera->move('w', entities, walls);
     }
@@ -227,7 +229,7 @@ static uint getUniqueColor(int index) {
 
 static unsigned int entity_uid_counter = 1;
 
-static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, const Map &map, CellType type) {
+static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, Map &map, CellType type) {
     draw::Drawable *drawable = new draw::Drawable(config);
     uint cols = map.getColumns();
     uint rows = map.getRows();
@@ -257,18 +259,19 @@ static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, con
                 e.generateBoundingBox();
                 e.setUseBoundingBox(true);
                 cubes->push_back(e);
+                map.setMapComponentForCell(i,j, &(cubes->back()));
             }
         }
     }
 }
 
-static void init_floors(std::vector<Entity> *floors, const Map &map) {
+static void init_floors(std::vector<Entity> *floors, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
     gen_cubes(floors, config, map, HALLWAY);
 }
 
-static void init_walls(std::vector<Entity> *walls, const Map &map) {
+static void init_walls(std::vector<Entity> *walls, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
@@ -486,6 +489,8 @@ int main(void)
             MV.popMatrix();
         }
 
+
+
         for (auto it = walls.begin(); it != walls.end(); it++) {
             MV.pushMatrix();
             MV.translate(it->getPosition());
@@ -503,7 +508,13 @@ int main(void)
         MV.popMatrix();
         P.popMatrix();
 
-    	bufferMovement(window, entities, walls);
+        Eigen::Vector3f campos = -camera->translations;
+        uint col = std::round(campos(0)), row = std::round(campos(2));
+        std::cout << col << " " << row << std::endl;
+        std::vector<Entity*> local_walls =
+            map.getNearbyWalls(col, row);
+        std::cout << local_walls.size() << std::endl;
+    	bufferMovement(window, entities, local_walls);
         findFPS();        
 
         glfwSwapBuffers(window);

@@ -72,7 +72,9 @@ void Camera::applyViewMatrix(MatrixStack *MV) const
     MV->translate(translations);
 }
 
-void Camera::move(char c, const std::vector<Entity> &entities, const std::vector<Entity> &walls) {
+// TODO: make less sticky and more slidey
+void Camera::move(char c, const std::vector<Entity> &entities,
+                  const std::vector<Entity*> &walls) {
     Eigen::Quaternionf q1;
     Eigen::Vector3f axis1(0.0f, 1.0f, 0.0f);
     q1 = Eigen::AngleAxisf(rotations(0), axis1); 
@@ -117,7 +119,7 @@ void Camera::move(char c, const std::vector<Entity> &entities, const std::vector
     }
 
     for (auto it = walls.begin(); it != walls.end(); it++) {
-        if (this->collides(*it)) {
+        if (this->collides(**it)) {
             translations = last_valid_location;
             return;
         }
@@ -145,33 +147,7 @@ bool Camera::collides(const Entity &e) {
         Eigen::Vector3f displacement = (bb.box.center() - our_pos);
         float distance = displacement.norm();
         Eigen::Vector3f direction = displacement.normalized();
-        /*
-        if (sq(our_pos(0) - bb.box.min(0)) > sq(cam_rad)) {
-            return true;
-        }
 
-        if (sq(our_pos(1) - bb.box.min(1)) > sq(cam_rad)) {
-            return true;
-        }
-
-        if (sq(our_pos(2) - bb.box.min(2)) > sq(cam_rad)) {
-            return true;
-        }
-
-
-        if (sq(our_pos(0) - bb.box.max(0)) > sq(cam_rad)) {
-            return true;
-        }
-
-        if (sq(our_pos(1) - bb.box.max(1)) > sq(cam_rad)) {
-            return true;
-        }
-
-        if (sq(our_pos(2) - bb.box.max(2)) > sq(cam_rad)) {
-            return true;
-        }
-        */
-        
         if (bb.contains(direction * cam_rad + our_pos)) {
             return true;
         }

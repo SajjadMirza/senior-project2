@@ -102,6 +102,54 @@ CellType Map::getTypeForCell(uint col, uint row) const {
     return grid[col][row].type;
 }
 
+void Map::setMapComponentForCell(uint col, uint row, Entity *map_component) {
+    grid[col][row].component = map_component;
+}
+
+Entity *Map::getMapComponentForCell(uint col, uint row) const {
+    return grid[col][row].component;
+}
+
+std::vector<Entity*> Map::getNearbyWalls(uint col, uint row) const {
+    std::vector<Entity*> walls;
+    if (col < 0 || col >= columns || row < 0 || row >= rows) {
+        return walls;
+    }
+    
+    if (col > 0) {
+        MapCell cell = grid[col-1][row];
+        if (cell.type == WALL) {
+            walls.push_back((cell.component));
+        }
+    }
+
+    if (row > 0) {
+        MapCell cell = grid[col][row-1];
+        if (cell.type == WALL) {
+            walls.push_back((cell.component));
+        }
+
+    }
+
+    if (col < columns - 1) {
+        MapCell cell = grid[col+1][row];
+        if (cell.type == WALL) {
+            walls.push_back((cell.component));
+        }
+    }
+
+    if (row < rows - 1) {
+        MapCell cell = grid[col][row+1];
+        if (cell.type == WALL) {
+            walls.push_back((cell.component));
+        }
+
+    }
+
+    return walls;
+}
+
+
 uint Map::getColumns() const {
     return columns;
 }
