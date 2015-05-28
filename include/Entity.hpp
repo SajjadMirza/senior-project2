@@ -16,6 +16,7 @@ private:
     BoundingBox bounding_box;
     bool use_bounding_box;
 public:
+    bool selected;
     uint id;
     Entity();
     Entity(draw::Drawable *d);

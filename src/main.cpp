@@ -202,6 +202,7 @@ static void init_gl() {
     prog.addUniform("uFont");
     prog.addUniform("uLightPos");
     prog.addUniform("uTextToggle");
+    prog.addUniform("uRedder");
 
     color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
     color_prog.init();
@@ -435,7 +436,7 @@ int main(void)
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
                 MV.multMatrix(it->getRotation());
-                MV.translate(it->getPosition());
+                MV.worldTranslate(it->getPosition(), it->getRotation());
                 Eigen::Vector3f entity_color;
                 uint id = it->id;
                 entity_color(0) = (id & 0xFF);
@@ -461,6 +462,10 @@ int main(void)
             glReadPixels(x,y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
             uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
             std::cout << "picked: " << pickedID << std::endl;
+
+            if (pickedID > 0) {
+                entities[pickedID - 1].selected = !entities[pickedID - 1].selected;
+            }
             
             color_prog.unbind();
             selection_flag = false;
@@ -471,13 +476,19 @@ int main(void)
         /* Beginning main render path */
         prog.bind();
 
-
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(prog.getUniform("uTextToggle"), 0);
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
+            if (it->selected == true) {
+                glUniform1i(prog.getUniform("uRedder"), 1);
+            }
+            else {
+                glUniform1i(prog.getUniform("uRedder"), 0);
+            }
+
             MV.pushMatrix();
             MV.multMatrix(it->getRotation());
             MV.worldTranslate(it->getPosition(), it->getRotation());
@@ -486,6 +497,7 @@ int main(void)
             it->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
+        glUniform1i(prog.getUniform("uRedder"), 0);
 
         for (auto it = floors.begin(); it != floors.end(); it++) {
             MV.pushMatrix();
