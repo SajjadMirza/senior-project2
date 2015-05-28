@@ -4,13 +4,15 @@
 Entity::Entity() : pos(0, 0, 0), 
                    rot(Eigen::Matrix4f::Identity()),
                    drawable(NULL),
-                   use_bounding_box(false)
+                   use_bounding_box(false),
+                   selected(false)
 {}
 
 Entity::Entity(draw::Drawable *d) : pos(0, 0, 0),
                                    rot(Eigen::Matrix4f::Identity()),
                                     drawable(d),
-                                    use_bounding_box(false)
+                                    use_bounding_box(false),
+                                    selected(false)
 {}
 
 Entity::~Entity() {}

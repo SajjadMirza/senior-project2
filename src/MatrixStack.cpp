@@ -4,7 +4,7 @@
 
 #include <Eigen/Geometry>
 
-MatrixStack::MatrixStack()
+MatrixStack::MatrixStack() : flipped(false)
 {
 	mstack.push(Eigen::Matrix4f::Identity());
 }
@@ -43,6 +43,17 @@ void MatrixStack::translate(const Eigen::Vector3f &trans)
 	E(2,3) = trans(2);
 	top *= E;
 }
+
+void MatrixStack::worldTranslate(const Eigen::Vector3f &trans, const Eigen::Matrix4f &matrix) {
+	Eigen::Matrix4f &top = mstack.top();
+	Eigen::Matrix4f E = Eigen::Matrix4f::Identity();
+	Eigen::Vector4f new_trans = matrix * Eigen::Vector4f(trans(0), trans(1), trans(2), 1.0f);
+	E(0,3) = new_trans(0);
+	E(1,3) = new_trans(1);
+	E(2,3) = new_trans(2);
+	top *= E;
+}
+
 
 void MatrixStack::scale(const Eigen::Vector3f &scale)
 {

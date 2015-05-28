@@ -5,6 +5,7 @@
 
 // Internal headers
 #include <draw/Drawable.hpp>
+#include <draw/Text.hpp>
 #include <Entity.hpp>
 #include <sound/FMODDriver.hpp>
 #include <resources.hpp>
@@ -14,8 +15,7 @@
 #include <ModelConfig.hpp>
 #include <Map.hpp>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+draw::Text text("testfont.ttf", 24);
 
 /* globals */
 Camera * camera;
@@ -26,6 +26,7 @@ Eigen::Vector3f light_pos(0.0, 20.0, 0.0);
 
 /* FPS counter */
 double lastTime = glfwGetTime();
+int lastFPS = 0;
 int nbFrames = 0;
 
 // TEMP ON DRAWING GPU
@@ -63,11 +64,18 @@ static void findFPS() {
     double currentTime = glfwGetTime();
     ++nbFrames;
     if ( currentTime - lastTime >= 1.0 ) {
-        //std::cout << 1000.0/double(nbFrames) << " ms/frame" << std::endl;
-        std::cout << double(nbFrames) << " frames/sec" << std::endl;
+        // std::cout << 1000.0/double(nbFrames) << " ms/frame" << std::endl;
+        // std::cout << double(nbFrames) << " frames/sec" << std::endl;
+        lastFPS = nbFrames;
         nbFrames = 0;
         lastTime += currentTime - lastTime;
     }
+}
+
+static void draw_text(GLFWwindow& window) {
+    std::ostringstream convert; 
+    convert << "FPS " << lastFPS;
+    text.draw(prog, window, convert.str(), -0.95f, 0.9f);
 }
 
 static void error_callback(int error, const char* description) {
@@ -83,7 +91,7 @@ static void resize_window(GLFWwindow *window, int w, int h) {
 static Eigen::Vector3f selection_coords;
 static bool selection_flag = false;
 
-static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
     if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
         camera->mouseReleased();
         return;
@@ -187,12 +195,16 @@ static void init_gl() {
     prog.addAttribute("vertPos");
     prog.addAttribute("vertNor");
     prog.addAttribute("vertTex");
+    prog.addAttribute("wordCoords");
     prog.addUniform("P");
     prog.addUniform("MV");
     prog.addUniform("mode");
     prog.addUniform("color");
     prog.addUniform("texture0");
+    prog.addUniform("uFont");
     prog.addUniform("uLightPos");
+    prog.addUniform("uTextToggle");
+    prog.addUniform("uRedder");
 
     color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
     color_prog.init();
@@ -427,7 +439,7 @@ int main(void)
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
                 MV.multMatrix(it->getRotation());
-                MV.translate(it->getPosition());
+                MV.worldTranslate(it->getPosition(), it->getRotation());
                 Eigen::Vector3f entity_color;
                 uint id = it->id;
                 entity_color(0) = (id & 0xFF);
@@ -453,6 +465,10 @@ int main(void)
             glReadPixels(x,y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
             uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
             std::cout << "picked: " << pickedID << std::endl;
+
+            if (pickedID > 0) {
+                entities[pickedID - 1].selected = !entities[pickedID - 1].selected;
+            }
             
             color_prog.unbind();
             selection_flag = false;
@@ -463,25 +479,32 @@ int main(void)
         /* Beginning main render path */
         prog.bind();
 
-
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
+        glUniform1i(prog.getUniform("uTextToggle"), 0);
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
+            if (it->selected == true) {
+                glUniform1i(prog.getUniform("uRedder"), 1);
+            }
+            else {
+                glUniform1i(prog.getUniform("uRedder"), 0);
+            }
+
             MV.pushMatrix();
             MV.multMatrix(it->getRotation());
-            MV.translate(it->getPosition());
-
+            MV.worldTranslate(it->getPosition(), it->getRotation());
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
             it->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
+        glUniform1i(prog.getUniform("uRedder"), 0);
 
         for (auto it = floors.begin(); it != floors.end(); it++) {
             MV.pushMatrix();
-            MV.translate(it->getPosition());
+            MV.worldTranslate(it->getPosition(), it->getRotation());
 
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
@@ -493,14 +516,14 @@ int main(void)
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
             MV.pushMatrix();
-            MV.translate(it->getPosition());
+            MV.worldTranslate(it->getPosition(), it->getRotation());
 
             glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                MV.topMatrix().data());
             it->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
-
+        draw_text(*window);
 
         // Unbind the program
         prog.unbind();
