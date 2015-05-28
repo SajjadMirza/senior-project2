@@ -15,10 +15,7 @@
 #include <ModelConfig.hpp>
 #include <Map.hpp>
 
-/*FT_GlyphSlot g;
-FT_Face face;*/
-
-draw::Text txt_temp("testfont.ttf", 24);
+draw::Text text("testfont.ttf", 24);
 
 /* globals */
 Camera * camera;
@@ -73,106 +70,11 @@ static void findFPS() {
     }
 }
 
-/*static void initText() {
-    // Given Code to check if freetype library can be used
-    // This was source code in the glbook wiki website on freetype
-    FT_Library ft;
-    std::string header = "resources/font/";
-    std::string font_name = "testfont.ttf";
-    std::string file = header + font_name;
- 
-    if (FT_Init_FreeType(&ft)) {
-        std::cerr << "Could not init freetype library" << std::endl;
-        exit(-1);
-    }
- 
-    if (FT_New_Face(ft, file.c_str(), 0, &face)) {
-        std::cerr << "Could not open font" << std::endl;
-        exit(-1);
-    }
-      
-    FT_Set_Pixel_Sizes(face, 0, 24);      
-    g = face->glyph;
-
-    GLuint tex;
-    glActiveTexture(GL_TEXTURE0);
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-   
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glEnableVertexAttribArray(prog.getAttribute("wordCoords"));
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(prog.getAttribute("wordCoords"), 4, GL_FLOAT, GL_FALSE, 0, 0);
-}
-
-static void renderText(const char *text, float x, float y, float sx, float sy) {
-    for(const char *p = text; *p; p++) {
-        if(FT_Load_Char(face, *p, FT_LOAD_RENDER))
-            continue;
- 
-        glTexImage2D(
-          GL_TEXTURE_2D,
-          0,
-          GL_ALPHA,
-          g->bitmap.width,
-          g->bitmap.rows,
-          0,
-          GL_ALPHA,
-          GL_UNSIGNED_BYTE,
-          g->bitmap.buffer
-        );
- 
-        float x2 = x + g->bitmap_left * sx;
-        float y2 = -y - g->bitmap_top * sy;
-        float w = g->bitmap.width * sx;
-        float h = g->bitmap.rows * sy;
-     
-        GLfloat box[4][4] = {
-            {x2,     -y2    , 0, 0},
-            {x2 + w, -y2    , 1, 0},
-            {x2,     -y2 - h, 0, 1},
-            {x2 + w, -y2 - h, 1, 1},
-        };
-     
-        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-     
-        x += (g->advance.x >> 6) * sx;
-        y += (g->advance.y >> 6) * sy;
-    }
-}
-
-static void printText(GLFWwindow* window) {
-    initText();
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    int w, h;
-    glfwGetWindowSize(window, &w, &h);
-
-    float sx = 2.0f / w; 
-    float sy = 2.0f / h;
-
-    const char* cn_str;
-    std::string cplus_str;
-
+static void draw_text(GLFWwindow& window) {
     std::ostringstream convert; 
-    convert << lastFPS;
-    cplus_str = "FPS " + convert.str();
-    cn_str = cplus_str.c_str();
-       
-    renderText(cn_str, -1 + 8 * sx, 1 - 150 * sy, sx, sy); 
-}*/
+    convert << "FPS " << lastFPS;
+    text.draw(prog, window, convert.str(), -0.95f, 0.9f);
+}
 
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
@@ -599,10 +501,7 @@ int main(void)
             it->getDrawable().draw(&prog, &P, &MV, camera);
             MV.popMatrix();
         }
-
-        /*glUniform1i(prog.getUniform("uTextToggle"), 1);
-        printText(window);*/
-        txt_temp.draw(prog, *window, "HELLO WORLD");
+        draw_text(*window);
 
         // Unbind the program
         prog.unbind();

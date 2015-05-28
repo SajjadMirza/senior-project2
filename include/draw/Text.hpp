@@ -12,7 +12,7 @@ namespace draw {
         Text();
         Text(std::string font, int font_size);
         ~Text();
-        void draw(Program& prog, GLFWwindow& window, std::string display_txt);
+        void draw(Program& prog, GLFWwindow& window, std::string display_txt, float x_s, float y_s);
     private:
 	    GLuint tex;
 	    GLuint vbo;

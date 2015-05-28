@@ -43,7 +43,10 @@ namespace draw {
 
 	Text::~Text() {}
 
-	void Text::draw(Program& prog, GLFWwindow& window, std::string display_txt) {
+	// folow coords of 0,0 is middle, .9, .9 is top right corner, -.9, -.9, is bottom left corner
+	void Text::draw(Program& prog, GLFWwindow& window, std::string display_txt, float x_s, float y_s) {
+		int str_size = display_txt.size();
+
 		glUniform1i(prog.getUniform("uTextToggle"), 1);
 
 	    glActiveTexture(GL_TEXTURE0);
@@ -69,7 +72,6 @@ namespace draw {
 		int w, h;
 		glfwGetWindowSize(&window, &w, &h);
 
-		/* TODO: Temp for the moment */
 	    float sx = 2.0f / w; 
 	    float sy = 2.0f / h;
 
@@ -80,8 +82,13 @@ namespace draw {
 	    convert << display_txt;
 	    cplus_str = convert.str();
 	    cn_str = cplus_str.c_str();
-	       
-	    renderText(cn_str, -1 + 8 * sx, 1 - 150 * sy, sx, sy); 
+
+	    if (sx + x_s + str_size * .07 > 1) {
+	    	renderText(cn_str, sx + x_s - .5 * str_size * .07, sy + y_s, sx, sy);
+	    }
+	    else {   
+	    	renderText(cn_str, sx + x_s, sy + y_s, sx, sy);
+	    } 
 
 		glUniform1i(prog.getUniform("uTextToggle"), 0);
 	}
