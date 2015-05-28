@@ -96,6 +96,15 @@ namespace draw {
             texs.diffuse = dt;
         }
 
+        if (!texconf.normal.empty()) {
+            Texture dt;
+            dt.filename = texconf.normal;
+            dt.type = TexType::NORMAL;
+            resource::load_texture_from_file(config.directory+"/"+texconf.normal,
+                                             &dt.tid);
+            texs.normal = dt;
+        }
+
         // load Assimp scene from file
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(config.directory+"/"+config.file,
@@ -203,26 +212,39 @@ namespace draw {
 
     Drawable::~Drawable() {}
 
-    static void draw_node(Node *current, Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam) {
+    static void draw_node(Node *current, Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, TextureBundle& texs) {
         MV->pushMatrix();
         MV->multMatrix(current->transform);
         glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, MV->topMatrix().data());
         glUniform1i(prog->getUniform("mode"), 't'); 
         for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
+            if (texs.normal) {
+            glUniform1i(prog->getUniform("uNormFlag"), 1);
+
             it->draw(prog->getAttribute("vertPos"),
                      prog->getAttribute("vertNor"),
                      prog->getAttribute("vertTex"),
-                     prog->getUniform("texture0"));
+                     prog->getUniform("texture0"),
+                     prog->getUniform("textureNorm"));
+
+            glUniform1i(prog->getUniform("uNormFlag"), 0);
+            }
+            else {
+                it->draw(prog->getAttribute("vertPos"),
+                         prog->getAttribute("vertNor"),
+                         prog->getAttribute("vertTex"),
+                         prog->getUniform("texture0"));
+            }
         }
 
         for (auto it = current->children.begin(); it != current->children.end(); it++) {
-            draw_node(*it, prog, P, MV, cam);
+            draw_node(*it, prog, P, MV, cam, texs);
         }
         MV->popMatrix();
     }
 
     void Drawable::draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam) {
-        draw_node(root, prog, P, MV, cam);
+        draw_node(root, prog, P, MV, cam, texs);
     }
 
     static Shape *find_first(Node *n) {

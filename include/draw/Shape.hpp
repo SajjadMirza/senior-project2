@@ -15,6 +15,7 @@ namespace draw {
         GLuint uv_buf;
 
         GLuint tex_id_diffuse;
+        GLuint tex_id_norm;
 
     public:
         std::vector<float> vertices;
@@ -26,11 +27,10 @@ namespace draw {
         ~Shape();
 
         void init(const TextureBundle &textures, const aiMesh &mesh);
-        void init(const TexTable &textures, const aiMesh& mesh,
-                  const aiScene& scene);
         
         void draw(int h_vert, int h_nor) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const;
+        void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm) const;
     };
 
 }

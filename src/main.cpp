@@ -201,9 +201,10 @@ static void init_gl() {
     prog.addUniform("mode");
     prog.addUniform("color");
     prog.addUniform("texture0");
-    prog.addUniform("uFont");
+    prog.addUniform("textureNorm");
     prog.addUniform("uLightPos");
     prog.addUniform("uTextToggle");
+    prog.addUniform("uNormFlag");
     prog.addUniform("uRedder");
 
     color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
@@ -483,6 +484,7 @@ int main(void)
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(prog.getUniform("uTextToggle"), 0);
+        glUniform1i(prog.getUniform("uNormFlag"), 0);
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
             if (it->selected == true) {

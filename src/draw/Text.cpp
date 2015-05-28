@@ -49,7 +49,7 @@ namespace draw {
 
 		glUniform1i(prog.getUniform("uTextToggle"), 1);
 
-	    glActiveTexture(GL_TEXTURE0);
+	    glActiveTexture(GL_TEXTURE0 + 1);
 	    glGenTextures(1, &tex);
 	    glBindTexture(GL_TEXTURE_2D, tex);
 	   

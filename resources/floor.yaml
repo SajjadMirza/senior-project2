@@ -6,6 +6,8 @@ format: obj
 textures:
   diffuse:
     cavefloor01.dds
+  normal:
+    cavefloor01_n.dds
 transforms:
   translations:
     xaxis: -0.5

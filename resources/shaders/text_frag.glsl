@@ -4,11 +4,14 @@ in vec3 fragPos; // in camera space
 in vec3 fragNor; // in camera space
 in vec2 fragTex;
 in vec3 lightPos;
+uniform mat4 MV;
 uniform sampler2D texture0;
+uniform sampler2D texture_norm;
 uniform int  mode;
 uniform vec3 color;
 uniform int uTextToggle;
 uniform int uRedder;
+uniform int uNormFlag;
 out vec4 out_color;
 
 void main()
@@ -28,7 +31,13 @@ void main()
             tex = vec3(0.0, 0.0, 1.0);
         }
 
-        vec3 n = normalize(fragNor);
+        vec3 n;
+        if (uNormFlag == 1) {
+            n = normalize(MV * vec4(texture2D(texture_norm, fragTex.st).rgb, 0.0)).xyz;
+        }
+        else {
+            n = normalize(fragNor);
+        }
         vec3 l = normalize(lightPos - fragPos);
         vec3 v = -normalize(fragPos);
         vec3 h = normalize(l + v);
@@ -39,7 +48,7 @@ void main()
             colorA = vec3(0.3, 0, 0);
         }
 
-        vec3 col = colorD + colorS + colorA;
+        vec3 col = colorD + colorS;// + colorA;
         out_color = vec4(col, 1.0);
   }
   else {
