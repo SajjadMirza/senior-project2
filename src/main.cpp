@@ -35,7 +35,7 @@ Program color_prog;
 const uint init_w = 640;
 const uint init_h = 480;
 
-const uint map_cols = 44;
+const uint map_cols = 45;
 const uint map_rows = 45;
 
 float deg_to_rad(float deg) {
@@ -43,18 +43,18 @@ float deg_to_rad(float deg) {
     return rad;
 }
 
-static void bufferMovement(GLFWwindow *window, const std::vector<Entity> entities) {
+static void bufferMovement(GLFWwindow *window, const std::vector<Entity> &entities, const std::vector<Entity> &walls) {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera->move('w', entities);
+        camera->move('w', entities, walls);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera->move('a', entities);
+        camera->move('a', entities, walls);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera->move('s', entities);
+        camera->move('s', entities, walls);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera->move('d', entities);
+        camera->move('d', entities, walls);
     }
 }
 
@@ -151,6 +151,10 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
         break;
+    case GLFW_KEY_P:
+        if (action == GLFW_RELEASE) {
+            std::cout << camera->translations << std::endl;
+        }
     } // end of switch
 }
 
@@ -261,6 +265,8 @@ static void gen_cubes(std::vector<Entity> *cubes, const ModelConfig &config, con
                 e.setRadius(0);
                 e.setPosition(pos);
                 e.move(Eigen::Vector3f(i, 0, j));
+                e.generateBoundingBox();
+                e.setUseBoundingBox(true);
                 cubes->push_back(e);
             }
         }
@@ -509,7 +515,7 @@ int main(void)
         MV.popMatrix();
         P.popMatrix();
 
-    	bufferMovement(window, entities);
+    	bufferMovement(window, entities, walls);
         findFPS();        
 
         glfwSwapBuffers(window);

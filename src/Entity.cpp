@@ -3,11 +3,15 @@
 
 Entity::Entity() : pos(0, 0, 0), 
                    rot(Eigen::Matrix4f::Identity()),
-                   drawable(NULL) {}
+                   drawable(NULL),
+                   use_bounding_box(false)
+{}
 
 Entity::Entity(draw::Drawable *d) : pos(0, 0, 0),
                                    rot(Eigen::Matrix4f::Identity()),
-                                    drawable(d) {}
+                                    drawable(d),
+                                    use_bounding_box(false)
+{}
 
 Entity::~Entity() {}
 
@@ -109,4 +113,30 @@ Eigen::Vector3f Entity::getCenterWorld() const {
     Eigen::Vector3f result = (tmat * c4).head<3>();
 
     return result;
+}
+
+const BoundingBox &Entity::getBoundingBox() const {
+    return bounding_box;
+}
+
+
+void Entity::generateBoundingBox() {
+    const draw::Shape *s = drawable->find_first_shape();
+    std::vector< Eigen::Vector3f > verts;
+    for (auto it = s->vertices.begin(); it != s->vertices.end(); it++) {
+        float x = *it++;
+        float y = *it++;
+        float z = *it;
+        Eigen::Vector3f vec(x,y,z);
+        verts.push_back(vec);
+    }
+    bounding_box = BoundingBox(verts);
+}
+
+bool Entity::useBoundingBox() const {
+    return use_bounding_box;
+}
+
+void Entity::setUseBoundingBox(bool use) {
+    use_bounding_box = use;
 }
