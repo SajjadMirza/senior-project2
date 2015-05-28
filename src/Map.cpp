@@ -102,12 +102,8 @@ CellType Map::getTypeForCell(uint col, uint row) const {
     return grid[col][row].type;
 }
 
-void Map::setMapComponentForCell(uint col, uint row, Entity *map_component) {
-    grid[col][row].component = map_component;
-}
-
 Entity *Map::getMapComponentForCell(uint col, uint row) const {
-    return grid[col][row].component;
+    return grid[col][row].component.get();
 }
 
 std::vector<Entity*> Map::getNearbyWalls(uint col, uint row) const {
@@ -117,31 +113,31 @@ std::vector<Entity*> Map::getNearbyWalls(uint col, uint row) const {
     }
     
     if (col > 0) {
-        MapCell cell = grid[col-1][row];
+        const MapCell &cell = grid[col-1][row];
         if (cell.type == WALL) {
-            walls.push_back((cell.component));
+            walls.push_back((cell.component.get()));
         }
     }
 
     if (row > 0) {
-        MapCell cell = grid[col][row-1];
+        const MapCell &cell = grid[col][row-1];
         if (cell.type == WALL) {
-            walls.push_back((cell.component));
+            walls.push_back((cell.component.get()));
         }
 
     }
 
     if (col < columns - 1) {
-        MapCell cell = grid[col+1][row];
+        const MapCell &cell = grid[col+1][row];
         if (cell.type == WALL) {
-            walls.push_back((cell.component));
+            walls.push_back((cell.component.get()));
         }
     }
 
     if (row < rows - 1) {
-        MapCell cell = grid[col][row+1];
+        const MapCell &cell = grid[col][row+1];
         if (cell.type == WALL) {
-            walls.push_back((cell.component));
+            walls.push_back((cell.component.get()));
         }
 
     }
@@ -155,4 +151,12 @@ uint Map::getColumns() const {
 }
 uint Map::getRows() const {
     return rows;
+}
+
+MapCell& Map::get(uint col, uint row) {
+    return grid[col][row];
+}
+
+const MapCell& Map::cget(uint col, uint row) const {
+    return grid[col][row];
 }
