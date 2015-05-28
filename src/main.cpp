@@ -5,6 +5,7 @@
 
 // Internal headers
 #include <draw/Drawable.hpp>
+#include <draw/Text.hpp>
 #include <Entity.hpp>
 #include <sound/FMODDriver.hpp>
 #include <resources.hpp>
@@ -14,11 +15,10 @@
 #include <ModelConfig.hpp>
 #include <Map.hpp>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+/*FT_GlyphSlot g;
+FT_Face face;*/
 
-FT_GlyphSlot g;
-FT_Face face;
+draw::Text txt_temp("testfont.ttf", 24);
 
 /* globals */
 Camera * camera;
@@ -73,7 +73,7 @@ static void findFPS() {
     }
 }
 
-static void initText() {
+/*static void initText() {
     // Given Code to check if freetype library can be used
     // This was source code in the glbook wiki website on freetype
     FT_Library ft;
@@ -172,7 +172,7 @@ static void printText(GLFWwindow* window) {
     cn_str = cplus_str.c_str();
        
     renderText(cn_str, -1 + 8 * sx, 1 - 150 * sy, sx, sy); 
-}
+}*/
 
 static void error_callback(int error, const char* description) {
     std::cerr << description << std::endl;
@@ -600,8 +600,9 @@ int main(void)
             MV.popMatrix();
         }
 
-        glUniform1i(prog.getUniform("uTextToggle"), 1);
-        printText(window);
+        /*glUniform1i(prog.getUniform("uTextToggle"), 1);
+        printText(window);*/
+        txt_temp.draw(prog, *window, "HELLO WORLD");
 
         // Unbind the program
         prog.unbind();
