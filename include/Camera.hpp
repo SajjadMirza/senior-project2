@@ -6,7 +6,7 @@
 #include <Entity.hpp>
 #include <MatrixStack.hpp>
 
-static const float camera_default_collision_radius = 0.1;
+static const float camera_default_collision_radius = 0.2;
 
 class Camera
 {
@@ -33,7 +33,7 @@ public:
     void applyViewMatrix(MatrixStack *MV) const;
     Eigen::Vector2f rotations;
     Eigen::Vector3f translations;
-    void move(char c, const std::vector<Entity> entities);
+    void move(char c, const std::vector<Entity> &entities, const std::vector<Entity> &walls);
 
     float collisionRadius() const { return camera_default_collision_radius; }
 
