@@ -15,4 +15,22 @@ transforms:
     xaxis: 4.0
     yaxis: -1.0
     zaxis: 25.0
+---
+model: player
+file: cube.obj
+directory: resources/models/cube
+format: obj
+textures:
+  diffuse:
+    character.jpg
+  normal:
+    cavewall01_n.dds
+overrides:
+  radius: -100
+  center: position
+transforms:
+  translations:
+    xaxis: -0.5
+    zaxis: 0.5
+    yaxis: 1.0
 ...

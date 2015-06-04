@@ -355,19 +355,25 @@ static void init_entities(std::vector<Entity> *entities) {
 
         Eigen::Vector3f pos(0,0,0);
 
-        if (it->transforms.xpos != 0.0f) {
-            pos(0) = it->transforms.xpos;
+        if (it->model == "player") {
+            pos = -camera->translations;
         }
+        else {
+            if (it->transforms.xpos != 0.0f) {
+                pos(0) = it->transforms.xpos;
+            }
 
-        if (it->transforms.ypos != 0.0f) {
-            pos(1) = it->transforms.ypos;
-        }
+            if (it->transforms.ypos != 0.0f) {
+                pos(1) = it->transforms.ypos;
+            }
 
-        if (it->transforms.zpos != 0.0f) {
-            pos(2) = it->transforms.zpos;
+            if (it->transforms.zpos != 0.0f) {
+                pos(2) = it->transforms.zpos;
+            }
         }
 
         e.setPosition(pos);
+        e.setName(it->model);
         
         entities->push_back(e);
     }
@@ -496,7 +502,7 @@ int main(void)
         /* Beginning main render path */
         prog.bind();
 
-        std::cout << "RAWR " << light_pos << std::endl << std::endl;
+        // std::cout << "RAWR " << light_pos << std::endl << std::endl;
 
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
@@ -512,13 +518,27 @@ int main(void)
                 glUniform1i(prog.getUniform("uRedder"), 0);
             }
 
-            MV.pushMatrix();
-            MV.multMatrix(it->getRotation());
-            MV.worldTranslate(it->getPosition(), it->getRotation());
-            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                               MV.topMatrix().data());
-            it->getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
+            if (it->getName() == "player" && camera == fp_camera) {
+                Eigen::Vector3f change = -camera->translations;
+                
+                change(0) = std::round(change(0)) - 0.5f;
+                change(1) -= 1.0f;
+                change(2) = std::round(change(2) - 1) + 0.5f;
+
+                it->setPosition(change);
+            }
+            else {
+                if (it->getName() == "player") {
+
+                }
+                MV.pushMatrix();
+                MV.multMatrix(it->getRotation());
+                MV.worldTranslate(it->getPosition(), it->getRotation());
+                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
+                                   MV.topMatrix().data());
+                it->getDrawable().draw(&prog, &P, &MV, camera);
+                MV.popMatrix();
+            }
         }
         glUniform1i(prog.getUniform("uRedder"), 0);
 
