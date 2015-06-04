@@ -5,6 +5,7 @@
 
 #include <Entity.hpp>
 #include <MatrixStack.hpp>
+#include <Map.hpp>
 
 static const float camera_default_collision_radius = 0.15;
 
@@ -34,7 +35,7 @@ public:
     Eigen::Vector2f rotations;
     Eigen::Vector3f translations;
     void move(char c, const std::vector<Entity> &entities,
-              const std::vector<Entity*> &walls);
+              const Map &map, int col, int row);
 
     float collisionRadius() const { return camera_default_collision_radius; }
 

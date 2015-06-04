@@ -49,18 +49,26 @@ float deg_to_rad(float deg) {
 
 static void bufferMovement(GLFWwindow *window,
                            const std::vector<Entity> &entities,
-                           const std::vector<Entity*> &walls) {
+                           const Map &map, int col, int row) {
+    char c = 0;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera->move('w', entities, walls);
+        c = 'w';
+        camera->move(c, entities, map, col, row);
     }
+    
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera->move('a', entities, walls);
+        c = 'a';
+        camera->move(c, entities, map, col, row);
     }
+    
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera->move('s', entities, walls);
+        c = 's';
+        camera->move(c, entities, map, col, row);
     }
+    
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera->move('d', entities, walls);
+        c = 'd';
+        camera->move(c, entities, map, col, row);
     }
 }
 
@@ -595,19 +603,16 @@ int main(void)
 
             std::cout << col << " " << row << std::endl;
             std::cout << campos(0) << " " << campos(2) << std::endl;
-            std::vector<Entity*> local_walls =
-                map.getNearbyWalls(col, row);
-            std::cout << local_walls.size() << std::endl;
 
             MapCell& ref = map.get(col, row);
 
             if (highlight) {
                 ref.component->selected = true;
             }
-            bufferMovement(window, entities, local_walls);
+            bufferMovement(window, entities, map, col, row);
         }
         else {
-            bufferMovement(window, entities, std::vector<Entity *>());
+            bufferMovement(window, entities, map, -1, -1);
         }
 
         findFPS();        

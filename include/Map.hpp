@@ -25,6 +25,15 @@ struct MapCell {
     ~MapCell();
 };
 
+struct Neighbors {
+    Entity *up;
+    Entity *down;
+    Entity *left;
+    Entity *right;
+    Neighbors() : up(NULL), down(NULL), left(NULL), right(NULL) {}
+    ~Neighbors() {}
+};
+
 
 class Map {
 private:
@@ -42,7 +51,8 @@ public:
 
     CellType getTypeForCell(uint col, uint row) const;
     Entity *getMapComponentForCell(uint col, uint row) const;
-    std::vector<Entity*> getNearbyWalls(uint col, uint row) const;
+    Neighbors getNearbyWalls(uint col, uint row) const;
+    
     uint getColumns() const;
     uint getRows() const;
 
