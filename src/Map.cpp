@@ -106,8 +106,8 @@ Entity *Map::getMapComponentForCell(uint col, uint row) const {
     return grid[col][row].component.get();
 }
 
-std::vector<Entity*> Map::getNearbyWalls(uint col, uint row) const {
-    std::vector<Entity*> walls;
+Neighbors Map::getNearbyWalls(uint col, uint row) const {
+    Neighbors walls;
     if (col < 0 || col >= columns || row < 0 || row >= rows) {
         return walls;
     }
@@ -115,14 +115,14 @@ std::vector<Entity*> Map::getNearbyWalls(uint col, uint row) const {
     if (col > 0) {
         const MapCell &cell = grid[col-1][row];
         if (cell.type == WALL) {
-            walls.push_back((cell.component.get()));
+            walls.left = cell.component.get();
         }
     }
 
     if (row > 0) {
         const MapCell &cell = grid[col][row-1];
         if (cell.type == WALL) {
-            walls.push_back((cell.component.get()));
+            walls.up = cell.component.get();
         }
 
     }
@@ -130,14 +130,14 @@ std::vector<Entity*> Map::getNearbyWalls(uint col, uint row) const {
     if (col < columns - 1) {
         const MapCell &cell = grid[col+1][row];
         if (cell.type == WALL) {
-            walls.push_back((cell.component.get()));
+            walls.right = cell.component.get();
         }
     }
 
     if (row < rows - 1) {
         const MapCell &cell = grid[col][row+1];
         if (cell.type == WALL) {
-            walls.push_back((cell.component.get()));
+            walls.down = cell.component.get();
         }
 
     }
