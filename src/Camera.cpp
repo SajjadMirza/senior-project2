@@ -72,7 +72,6 @@ void Camera::applyViewMatrix(MatrixStack *MV) const
     MV->translate(translations);
 }
 
-// TODO: make less sticky and more slidey
 void Camera::move(char c, const std::vector<Entity> &entities,
                   const Map &map, int col, int row) {
     Eigen::Quaternionf q1;
@@ -100,7 +99,6 @@ void Camera::move(char c, const std::vector<Entity> &entities,
         assert(0);
     }
 
-    std::cout << c << std::endl;
 
     point = R1.block<3,3>(0,0) * point;      
     	
@@ -113,13 +111,13 @@ void Camera::move(char c, const std::vector<Entity> &entities,
         
         if ((neighbors.up && this->collides(*neighbors.up)) ||
             (neighbors.down && this->collides(*neighbors.down))) {
-            std::cout << "COLLIDES Z" << std::endl;
+//            std::cout << "COLLIDES Z" << std::endl;
             reset_z = true;
         }
         
         if ((neighbors.left && this->collides(*neighbors.left)) ||
             (neighbors.right && this->collides(*neighbors.right))) {
-            std::cout << "COLLIDES X" << std::endl;
+//            std::cout << "COLLIDES X" << std::endl;
             reset_x = true;
         }
 

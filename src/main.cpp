@@ -504,7 +504,7 @@ int main(void)
         /* Beginning main render path */
         prog.bind();
 
-        std::cout << "RAWR " << light_pos << std::endl << std::endl;
+//        std::cout << "RAWR " << light_pos << std::endl << std::endl;
 
         /* Send projection matrix */
         glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
@@ -581,8 +581,8 @@ int main(void)
             light_pos(0) = campos(0);
             light_pos(2) = campos(2);
 
-            std::cout << col << " " << row << std::endl;
-            std::cout << campos(0) << " " << campos(2) << std::endl;
+//            std::cout << col << " " << row << std::endl;
+//            std::cout << campos(0) << " " << campos(2) << std::endl;
 
             MapCell& ref = map.get(col, row);
 
