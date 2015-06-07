@@ -1,21 +1,32 @@
 #include <Entity.hpp>
 #include <algorithm>
 
-Entity::Entity() : pos(0, 0, 0), 
+Entity::Entity() : name(""),
+                   pos(0, 0, 0), 
                    rot(Eigen::Matrix4f::Identity()),
                    drawable(NULL),
                    use_bounding_box(false),
                    selected(false)
 {}
 
-Entity::Entity(draw::Drawable *d) : pos(0, 0, 0),
-                                   rot(Eigen::Matrix4f::Identity()),
+Entity::Entity(draw::Drawable *d) : name(""),
+                                    pos(0, 0, 0),
+                                    rot(Eigen::Matrix4f::Identity()),
                                     drawable(d),
                                     use_bounding_box(false),
                                     selected(false)
 {}
 
 Entity::~Entity() {}
+
+void Entity::setName(std::string str) {
+    name = str;
+}
+
+std::string Entity::getName() {
+    return name;
+}
+
 
 void Entity::setRotation(float angle, Eigen::Vector3f axis) {
     assert(0);

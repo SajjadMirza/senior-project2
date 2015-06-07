@@ -8,6 +8,7 @@
 
 class Entity {
 private:
+    std::string name;
     Eigen::Vector3f pos;
     Eigen::Matrix4f rot;
     float radius;
@@ -22,6 +23,9 @@ public:
     Entity(draw::Drawable *d);
     virtual ~Entity();
     
+    void setName(std::string str);
+    std::string getName();
+
     void attachDrawable(draw::Drawable *drawable);
     void clearDrawable();
 
