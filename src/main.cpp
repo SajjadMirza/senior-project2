@@ -197,6 +197,18 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
         if (action == GLFW_RELEASE) {
             std::cout << camera->translations << std::endl;
         }
+    case GLFW_KEY_T:
+        camera->translations = Eigen::Vector3f(-5.0f, -0.7f, -22.0f);
+        break;
+    case GLFW_KEY_Y:
+        camera->translations = Eigen::Vector3f(-27.0f, -0.7f, -12.0f);
+        break;
+    case GLFW_KEY_U:
+        camera->translations = Eigen::Vector3f(-29.0f, -0.7f, -22.0f);
+        break;
+    case GLFW_KEY_I:
+        camera->translations = Eigen::Vector3f(-24.0f, -0.7f, -42.0f);
+        break;
     } // end of switch
 }
 
