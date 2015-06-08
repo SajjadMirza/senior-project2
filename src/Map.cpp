@@ -10,6 +10,7 @@ const char goal = 'G';
 const char puzzle_floor = 'g';
 const char start = 'S';
 const char hole = 'H';
+const char end = 'E';
 
 MapCell::MapCell() : type(EMPTY) {
 }
@@ -104,6 +105,10 @@ int Map::loadMapFromFile(std::string filename) {
             case hole:
                 grid[col][row].type = HOLE;
                 grid[col][row].name = "HOLE";
+                break;
+            case end:
+                grid[col][row].type = END;
+                grid[col][row].name = "END";
                 break;
             case empty_marker:
                 break;

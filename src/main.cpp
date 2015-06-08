@@ -20,6 +20,7 @@
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
+draw::Text text_end("testfont_3.ttf", 18);
 
 /* globals */
 Camera * camera;
@@ -31,6 +32,7 @@ std::shared_ptr<Puzzle> logic;
 PuzzleFactory puzzle_factory;
 
 bool success_puzzle_lava = false;
+bool end_flag = false;
 
 bool highlight = false;
 bool highlight_l = false;
@@ -316,6 +318,44 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, Ma
     }
 }
 
+static void gen_cubes_s(std::vector<Entity*> *cubes, const ModelConfig &config, draw::Drawable *drawable, Map &map, CellType type) {
+    uint cols = map.getColumns();
+    uint rows = map.getRows();
+
+    Eigen::Vector3f pos(0,0,0);
+
+    if (config.transforms.xpos != 0.0f) {
+        pos(0) = config.transforms.xpos;
+    }
+
+    if (config.transforms.ypos != 0.0f) {
+        pos(1) = config.transforms.ypos;
+    }
+
+    if (config.transforms.zpos != 0.0f) {
+        pos(2) = config.transforms.zpos;
+    }
+
+    for (int i = 0; i < cols; i++) {
+        for (int j = 0; j < rows; j++) {
+            if (map.getTypeForCell(i, j) == type) {
+                MapCell &cell = map.get(i, j);
+                std::unique_ptr<Entity> temp(new Entity(drawable));
+                cell.component = std::move(temp); // constructor
+                Entity &e = *cell.component.get();
+                e.setName(cell.name);
+                e.setCenter(Eigen::Vector3f(0,0,0));
+                e.setRadius(0);
+                e.setPosition(pos);
+                e.move(Eigen::Vector3f(i, 0, j));
+                e.generateBoundingBox();
+                e.setUseBoundingBox(true);
+                cubes->push_back(cell.component.get());
+            }
+        }
+    }
+}
+
 static void make_hole(const ModelConfig &config, MapCell &map, int i, int j) {
     draw::Drawable *drawable = new draw::Drawable(config);
 
@@ -361,6 +401,39 @@ static void init_floors(std::vector<Entity*> *floors, Map &map) {
     ModelConfig config_g;
     resource::load_config(&config_g, "resources/goal.yaml");
     gen_cubes(floors, config_g, map, GOAL);
+
+    ModelConfig config_e_2;
+    resource::load_config(&config_e_2, "resources/floor.yaml");
+
+    gen_cubes(floors, config_e_2, map, END);
+
+}
+
+static void init_floors_s(std::vector<Entity*> *floors, Map &map, draw::Drawable *drawable) {
+    ModelConfig config;
+    resource::load_config(&config, "resources/floor.yaml");
+    gen_cubes(floors, config, map, HALLWAY);
+
+    ModelConfig config_f;
+    resource::load_config(&config_f, "resources/skull.yaml");
+
+    gen_cubes(floors, config_f, map, PUZZLE_FLOOR);
+    gen_cubes(floors, config_f, map, START);
+
+    ModelConfig config_g;
+    resource::load_config(&config_g, "resources/goal.yaml");
+    gen_cubes(floors, config_g, map, GOAL);
+
+    ModelConfig config_e_1;
+    resource::load_config(&config_e_1, "resources/end.yaml");
+
+    ModelConfig config_lava;
+
+    resource::load_config(&config_lava, "resources/lava.yaml");
+    gen_cubes(floors, config_lava, map, HOLE);
+
+    gen_cubes_s(floors, config_lava, drawable, map, END);
+
 }
 
 static void init_walls(std::vector<Entity*> *walls, Map &map) {
@@ -495,6 +568,11 @@ int main(void)
     ColRow logic_br = col_row(41, 26);
     const char *logic_puzzle_file = "resources/puzzles/logic1.yaml";
     logic = puzzle_factory.createPuzzle(logic_tl, logic_br, logic_puzzle_file);
+
+    ModelConfig config_e_1;
+    resource::load_config(&config_e_1, "resources/end.yaml");
+    draw::Drawable *drawable_s = new draw::Drawable(config_e_1);
+
     LOG("deinit freeimage");
     FreeImage_DeInitialise();
 
@@ -729,6 +807,10 @@ int main(void)
 
             static int counter = 0;
 
+            if (ref.type == END && end_flag == true) {
+
+            }
+
             if (ref.type == START && enter_game == false) {
                 MapCell& ref_2 = map.get(col -1, row);
 
@@ -884,6 +966,26 @@ int main(void)
         }
         else {
             bufferMovement(window, entities, map, -1, -1);
+        }
+
+        static int delay_talk = 200;
+        static int begin_talk = 200; 
+
+        if (success_puzzle_lava && !end_flag) {
+            if (delay_talk > 0) {
+                --delay_talk;
+            }
+        }
+        if (delay_talk == 0 && begin_talk != 0) {
+            if (end_flag == false) {
+                end_flag = true;
+                floors.clear();
+                init_floors_s(&floors, map, drawable_s);
+            }
+            --begin_talk;
+            std::ostringstream convert; 
+            convert << "You solved all puzzles on this floor.\n The exit has been opened.";
+            text_end.draw(prog, *window, convert.str(), -0.9f, 0.7f);
         }
 
         // Unbind the program

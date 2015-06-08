@@ -1,0 +1,17 @@
+---
+model: cube
+file: cube.obj
+directory: resources/models/cube
+format: obj
+textures:
+  diffuse:
+    hole.jpg
+  normal:
+    hole_n.png
+transforms:
+  translations:
+    xaxis: -0.5
+    zaxis: 0.5
+    yaxis: -1.0
+  scale: 20.0  
+...
