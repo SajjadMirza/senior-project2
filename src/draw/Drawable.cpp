@@ -37,18 +37,26 @@ void assimp_to_eigen_matrix(Eigen::Matrix4f *dst, const aiMatrix4x4 &src) {
 Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *node, const aiScene *scene) {
     Node *n = new Node();
 
+    LOG("copy 1");
     // copy transformation matrix
     assimp_to_eigen_matrix(&(n->transform), node->mTransformation);
 
+    LOG("copy 2");
     // copy meshes
     n->meshes.reserve(node->mNumMeshes);
+    LOG("copy 2.1");
     for (int i = 0; i < node->mNumMeshes; i++) {
         draw::Shape s;
+        LOG("copy 2.2");
         aiMesh *mesh = scene->mMeshes[i];
+        LOG("copy 2.3");
         s.init(parent_drawable->texs, *mesh);
+        LOG("Copy 2.4");
         n->meshes.push_back(s);
+        LOG("Copy 2.5");
     }
 
+    LOG("copy 3");
     // recurse
     n->children.reserve(node->mNumChildren);
     for (int i = 0; i < node->mNumChildren; i++) {
@@ -57,6 +65,7 @@ Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *
         n->children.push_back(c);
     }
 
+    LOG("copy 4");
     return n;
 
 }
@@ -84,6 +93,7 @@ static void print_texture_type_counts(const aiMaterial *mat) {
 namespace draw {
 
     Drawable::Drawable(const ModelConfig &config) {
+        LOG("drawable constructor");
         name = config.model;
         // load textures to Drawable
         const ModelTextureConfig &texconf = config.textures;
@@ -105,6 +115,8 @@ namespace draw {
             texs.normal = dt;
         }
 
+        LOG("loading scene through assimp");
+        LOG(config.directory+"/"+config.file);
         // load Assimp scene from file
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(config.directory+"/"+config.file,
@@ -112,6 +124,7 @@ namespace draw {
                                                  aiProcess_Triangulate |
                                                  aiProcess_JoinIdenticalVertices |
                                                  aiProcess_SortByPType);
+        LOG("loaded scene through assimp");
         if (!scene) {
             // do some error
             std::cerr << "NO SCENE FOUND! ABORT!" << std::endl;
@@ -119,8 +132,10 @@ namespace draw {
         }
 
         // copy Assimp scene structure to Drawable
+        LOG("copy assimp scene structure to drawable");
         const aiNode *rootAiNode = scene->mRootNode;
         root = deepcopy_assimp_tree(this, rootAiNode, scene);
+        LOG("done copying scene");
     }
     
     
@@ -212,6 +227,28 @@ namespace draw {
 
     Drawable::~Drawable() {}
 
+    static void draw_node_color(Node *current, Program *color_prog,
+                                MatrixStack *P, MatrixStack *MV,
+                                Camera *cam) {
+        MV->pushMatrix();
+        MV->multMatrix(current->transform);
+        
+        glUniformMatrix4fv(color_prog->getUniform("MV"), 1, GL_FALSE,
+                           MV->topMatrix().data());
+        
+        for (auto it = current->meshes.begin();
+             it != current->meshes.end(); it++) {
+            it->colorDraw(color_prog->getAttribute("vertPos"));
+        }
+
+        for (auto it = current->children.begin();
+             it != current->children.end(); it++) {
+            draw_node_color(*it, color_prog, P, MV, cam);
+        }
+        
+        MV->popMatrix();
+    }
+
     static void draw_node(Node *current, Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam, TextureBundle& texs) {
         MV->pushMatrix();
         MV->multMatrix(current->transform);
@@ -219,15 +256,15 @@ namespace draw {
         glUniform1i(prog->getUniform("mode"), 't'); 
         for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
             if (texs.normal) {
-            glUniform1i(prog->getUniform("uNormFlag"), 1);
+                glUniform1i(prog->getUniform("uNormFlag"), 1);
 
-            it->draw(prog->getAttribute("vertPos"),
-                     prog->getAttribute("vertNor"),
-                     prog->getAttribute("vertTex"),
-                     prog->getUniform("texture0"),
-                     prog->getUniform("textureNorm"));
+                it->draw(prog->getAttribute("vertPos"),
+                         prog->getAttribute("vertNor"),
+                         prog->getAttribute("vertTex"),
+                         prog->getUniform("texture0"),
+                         prog->getUniform("textureNorm"));
 
-            glUniform1i(prog->getUniform("uNormFlag"), 0);
+                glUniform1i(prog->getUniform("uNormFlag"), 0);
             }
             else {
                 it->draw(prog->getAttribute("vertPos"),
@@ -237,13 +274,20 @@ namespace draw {
             }
         }
 
-        for (auto it = current->children.begin(); it != current->children.end(); it++) {
+        for (auto it = current->children.begin();
+             it != current->children.end(); it++) {
             draw_node(*it, prog, P, MV, cam, texs);
         }
         MV->popMatrix();
     }
 
-    void Drawable::draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam) {
+    void Drawable::drawColor(Program *color_prog, MatrixStack *P, MatrixStack *MV,
+                             Camera *cam) {
+        draw_node_color(root, color_prog, P, MV, cam);
+    }
+
+    void Drawable::draw(Program *prog, MatrixStack *P, MatrixStack *MV,
+                        Camera *cam) {
         draw_node(root, prog, P, MV, cam, texs);
     }
 

@@ -1,0 +1,9 @@
+---
+model: statue
+file: stanford-bunny.obj
+directory: resources/models/bunny
+format: obj
+textures:
+  diffuse: WoodLight_COLOR.png
+  normal: WoodLight_NRM.png
+...

@@ -43,6 +43,8 @@ namespace draw {
         const Shape *find_first_shape();
 
         void draw(Program *prog, MatrixStack *P, MatrixStack *MV, Camera *cam);
+        void drawColor(Program *prog, MatrixStack *P, MatrixStack *MV,
+                       Camera *cam);
     };
 
     typedef std::unordered_map<uint, Drawable*> DrawableMap; 

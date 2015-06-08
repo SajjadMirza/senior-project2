@@ -1,21 +1,27 @@
 #include <Entity.hpp>
 #include <algorithm>
 
+static int entity_uid_counter = 1;
+
 Entity::Entity() : name(""),
                    pos(0, 0, 0), 
                    rot(Eigen::Matrix4f::Identity()),
                    drawable(NULL),
                    use_bounding_box(false),
-                   selected(false)
-{}
+                   selected(false),
+                   id(entity_uid_counter++)
+{
+}
 
 Entity::Entity(draw::Drawable *d) : name(""),
                                     pos(0, 0, 0),
                                     rot(Eigen::Matrix4f::Identity()),
                                     drawable(d),
                                     use_bounding_box(false),
-                                    selected(false)
-{}
+                                    selected(false),
+                                    id(entity_uid_counter++)
+{
+}
 
 Entity::~Entity() {}
 

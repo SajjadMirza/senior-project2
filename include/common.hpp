@@ -48,6 +48,6 @@ typedef unsigned char uchar;
 #include <Program.hpp>
 
 
-
+#define LOG(x) (std::cout << __FILE__ << ":" << __LINE__ << " " << x << std::endl)
 
 #endif

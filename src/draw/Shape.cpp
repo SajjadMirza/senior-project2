@@ -44,13 +44,14 @@ namespace draw {
     Shape::~Shape() {}
 
     void Shape::init(const TextureBundle &textures, const aiMesh &mesh) {
+        LOG("shape 1");
         // copy vertex coordinates
         flatten_array(&vertices, mesh.mVertices, mesh.mNumVertices);
         glGenBuffers(1, &ver_buf);
         glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), 
                      &vertices[0], GL_STATIC_DRAW);
-
+        LOG("shape 2");
         // copy vertex normal vectors
         flatten_array(&normals, mesh.mNormals, mesh.mNumVertices);
         glGenBuffers(1, &nor_buf);
@@ -66,14 +67,21 @@ namespace draw {
         if (textures.normal) {
             tex_id_norm = textures.normal->tid;
         }
-        
+
+        LOG("shape 3");
         // copy uv coordinates
+        
         flatten_array2D(&uvs, mesh.mTextureCoords[0], mesh.mNumVertices);
+        LOG("shape 3.1");
         glGenBuffers(1, &uv_buf);
+        LOG("shape 3.2");
         glBindBuffer(GL_ARRAY_BUFFER, uv_buf);
+        LOG("shape 3.3");
         glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(float), &uvs[0],
                      GL_STATIC_DRAW);
+        LOG("shape 3.4");
 
+        LOG("shape 4");
         // copy indices
         flatten_indices(&indices, mesh.mFaces, mesh.mNumFaces);
         glGenBuffers(1, &ind_buf);
@@ -81,12 +89,34 @@ namespace draw {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint),
                      &indices[0], GL_STATIC_DRAW);
 
+        LOG("shape 5");
         // unbind buffers
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+        LOG("shape 6");
         // check for errors
         assert(glGetError() == GL_NO_ERROR);
+    }
+
+    void Shape::colorDraw(int h_vert) const {
+        // Enable and bind verticies array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Bind index array for drawing
+        int nIndices = indices.size();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+         // Draw
+        glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
+
+        // Disable and unbind
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
     }
 
     void Shape::draw(int h_vert, int h_nor) const {

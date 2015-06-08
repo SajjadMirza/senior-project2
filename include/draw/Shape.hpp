@@ -27,7 +27,8 @@ namespace draw {
         ~Shape();
 
         void init(const TextureBundle &textures, const aiMesh &mesh);
-        
+
+        void colorDraw(int h_vert) const;
         void draw(int h_vert, int h_nor) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm) const;

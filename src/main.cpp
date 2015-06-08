@@ -13,6 +13,7 @@
 #include <OverviewCamera.hpp>
 #include <MatrixStack.hpp>
 #include <ModelConfig.hpp>
+#include <Puzzle.hpp>
 #include <Map.hpp>
 #include <memory>
 #include <utility>
@@ -25,6 +26,8 @@ Camera *fp_camera = new Camera();
 OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
 Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
+std::shared_ptr<Puzzle> logic;
+PuzzleFactory puzzle_factory;
 
 bool highlight = false;
 
@@ -262,8 +265,6 @@ static uint getUniqueColor(int index) {
     return color;
  }
 
-static unsigned int entity_uid_counter = 1;
-
 static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, Map &map, CellType type) {
     draw::Drawable *drawable = new draw::Drawable(config);
     uint cols = map.getColumns();
@@ -323,7 +324,7 @@ static void init_entities(std::vector<Entity> *entities) {
         Entity e(drawable);
         e.calculate_center_and_radius();
 //        e.setPosition(Eigen::Vector3f(0,0,-5));
-        e.id = entity_uid_counter++;
+
         
         if (it->radius_override) {
             std::cout << "radius override detected" << std::endl;
@@ -433,10 +434,16 @@ int main(void)
     std::vector<Entity*> walls;
     init_walls(&walls, map);
 
+    ColRow logic_tl = col_row(31, 18);
+    ColRow logic_br = col_row(41, 26);
+    const char *logic_puzzle_file = "resources/puzzles/logic1.yaml";
+    logic = puzzle_factory.createPuzzle(logic_tl, logic_br, logic_puzzle_file);
+    LOG("deinit freeimage");
     FreeImage_DeInitialise();
 
-
+    LOG("init gl");
     init_gl();
+    LOG("after init gl");
 
     ulong num_collisions = 0;
 
@@ -465,23 +472,49 @@ int main(void)
             /* Beginning color picking program */
             color_prog.bind();
 
-            glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+            glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE,
+                               P.topMatrix().data());
 
             for (auto it = entities.begin(); it != entities.end(); it++) {
                 MV.pushMatrix();
                 MV.multMatrix(it->getRotation());
                 MV.worldTranslate(it->getPosition(), it->getRotation());
+                MV.scale(0.5f);
                 Eigen::Vector3f entity_color;
                 uint id = it->id;
                 entity_color(0) = (id & 0xFF);
                 entity_color(1) = (id & 0xFF00) >> 8;
                 entity_color(2) = (id & 0xFF0000) >> 16;
                 entity_color = entity_color / 255.0f;
-                glUniform3fv(color_prog.getUniform("uColor"), 1, entity_color.data());
+                glUniform3fv(color_prog.getUniform("uColor"), 1,
+                             entity_color.data());
 
                 glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
                                    MV.topMatrix().data());
-                it->getDrawable().draw(&prog, &P, &MV, camera);
+                it->getDrawable().drawColor(&color_prog, &P, &MV, camera);
+                MV.popMatrix();
+            }
+            
+            std::vector<Entity*> &logic_ents = logic->getEntities();
+            for (auto it = logic_ents.begin(); it != logic_ents.end(); it++) {
+
+                Entity *ptr = *it;
+                MV.pushMatrix();
+                MV.multMatrix(ptr->getRotation());
+                MV.worldTranslate(ptr->getPosition(), ptr->getRotation());
+                MV.scale(0.005f);
+                Eigen::Vector3f entity_color;
+                uint id = ptr->id;
+                LOG("drawing logic entity colorpicker " << id);
+                entity_color(0) = (id & 0xFF);
+                entity_color(1) = (id & 0xFF00) >> 8;
+                entity_color(2) = (id & 0xFF0000) >> 16;
+                entity_color = entity_color / 255.0f;
+                glUniform3fv(color_prog.getUniform("uColor"), 1,
+                             entity_color.data());
+                glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
+                                   MV.topMatrix().data());
+                ptr->getDrawable().drawColor(&color_prog, &P, &MV, camera);
                 MV.popMatrix();
             }
 
@@ -492,13 +525,35 @@ int main(void)
             // Read the desired pixel from the buffer
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             unsigned char data[4];
-            int x = std::floor(selection_coords(0)), y = std::floor(selection_coords(1));
+            int x = std::floor(selection_coords(0)),
+                y = std::floor(selection_coords(1));
             glReadPixels(x,y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
             uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
             std::cout << "picked: " << pickedID << std::endl;
 
             if (pickedID > 0) {
-                entities[pickedID - 1].selected = !entities[pickedID - 1].selected;
+                for (auto it = entities.begin(); it != entities.end(); it++) {
+                    LOG(it->getName());
+                    if (it->id == pickedID) {
+                        it->selected = true;
+                    }
+                    else {
+                        it->selected = false;
+                    }
+                }
+                
+                std::vector<Entity*> &logic_ents = logic->getEntities();
+                for (auto it = logic_ents.begin(); it != logic_ents.end(); it++) {
+                    Entity *ptr = *it;
+                    LOG(ptr->getName());
+                    if (ptr->id == pickedID) {
+                        ptr->selected = true;
+                        logic->notifySelect(ptr);
+                    }
+                    else {
+                        ptr->selected = false;
+                    }
+                }
             }
             
             color_prog.unbind();
@@ -540,6 +595,7 @@ int main(void)
                 MV.pushMatrix();
                 MV.multMatrix(it->getRotation());
                 MV.worldTranslate(it->getPosition(), it->getRotation());
+                MV.scale(0.5f);
                 glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
                                    MV.topMatrix().data());
                 it->getDrawable().draw(&prog, &P, &MV, camera);
@@ -585,6 +641,8 @@ int main(void)
         glUniform1i(prog.getUniform("uRedder"), 0);
 
         draw_text(*window);
+
+        logic->draw(&prog, &P, &MV, camera, &text, window);
 
         // Unbind the program
         prog.unbind();
