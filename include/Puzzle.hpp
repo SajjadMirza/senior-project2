@@ -14,6 +14,14 @@ inline ColRow col_row(int col, int row) {
     return std::make_pair(col, row);
 }
 
+inline int getCol(ColRow cr) {
+    return cr.first;
+}
+
+inline int getRow(ColRow cr) {
+    return cr.second;
+}
+
 enum PuzzleType {
     LOGIC,
     PATTERN,
@@ -64,13 +72,20 @@ public:
 
 class PatternPuzzle : public Puzzle {
     friend class PuzzleFactory;
+    ColRow tl, br;
     int counter;
     std::vector<Entity*> correct_order;
+    bool active;
+    double start_time;
 public:
     void notifyPosition(ColRow pos);
     void notifySelect(Entity *selected_entity);
+    void notifyKey(char c);
     void draw(Program *prog, MatrixStack *P, MatrixStack *MV,
-              Camera *cam);
+              Camera *cam, draw::Text *text, GLFWwindow *window);
+    void activate();
+    void deactivate();
+    bool isActive();
 };
 
 class PathingPuzzle : public Puzzle {
@@ -78,8 +93,9 @@ class PathingPuzzle : public Puzzle {
 public:
     void notifyPosition(ColRow pos);
     void notifySelect(Entity *selected_entity);
+    void notifyKey(char c);
     void draw(Program *prog, MatrixStack *P, MatrixStack *MV,
-              Camera *cam);
+              Camera *cam, draw::Text *text, GLFWwindow *window);
 };
 
 
@@ -88,6 +104,8 @@ public:
     std::shared_ptr<Puzzle> createPuzzle(ColRow top_left,
                                          ColRow bottom_right,
                                          const char *config_file);
+
+    std::shared_ptr<PatternPuzzle> createPatternPuzzle();
 };
 
 #endif

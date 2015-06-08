@@ -29,6 +29,7 @@ OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
 Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
 std::shared_ptr<Puzzle> logic;
+std::shared_ptr<PatternPuzzle> pattern;
 PuzzleFactory puzzle_factory;
 
 bool success_puzzle_lava = false;
@@ -569,6 +570,8 @@ int main(void)
     const char *logic_puzzle_file = "resources/puzzles/logic1.yaml";
     logic = puzzle_factory.createPuzzle(logic_tl, logic_br, logic_puzzle_file);
 
+    pattern = puzzle_factory.createPatternPuzzle();
+
     ModelConfig config_e_1;
     resource::load_config(&config_e_1, "resources/end.yaml");
     draw::Drawable *drawable_s = new draw::Drawable(config_e_1);
@@ -655,6 +658,29 @@ int main(void)
                 MV.popMatrix();
             }
 
+            std::vector<Entity*> &ents = pattern->getEntities();
+            for (auto it = ents.begin(); it != ents.end(); it++) {
+                Entity *ptr = *it;
+
+                MV.pushMatrix();
+                MV.multMatrix(ptr->getRotation());
+                MV.worldTranslate(ptr->getPosition(), ptr->getRotation());
+                MV.scale(0.001f);
+                Eigen::Vector3f entity_color;
+                uint id = ptr->id;
+                LOG("drawing pattern entity colorpicker " << id);
+                entity_color(0) = (id & 0xFF);
+                entity_color(1) = (id & 0xFF00) >> 8;
+                entity_color(2) = (id & 0xFF0000) >> 16;
+                entity_color = entity_color / 255.0f;
+                glUniform3fv(color_prog.getUniform("uColor"), 1,
+                             entity_color.data());
+                glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
+                                   MV.topMatrix().data());
+                ptr->getDrawable().drawColor(&color_prog, &P, &MV, camera);
+                MV.popMatrix();
+            }
+
             // Force the driver to draw onto the buffer
             glFlush();
             glFinish();
@@ -688,6 +714,19 @@ int main(void)
                     if (ptr->id == pickedID) {
                         ptr->selected = true;
                         logic->notifySelect(ptr);
+                    }
+                    else {
+                        ptr->selected = false;
+                    }
+                }
+
+                std::vector<Entity*> &ents = pattern->getEntities();
+                for (auto it = ents.begin(); it != ents.end(); it++) {
+                    Entity *ptr = *it;
+//                    LOG(ptr->getName());
+                    if (ptr->id == pickedID) {
+                        ptr->selected = true;
+                        pattern->notifySelect(ptr);
                     }
                     else {
                         ptr->selected = false;
@@ -782,6 +821,16 @@ int main(void)
         draw_text(*window);
 
         logic->draw(&prog, &P, &MV, camera, &text, window);
+
+        if (camera == fp_camera) {
+            Eigen::Vector3f campos = -camera->translations;
+            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
+            pattern->notifyPosition(col_row(col, row));
+        }
+        
+        //LOG("pattern->draw()");
+        pattern->draw(&prog, &P, &MV, camera, &text, window);
+        //LOG("after pattern->draw()");
 
 
         if (camera == fp_camera) {
@@ -976,7 +1025,8 @@ int main(void)
         static int delay_talk = 200;
         static int begin_talk = 200; 
 
-        if (success_puzzle_lava && !end_flag && logic->getSuccess()) {
+        if (success_puzzle_lava && !end_flag &&
+            pattern->getSuccess() && logic->getSuccess()) {
             if (delay_talk > 0) {
                 --delay_talk;
             }
