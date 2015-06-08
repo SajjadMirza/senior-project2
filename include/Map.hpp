@@ -19,7 +19,8 @@ enum CellType {
     GOAL,
     PUZZLE_FLOOR,
     START,
-    HOLE
+    HOLE,
+    END
  };
 
 struct MapCell {
