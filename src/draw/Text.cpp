@@ -83,18 +83,26 @@ namespace draw {
 	    cplus_str = convert.str();
 	    cn_str = cplus_str.c_str();
 
-	    if (sx + x_s + str_size * .07 > 1) {
+	    /*if (sx + x_s + str_size * .07 > 1) {
 	    	renderText(cn_str, sx + x_s - .5 * str_size * .07, sy + y_s, sx, sy);
 	    }
-	    else {   
-	    	renderText(cn_str, sx + x_s, sy + y_s, sx, sy);
-	    } 
+	    else {   */
+    	renderText(cn_str, sx + x_s, sy + y_s, sx, sy);
+	    //} 
 
 		glUniform1i(prog.getUniform("uTextToggle"), 0);
 	}
 
 	void Text::renderText(const char *text, float x, float y, float sx, float sy) {
+		float orig_x = x;
+		float advancer = g->advance.x >> 6;
+
 	    for(const char *p = text; *p; p++) {
+	    	if (*p == '\n') {
+	    		y -= (advancer)/75.0f;
+	    		x = orig_x;
+	    		continue;
+	    	}
 	        if(FT_Load_Char(face, *p, FT_LOAD_RENDER))
 	            continue;
 	 
@@ -124,7 +132,7 @@ namespace draw {
 	     
 	        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
 	        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	     
+
 	        x += (g->advance.x >> 6) * sx;
 	        y += (g->advance.y >> 6) * sy;
 	    }

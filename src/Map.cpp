@@ -6,6 +6,10 @@
 const char hallway_marker = '#';
 const char empty_marker = ' ';
 const char sentinel = '.';
+const char goal = 'G';
+const char puzzle_floor = 'g';
+const char start = 'S';
+const char hole = 'H';
 
 MapCell::MapCell() : type(EMPTY) {
 }
@@ -27,32 +31,36 @@ void Map::initWalls() {
     for (int col = 0; col < columns; col++) {
         for (int row = 0; row < rows; row++) {
             MapCell &current = grid[col][row];
-            if (current.type == HALLWAY) {
+            if (current.type != EMPTY) {
                 continue;
             }
             
             if (col != 0) {
                 MapCell &left = grid[col-1][row];
-                if (left.type == HALLWAY) {
+                if (left.type != EMPTY && left.type != WALL) {
                     current.type = WALL;
+                    current.name = "WALL";
                 }
             }
             if (row != 0) {
                 MapCell &up = grid[col][row-1];
-                if (up.type == HALLWAY) {
+                if (up.type != EMPTY && up.type != WALL) {
                     current.type = WALL;
+                    current.name = "WALL";
                 }
             }
             if (col != columns - 1) {
                 MapCell &right = grid[col+1][row];
-                if (right.type == HALLWAY) {
+                if (right.type != EMPTY && right.type != WALL) {
                     current.type = WALL;
+                    current.name = "WALL";
                 }
             }
             if (row != rows - 1) {
                 MapCell &down = grid[col][row+1];
-                if (down.type == HALLWAY) {
+                if (down.type != EMPTY && down.type != WALL) {
                     current.type = WALL;
+                    current.name = "WALL";
                 }
             }
         }
@@ -79,6 +87,23 @@ int Map::loadMapFromFile(std::string filename) {
             switch (line.at(col)) {
             case hallway_marker:
                 grid[col][row].type = HALLWAY;
+                grid[col][row].name = "HALLWAY";
+                break;
+            case goal:
+                grid[col][row].type = GOAL;
+                grid[col][row].name = "GOAL";
+                break;
+            case puzzle_floor:
+                grid[col][row].type = PUZZLE_FLOOR;
+                grid[col][row].name = "PUZZLE_FLOOR";
+                break;
+             case start:
+                grid[col][row].type = START;
+                grid[col][row].name = "START";
+                break;
+            case hole:
+                grid[col][row].type = HOLE;
+                grid[col][row].name = "HOLE";
                 break;
             case empty_marker:
                 break;

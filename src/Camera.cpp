@@ -6,7 +6,8 @@ Camera::Camera() :
     znear(0.1f),
     zfar(1000.0f),
     rotations(0.0, 0.0),
-    translations(-4.0f, -0.7f, -27.0f),
+    // translations(-4.0f, -0.7f, -27.0f),
+    translations(-27.0f, -0.7f, -14.0f),
     rfactor(0.005f),
     tfactor(0.05f),
     sfactor(0.005f),
@@ -107,6 +108,7 @@ void Camera::move(char c, const std::vector<Entity> &entities,
 
     if (col >= 0 && row >= 0) {
         Neighbors neighbors = map.getNearbyWalls(col, row);
+
         bool reset_x = false, reset_z = false;
         
         if ((neighbors.up && this->collides(*neighbors.up)) ||
