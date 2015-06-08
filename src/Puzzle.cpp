@@ -4,7 +4,7 @@
 
 
 const int num_logic_puzzle_statues = 3;
-const int logic_correct_statue = 0;
+const int logic_correct_statue = 1;
 
 // Adjacent string literals are concatenated by the compiler
 const char *logic_puzzle_hints[] = {
@@ -164,7 +164,7 @@ void LogicPuzzle::notifyKey(char c) {
         }
         else {
             info = "Sorry, you picked the wrong statue, try again!\n";
-            display_text = false;
+            display_text = true;
             return;
         }
     }

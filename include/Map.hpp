@@ -16,9 +16,14 @@ enum CellType {
     HALLWAY,
     WALL,
     EMPTY,
+    GOAL,
+    PUZZLE_FLOOR,
+    START,
+    HOLE
  };
 
 struct MapCell {
+    std::string name;
     CellType type;
     std::shared_ptr<Entity> component;
     MapCell();

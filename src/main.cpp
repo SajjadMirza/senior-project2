@@ -19,6 +19,7 @@
 #include <utility>
 
 draw::Text text("testfont.ttf", 24);
+draw::Text text_lava("testfont_3.ttf", 18);
 
 /* globals */
 Camera * camera;
@@ -29,7 +30,10 @@ Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
 std::shared_ptr<Puzzle> logic;
 PuzzleFactory puzzle_factory;
 
+bool success_puzzle_lava = false;
+
 bool highlight = false;
+bool highlight_l = false;
 
 /* FPS counter */
 double lastTime = glfwGetTime();
@@ -44,6 +48,8 @@ const uint init_h = 480;
 
 const uint map_cols = 45;
 const uint map_rows = 45;
+
+ModelConfig config_lava;    
 
 float deg_to_rad(float deg) {
     float rad = (M_PI / 180.0f) * deg;
@@ -141,6 +147,12 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     switch (key) {
+    case GLFW_KEY_G:
+        logic->notifyKey('G');
+        break;
+    case GLFW_KEY_F:
+        logic->notifyKey('F');
+        break;
     case GLFW_KEY_LEFT_SHIFT:
     case GLFW_KEY_RIGHT_SHIFT:
         if (action == GLFW_RELEASE) {
@@ -291,6 +303,7 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, Ma
                 std::unique_ptr<Entity> temp(new Entity(drawable));
                 cell.component = std::move(temp); // constructor
                 Entity &e = *cell.component.get();
+                e.setName(cell.name);
                 e.setCenter(Eigen::Vector3f(0,0,0));
                 e.setRadius(0);
                 e.setPosition(pos);
@@ -303,16 +316,60 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, Ma
     }
 }
 
+static void make_hole(const ModelConfig &config, MapCell &map, int i, int j) {
+    draw::Drawable *drawable = new draw::Drawable(config);
+
+    Eigen::Vector3f pos(0,0,0);
+
+    if (config.transforms.xpos != 0.0f) {
+        pos(0) = config.transforms.xpos;
+    }
+
+    if (config.transforms.ypos != 0.0f) {
+        pos(1) = config.transforms.ypos;
+    }
+
+    if (config.transforms.zpos != 0.0f) {
+        pos(2) = config.transforms.zpos;
+    }
+
+    MapCell &cell = map;
+    cell.type = HOLE;
+    Entity &e = *cell.component.get();
+    e.clearDrawable();
+    e.attachDrawable(drawable);
+    e.setName("HOLE");
+    e.setCenter(Eigen::Vector3f(0,0,0));
+    e.setRadius(0);
+    e.setPosition(pos);
+    e.move(Eigen::Vector3f(i, 0, j));
+    e.generateBoundingBox();
+    e.setUseBoundingBox(true);
+}
+
 static void init_floors(std::vector<Entity*> *floors, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
     gen_cubes(floors, config, map, HALLWAY);
+
+    ModelConfig config_f;
+    resource::load_config(&config_f, "resources/skull.yaml");
+
+    gen_cubes(floors, config_f, map, PUZZLE_FLOOR);
+    gen_cubes(floors, config_f, map, START);
+
+    ModelConfig config_g;
+    resource::load_config(&config_g, "resources/goal.yaml");
+    gen_cubes(floors, config_g, map, GOAL);
 }
 
 static void init_walls(std::vector<Entity*> *walls, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
+
+    resource::load_config(&config_lava, "resources/lava.yaml");
+    gen_cubes(walls, config_lava, map, HOLE);
 }
 
 static void init_entities(std::vector<Entity> *entities) {
@@ -644,11 +701,6 @@ int main(void)
 
         logic->draw(&prog, &P, &MV, camera, &text, window);
 
-        // Unbind the program
-        prog.unbind();
-
-        MV.popMatrix();
-        P.popMatrix();
 
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
@@ -662,14 +714,183 @@ int main(void)
 
             MapCell& ref = map.get(col, row);
 
+            static bool enter_game = false;
+            static int last_col = 0;
+            static int last_row = 0; 
+            static char ch;
+            static int end_game_counter = 0;
+            static bool talk_fail = false;
+            static bool talk_neutral = false;
+            static bool talk_success = false;
+            static int talk_counter_1 = 200;
+            static int talk_counter_2 = 200;
+            static int talk_counter_3 = 200;
+
+
+            static int counter = 0;
+
+            if (ref.type == START && enter_game == false) {
+                MapCell& ref_2 = map.get(col -1, row);
+
+                talk_counter_1 = 200;
+                talk_counter_2 = 200;
+                talk_counter_3 = 200;
+                talk_fail = false;
+                talk_neutral = false;
+                talk_success = false;
+
+                ref_2.type = WALL;
+                ref_2.name = "WALL";
+
+                counter = 5;
+
+                floors.clear();
+                walls.clear();
+                init_floors(&floors, map);
+                init_walls(&walls, map);
+
+                highlight_l = true;
+                enter_game = true;
+                last_col = col;
+                last_row = row;
+
+                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                    ch = 'w';
+                }
+                if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                    ch = 'a';
+                }
+                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                    ch = 's';
+                }  
+                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                    ch = 'd';
+                }
+            }
+
+            if (enter_game && !success_puzzle_lava) {
+                if (end_game_counter < 4) {
+                    std::ostringstream convert; 
+                    convert << "Get to the goal(penguin) and also step on each and every tile\n that isn't lava.\n";
+                    convert << "Beware, once you leave a tile, you can't go back!!!!!!!";
+                    text_lava.draw(prog, *window, convert.str(), -0.9f, 0.7f);
+                }
+
+                if (highlight_l) {
+                    if (last_col != col || last_row != row) {
+                        MapCell& ref_2 = map.get(last_col, last_row);
+                        //ref_2.component->selected = true;
+
+                        //counter = 3;
+                        ++end_game_counter;
+                        std::cout << end_game_counter << std::endl;
+
+                        make_hole(config_lava, ref_2, last_col, last_row);
+
+                        last_col = col;
+                        last_row = row;
+
+                        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                            ch = 'w';
+                        }
+                        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                            ch = 'a';
+                        }
+                        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                            ch = 's';
+                        }  
+                        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                            ch = 'd';
+                        }
+                    }
+                }
+
+                if (end_game_counter == 64 && ref.type == GOAL) {
+                    std::cout << "SUCCESS\n";
+                    camera->translations = Eigen::Vector3f(-27.0f, -0.7f, -14.0f);
+                    highlight_l = false;
+
+                    talk_success = true;
+
+                    success_puzzle_lava = true;
+                }
+                else if (ref.type == HOLE || ref.type == GOAL) {
+                    std::cout << "GAME OVER: FATALITY\n";
+
+                    if (ref.type == GOAL) {
+                        talk_neutral = true;
+                    }
+                    else {
+                        talk_fail = true; 
+                    }
+
+                    camera->translations = Eigen::Vector3f(-27.0f, -0.7f, -14.0f);
+                    enter_game = false;
+                    highlight_l = false;
+                    end_game_counter = 0;
+
+                    Map map_t(map_cols, map_rows);
+                    map_t.loadMapFromFile("resources/maps/our_map.txt");
+                    floors.clear();
+                    walls.clear();
+                    init_floors(&floors, map_t);
+                    init_walls(&walls, map_t);
+                    map = map_t;
+                }
+            }
+
+            if (talk_success) {
+                --talk_counter_1;
+                std::ostringstream convert; 
+                convert << "Well done";
+                text_lava.draw(prog, *window, convert.str(), -0.9f, 0.7f);
+                if (talk_counter_1 == 0) {
+                    talk_counter_1 = 200;
+                    talk_success = !talk_success;
+                }
+            }
+            else if (talk_neutral && !enter_game) {
+                --talk_counter_2;
+                std::ostringstream convert; 
+                convert << "You didn't step on each tile before standing on the goal\n Try again.";
+                text_lava.draw(prog, *window, convert.str(), -0.9f, 0.7f);
+                if (talk_counter_2 == 0) {
+                    talk_counter_2 = 200;
+                    talk_neutral = !talk_neutral;
+                }
+            }
+            else if (talk_fail && !enter_game) {
+                --talk_counter_3;
+                std::ostringstream convert; 
+                convert << "You fell in lava. Try again.";
+                text_lava.draw(prog, *window, convert.str(), -0.9f, 0.7f);
+                if (talk_counter_3 == 0) {
+                    talk_counter_3 = 200;
+                    talk_fail = !talk_fail;
+                }
+            }
+
             if (highlight) {
                 ref.component->selected = true;
             }
-            bufferMovement(window, entities, map, col, row);
+
+            if (counter != 0) {
+                --counter;
+                camera->move(ch, entities, map, col+1, row+1);
+            }
+            else {
+                bufferMovement(window, entities, map, col, row);
+            }
         }
         else {
             bufferMovement(window, entities, map, -1, -1);
         }
+
+        // Unbind the program
+        prog.unbind();
+
+        MV.popMatrix();
+        P.popMatrix();
 
         findFPS();        
 
