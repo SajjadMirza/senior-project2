@@ -31,7 +31,7 @@ Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
 std::shared_ptr<Puzzle> logic;
 PuzzleFactory puzzle_factory;
 
-bool success_puzzle_lava = false;
+bool success_puzzle_lava = true;
 bool end_flag = false;
 
 bool highlight = false;
@@ -808,7 +808,8 @@ int main(void)
             static int counter = 0;
 
             if (ref.type == END && end_flag == true) {
-
+                std::cout << "YOU WON!!!!" << std::endl;
+                exit(1);
             }
 
             if (ref.type == START && enter_game == false) {
