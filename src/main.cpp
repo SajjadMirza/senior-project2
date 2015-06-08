@@ -31,7 +31,7 @@ Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
 std::shared_ptr<Puzzle> logic;
 PuzzleFactory puzzle_factory;
 
-bool success_puzzle_lava = true;
+bool success_puzzle_lava = false;
 bool end_flag = false;
 
 bool highlight = false;
@@ -626,7 +626,9 @@ int main(void)
 
                 glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
                                    MV.topMatrix().data());
-                it->getDrawable().drawColor(&color_prog, &P, &MV, camera);
+                if (it->getName() != "player") {
+                    it->getDrawable().drawColor(&color_prog, &P, &MV, camera);
+                }
                 MV.popMatrix();
             }
             
@@ -662,7 +664,9 @@ int main(void)
             unsigned char data[4];
             int x = std::floor(selection_coords(0)),
                 y = std::floor(selection_coords(1));
-            glReadPixels(x,y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glReadPixels(x,height - y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                // std::cout << std::hex << "(" << (int)data[0] << ", " << (int)data[1] << ", " << (int)data[2] << ")" <<std::endl;
+
             uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
             std::cout << "picked: " << pickedID << std::endl;
 
@@ -972,7 +976,7 @@ int main(void)
         static int delay_talk = 200;
         static int begin_talk = 200; 
 
-        if (success_puzzle_lava && !end_flag) {
+        if (success_puzzle_lava && !end_flag && logic->getSuccess()) {
             if (delay_talk > 0) {
                 --delay_talk;
             }
