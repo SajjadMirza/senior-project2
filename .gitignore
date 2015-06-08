@@ -15,5 +15,7 @@ tmp/*
 *.pdf
 
 resources/models/sf_house/*
+resources/models/bunny/*
+resources/models/statue/*
 
 .idea/*
