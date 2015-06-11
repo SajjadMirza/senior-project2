@@ -27,7 +27,7 @@ Camera * camera;
 Camera *fp_camera = new Camera();
 OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
-Eigen::Vector3f light_pos(0.0, 3.0, 0.0);
+Eigen::Vector3f light_pos(0.0, 1.0, 0.0);
 std::shared_ptr<Puzzle> logic;
 std::shared_ptr<PatternPuzzle> pattern;
 PuzzleFactory puzzle_factory;
@@ -152,6 +152,7 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     switch (key) {
     case GLFW_KEY_G:
         logic->notifyKey('G');
+        pattern->notifyKey('G');
         break;
     case GLFW_KEY_F:
         logic->notifyKey('F');

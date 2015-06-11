@@ -77,6 +77,7 @@ class PatternPuzzle : public Puzzle {
     std::vector<Entity*> correct_order;
     bool active;
     double start_time;
+    bool display_text;
 public:
     void notifyPosition(ColRow pos);
     void notifySelect(Entity *selected_entity);

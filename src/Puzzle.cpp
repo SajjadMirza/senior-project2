@@ -267,6 +267,7 @@ void PatternPuzzle::notifySelect(Entity *selected_entity) {
             setSuccess(true);
             deactivate();
             LOG("Beat the pattern puzzle");
+            display_text = true;
         }
     }
     else {
@@ -276,6 +277,10 @@ void PatternPuzzle::notifySelect(Entity *selected_entity) {
 
 void PatternPuzzle::draw(Program *prog, MatrixStack *P, MatrixStack *MV,
                          Camera *cam, draw::Text *text, GLFWwindow *window) {
+    if (getSuccess() && display_text) {
+        text->draw(*prog, *window, "You have successfully beaten the pattern puzzle", 0, 0);
+    }
+
     if (isActive()) {
         double time = glfwGetTime();
         double dtime = time - start_time;
@@ -284,13 +289,13 @@ void PatternPuzzle::draw(Program *prog, MatrixStack *P, MatrixStack *MV,
         if (dtime < 5.0f) {
             // do nothing
         }
-        else if (dtime < 10.0f) {
+        else if (dtime < 8.0f) {
             highlight_entity = 0;
         }
-        else if (dtime < 15.0f) {
+        else if (dtime < 11.0f) {
             highlight_entity = 1;
         }
-        else if (dtime < 20.0f) {
+        else if (dtime < 14.0f) {
             highlight_entity = 2;
         }
         else {
@@ -356,6 +361,9 @@ void PathingPuzzle::notifySelect(Entity *selected_entity) {
 }
 
 void PatternPuzzle::notifyKey(char c) {
+    if (c == 'g' || c == 'G') {
+        display_text = false;
+    }
 }
 
 void PathingPuzzle::notifyKey(char c) {
