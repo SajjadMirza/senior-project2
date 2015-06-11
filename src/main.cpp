@@ -27,7 +27,7 @@ Camera * camera;
 Camera *fp_camera = new Camera();
 OverviewCamera *ov_camera = new OverviewCamera();
 draw::DrawableMap drawable_map;
-Eigen::Vector3f light_pos(0.0, 1.0, 0.0);
+Eigen::Vector3f light_pos(30.0, 7.0, 30.0);
 std::shared_ptr<Puzzle> logic;
 std::shared_ptr<PatternPuzzle> pattern;
 PuzzleFactory puzzle_factory;
@@ -850,8 +850,8 @@ int main(void)
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
 
-            light_pos(0) = campos(0);
-            light_pos(2) = campos(2);
+//            light_pos(0) = campos(0);
+//            light_pos(2) = campos(2);
 
 //            std::cout << col << " " << row << std::endl;
 //            std::cout << campos(0) << " " << campos(2) << std::endl;
