@@ -48,6 +48,8 @@ Program prog;
 Program color_prog;
 const uint init_w = 640;
 const uint init_h = 480;
+uint new_w = init_w;
+uint new_h = init_h;
 
 const uint map_cols = 45;
 const uint map_rows = 45;
@@ -110,6 +112,8 @@ static void resize_window(GLFWwindow *window, int w, int h) {
     glViewport(0, 0, w, h);
     // set the camera aspect ratio
     camera->setAspect((float)w / (float)h);
+    new_w = w;
+    new_h = h;
 }
 
 static Eigen::Vector3f selection_coords;
@@ -173,9 +177,11 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
         if (action == GLFW_RELEASE) {
             if (camera == fp_camera) {
                 camera = ov_camera;
+                camera->setAspect((float)new_w / (float)new_h);
             }
             else {
                 camera = fp_camera;
+                camera->setAspect((float)new_w / (float)new_h);
             }
         }
         break;
