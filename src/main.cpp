@@ -17,6 +17,7 @@
 #include <Map.hpp>
 #include <memory>
 #include <utility>
+#include <Gbuffer.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -542,7 +543,6 @@ int main(void)
 {
     GLFWwindow* window;
     sound::FMODDriver sound_driver;
-    
 
     camera = fp_camera;
 
@@ -604,6 +604,8 @@ int main(void)
 
     ulong num_collisions = 0;
 
+    Gbuffer gbuffer;
+
     while (!glfwWindowShouldClose(window)) {
         float ratio;
         int width, height;
@@ -623,141 +625,6 @@ int main(void)
         camera->applyProjectionMatrix(&P);
         MV.pushMatrix();
         camera->applyViewMatrix(&MV);
-
-        if (selection_flag) {
-            std::cout << "selection flag set" << std::endl;
-            /* Beginning color picking program */
-            color_prog.bind();
-
-            glUniformMatrix4fv(color_prog.getUniform("P"), 1, GL_FALSE,
-                               P.topMatrix().data());
-
-            for (auto it = entities.begin(); it != entities.end(); it++) {
-                MV.pushMatrix();
-                MV.multMatrix(it->getRotation());
-                MV.worldTranslate(it->getPosition(), it->getRotation());
-                MV.scale(0.5f);
-                Eigen::Vector3f entity_color;
-                uint id = it->id;
-                entity_color(0) = (id & 0xFF);
-                entity_color(1) = (id & 0xFF00) >> 8;
-                entity_color(2) = (id & 0xFF0000) >> 16;
-                entity_color = entity_color / 255.0f;
-                glUniform3fv(color_prog.getUniform("uColor"), 1,
-                             entity_color.data());
-
-                glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
-                                   MV.topMatrix().data());
-                if (it->getName() != "player") {
-                    it->getDrawable().drawColor(&color_prog, &P, &MV, camera);
-                }
-                MV.popMatrix();
-            }
-            
-            std::vector<Entity*> &logic_ents = logic->getEntities();
-            for (auto it = logic_ents.begin(); it != logic_ents.end(); it++) {
-
-                Entity *ptr = *it;
-                MV.pushMatrix();
-                MV.multMatrix(ptr->getRotation());
-                MV.worldTranslate(ptr->getPosition(), ptr->getRotation());
-                MV.scale(0.005f);
-                Eigen::Vector3f entity_color;
-                uint id = ptr->id;
-                LOG("drawing logic entity colorpicker " << id);
-                entity_color(0) = (id & 0xFF);
-                entity_color(1) = (id & 0xFF00) >> 8;
-                entity_color(2) = (id & 0xFF0000) >> 16;
-                entity_color = entity_color / 255.0f;
-                glUniform3fv(color_prog.getUniform("uColor"), 1,
-                             entity_color.data());
-                glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
-                                   MV.topMatrix().data());
-                ptr->getDrawable().drawColor(&color_prog, &P, &MV, camera);
-                MV.popMatrix();
-            }
-
-            std::vector<Entity*> &ents = pattern->getEntities();
-            for (auto it = ents.begin(); it != ents.end(); it++) {
-                Entity *ptr = *it;
-
-                MV.pushMatrix();
-                MV.multMatrix(ptr->getRotation());
-                MV.worldTranslate(ptr->getPosition(), ptr->getRotation());
-                MV.scale(0.001f);
-                Eigen::Vector3f entity_color;
-                uint id = ptr->id;
-                LOG("drawing pattern entity colorpicker " << id);
-                entity_color(0) = (id & 0xFF);
-                entity_color(1) = (id & 0xFF00) >> 8;
-                entity_color(2) = (id & 0xFF0000) >> 16;
-                entity_color = entity_color / 255.0f;
-                glUniform3fv(color_prog.getUniform("uColor"), 1,
-                             entity_color.data());
-                glUniformMatrix4fv(color_prog.getUniform("MV"), 1, GL_FALSE,
-                                   MV.topMatrix().data());
-                ptr->getDrawable().drawColor(&color_prog, &P, &MV, camera);
-                MV.popMatrix();
-            }
-
-            // Force the driver to draw onto the buffer
-            glFlush();
-            glFinish();
-
-            // Read the desired pixel from the buffer
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            unsigned char data[4];
-            int x = std::floor(selection_coords(0)),
-                y = std::floor(selection_coords(1));
-            glReadPixels(x,height - y, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                // std::cout << std::hex << "(" << (int)data[0] << ", " << (int)data[1] << ", " << (int)data[2] << ")" <<std::endl;
-
-            uint pickedID = data[0] + 256 * data[1] + 256*256 * data[2];
-            std::cout << "picked: " << pickedID << std::endl;
-
-            if (pickedID > 0) {
-                for (auto it = entities.begin(); it != entities.end(); it++) {
-                    LOG(it->getName());
-                    if (it->id == pickedID) {
-                        it->selected = true;
-                    }
-                    else {
-                        it->selected = false;
-                    }
-                }
-                
-                std::vector<Entity*> &logic_ents = logic->getEntities();
-                for (auto it = logic_ents.begin(); it != logic_ents.end(); it++) {
-                    Entity *ptr = *it;
-                    LOG(ptr->getName());
-                    if (ptr->id == pickedID) {
-                        ptr->selected = true;
-                        logic->notifySelect(ptr);
-                    }
-                    else {
-                        ptr->selected = false;
-                    }
-                }
-
-                std::vector<Entity*> &ents = pattern->getEntities();
-                for (auto it = ents.begin(); it != ents.end(); it++) {
-                    Entity *ptr = *it;
-//                    LOG(ptr->getName());
-                    if (ptr->id == pickedID) {
-                        ptr->selected = true;
-                        pattern->notifySelect(ptr);
-                    }
-                    else {
-                        ptr->selected = false;
-                    }
-                }
-            }
-            
-            color_prog.unbind();
-            selection_flag = false;
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        }
-
 
         /* Beginning main render path */
         prog.bind();
@@ -838,7 +705,7 @@ int main(void)
         glUniform1i(prog.getUniform("uRedder"), 0);
 
         draw_text(*window);
-
+#if 0
         logic->draw(&prog, &P, &MV, camera, &text, window);
 
         if (camera == fp_camera) {
@@ -851,7 +718,7 @@ int main(void)
         pattern->draw(&prog, &P, &MV, camera, &text, window);
         //LOG("after pattern->draw()");
 
-
+#endif
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
