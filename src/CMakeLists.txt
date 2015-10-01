@@ -1,6 +1,6 @@
 # src
 
-file(GLOB MAIN_SRC "*.cpp")
+file(GLOB MAIN_SRC *.cpp *.cc)
 
 add_executable(myapp ${MAIN_SRC})
 

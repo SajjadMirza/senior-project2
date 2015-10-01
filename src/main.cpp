@@ -1,7 +1,9 @@
+// Config defines
+#define USE_DEFERRED 0
+
 #include <common.hpp>
 
 #include <cmath>
-
 
 // Internal headers
 #include <draw/Drawable.hpp>
@@ -47,6 +49,7 @@ int nbFrames = 0;
 // TEMP ON DRAWING GPU
 Program prog;
 Program color_prog;
+Program deferred_geom_prog;
 const uint init_w = 640;
 const uint init_h = 480;
 uint new_w = init_w;
@@ -241,6 +244,8 @@ draw::Drawable *import_drawable(std::string file_name) {
 }
 
 static void init_gl() {
+    printf("%s\n", glGetString(GL_VERSION));
+    
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glEnable(GL_DEPTH_TEST);
 
@@ -273,6 +278,10 @@ static void init_gl() {
     color_prog.addUniform("P");
     color_prog.addUniform("MV");
     color_prog.addUniform("uColor");
+
+    deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
+                                      header + "deferred_geometry_frag.glsl");
+    deferred_geom_prog.init();
 
     GLSL::checkVersion();
 }
@@ -612,9 +621,12 @@ int main(void)
 
         glfwGetFramebufferSize(window, &width, &height);
 
-        
+#if USE_DEERRED
+        gbuffer.init(width, height);
+#endif        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if !USE_DEFERRED
         // P is the projection matrix
         // MV is the model-view matrix
         MatrixStack P, MV;
@@ -668,6 +680,7 @@ int main(void)
         }
         glUniform1i(prog.getUniform("uRedder"), 0);
 
+
         for (auto it = floors.begin(); it != floors.end(); it++) {
             if ((*it)->selected == true) {
                 glUniform1i(prog.getUniform("uRedder"), 1);
@@ -685,6 +698,7 @@ int main(void)
             MV.popMatrix();
         }
         glUniform1i(prog.getUniform("uRedder"), 0);
+
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
             if ((*it)->selected == true) {
@@ -705,7 +719,7 @@ int main(void)
         glUniform1i(prog.getUniform("uRedder"), 0);
 
         draw_text(*window);
-#if 0
+
         logic->draw(&prog, &P, &MV, camera, &text, window);
 
         if (camera == fp_camera) {
@@ -717,7 +731,27 @@ int main(void)
         //LOG("pattern->draw()");
         pattern->draw(&prog, &P, &MV, camera, &text, window);
         //LOG("after pattern->draw()");
-
+#else
+        // Deferred shading code
+        MatrixStack P, M, V;
+        P.pushMatrix();
+        camera->applyProjectionMatrix(&P);
+        V.pushMatrix();
+        camera->applyViewMatrix(&V);
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        
+        // Geometry pass
+        deferred_geom_prog.bind();
+        gbuffer.bind();
+        
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUniformMatrix4fv(deferred_geom_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+        glUniformMatrix4fv(deferred_geom_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+        
+        // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        
+        gbuffer.unbind();
 #endif
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
@@ -738,8 +772,10 @@ int main(void)
         // Unbind the program
         prog.unbind();
 
+#if USE_DEFERRED
         MV.popMatrix();
         P.popMatrix();
+#endif
 
         findFPS();        
 

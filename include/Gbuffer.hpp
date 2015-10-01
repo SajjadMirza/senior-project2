@@ -1,6 +1,7 @@
 #ifndef _GBUFFER_H
 #define _GBUFFER_H
 
+#define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
 #include <types.h>
 
@@ -17,6 +18,8 @@ class Gbuffer {
 public:
 
     bool init(uint width, uint height);
+    void bind();
+    void unbind();
 };
 
 #endif
