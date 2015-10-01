@@ -36,10 +36,7 @@
 #include <constants.hpp>
 
 // type declarations
-typedef unsigned int uint;
-typedef unsigned long ulong;
-typedef unsigned char uchar;
-
+#include <types.h>
 
 /* Internal headers. */
 
@@ -47,7 +44,7 @@ typedef unsigned char uchar;
 #include <GLSL.hpp>
 #include <Program.hpp>
 
+#include <log.hpp>
 
-#define LOG(x) (std::cout << __FILE__ << ":" << __LINE__ << " " << x << std::endl)
 
 #endif
