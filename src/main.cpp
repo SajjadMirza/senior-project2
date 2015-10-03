@@ -49,7 +49,9 @@ int nbFrames = 0;
 // TEMP ON DRAWING GPU
 Program prog;
 Program color_prog;
+#if USE_DEFERRED
 Program deferred_geom_prog;
+#endif
 const uint init_w = 640;
 const uint init_h = 480;
 uint new_w = init_w;
@@ -279,10 +281,11 @@ static void init_gl() {
     color_prog.addUniform("MV");
     color_prog.addUniform("uColor");
 
+#if USE_DEFERRED
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
     deferred_geom_prog.init();
-
+#endif
     GLSL::checkVersion();
 }
 
