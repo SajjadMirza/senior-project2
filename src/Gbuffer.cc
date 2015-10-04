@@ -48,6 +48,7 @@ bool Gbuffer::init(uint width, uint height)
     // - Finally check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         ERROR("FRAMEBUFFER PROBLEM!!!");
+        exit(1);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -1,5 +1,5 @@
 // Config defines
-#define USE_DEFERRED 0
+#define USE_DEFERRED 1
 
 #include <common.hpp>
 
@@ -285,6 +285,16 @@ static void init_gl() {
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
     deferred_geom_prog.init();
+    deferred_geom_prog.addAttribute("vertPos");
+    deferred_geom_prog.addAttribute("vertNor");
+    deferred_geom_prog.addAttribute("vertTex");
+    deferred_geom_prog.addUniform("M");
+    deferred_geom_prog.addUniform("V");
+    deferred_geom_prog.addUniform("P");
+    deferred_geom_prog.addUniform("uLightPos");
+    deferred_geom_prog.addUniform("uNormFlag");
+    deferred_geom_prog.addUniform("texture0");
+    deferred_geom_prog.addUniform("texture_norm");
 #endif
     GLSL::checkVersion();
 }
@@ -734,6 +744,10 @@ int main(void)
         //LOG("pattern->draw()");
         pattern->draw(&prog, &P, &MV, camera, &text, window);
         //LOG("after pattern->draw()");
+        
+        // Unbind the program
+        prog.unbind();
+
 #else
         // Deferred shading code
         MatrixStack P, M, V;
@@ -751,10 +765,39 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUniformMatrix4fv(deferred_geom_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(deferred_geom_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+        glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
+        glUniform1i(prog.getUniform("uNormFlag"), 0);
+
+        for (auto it = entities.begin(); it != entities.end(); it++) {
+//            LOG("ENTITY: " << it->getName());
+            M.pushMatrix();
+            M.multMatrix(it->getRotation());
+            M.worldTranslate(it->getPosition(), it->getRotation());
+            M.scale(0.5f);
+            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
+                               M.topMatrix().data());
+            it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+            M.popMatrix();
+        }
+
+        for (auto it = walls.begin(); it != walls.end(); it++) {
+            Entity *wall = *it;
+            M.pushMatrix();
+            M.worldTranslate(wall->getPosition(), wall->getRotation());
+            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
+                               M.topMatrix().data());
+            wall->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+            M.popMatrix();
+        }
         
         // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         
         gbuffer.unbind();
+        deferred_geom_prog.unbind();
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            LOG("FRAMEBUFFER NOT COMPLETE");
+        }
 #endif
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
@@ -772,13 +815,14 @@ int main(void)
             bufferMovement(window, entities, map, -1, -1);
         }
 
-        // Unbind the program
-        prog.unbind();
 
 #if USE_DEFERRED
+        V.popMatrix();
+#else
         MV.popMatrix();
+#endif        
         P.popMatrix();
-#endif
+
 
         findFPS();        
 

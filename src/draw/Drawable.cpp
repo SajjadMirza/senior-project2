@@ -313,4 +313,41 @@ namespace draw {
         Shape *s = find_first(root);
         return s;
     }
+
+    static void draw_node_deferred(Node *current, Program *prog, MatrixStack *M, Camera *cam,
+                                   TextureBundle texs)
+    {
+        M->pushMatrix();
+        M->multMatrix(current->transform);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        
+        for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
+            if (texs.normal) {
+                glUniform1i(prog->getUniform("uNormFlag"), 1);
+                it->draw(prog->getAttribute("vertPos"),
+                         prog->getAttribute("vertNor"),
+                         prog->getAttribute("vertTex"),
+                         prog->getUniform("texture0"),
+                         prog->getUniform("texture_norm"));
+                glUniform1i(prog->getUniform("uNormFlag"), 0);
+            }
+            else {
+                it->draw(prog->getAttribute("vertPos"),
+                         prog->getAttribute("vertNor"),
+                         prog->getAttribute("vertTex"),
+                         prog->getUniform("texture0"));
+            }
+        }
+
+        for (auto it = current->children.begin(); it != current->children.end(); it++) {
+            draw_node_deferred(*it, prog, M, cam, texs);
+        }
+
+        M->popMatrix();
+    }
+
+    void Drawable::drawDeferred(Program *prog, MatrixStack *M, Camera *cam)
+    {
+        draw_node_deferred(root, prog, M, cam, texs);
+    }
 };

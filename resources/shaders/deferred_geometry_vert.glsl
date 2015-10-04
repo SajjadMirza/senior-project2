@@ -18,12 +18,12 @@ uniform vec3 uLightPos;
 void main()
 {
     vec4 worldPos = M * vec4(vertPos, 1.0f);
-    fragPos = worldPos.xyz;
+    fragPos = (V * worldPos).xyz;
     gl_Position = P * V * worldPos;
     fragTex = vertTex;
 
     mat3 normalMatrix = transpose(inverse(mat3(M)));
-    fragNor = normalMatrix * normal;
+    fragNor = normalMatrix * vertNor;
 
     vec4 light = M * vec4(uLightPos, 1.0f);
     lightPos = light.xyz;
