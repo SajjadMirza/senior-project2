@@ -307,6 +307,8 @@ static void init_gl() {
     deferred_geom_prog.addAttribute("vertPos");
     deferred_geom_prog.addAttribute("vertNor");
     deferred_geom_prog.addAttribute("vertTex");
+    deferred_geom_prog.addAttribute("tangent");
+    deferred_geom_prog.addAttribute("bitangent");
     deferred_geom_prog.addUniform("M");
     deferred_geom_prog.addUniform("V");
     deferred_geom_prog.addUniform("P");
@@ -314,11 +316,11 @@ static void init_gl() {
     deferred_geom_prog.addUniform("uNormFlag");
     deferred_geom_prog.addUniform("texture0");
     deferred_geom_prog.addUniform("texture_norm");
+    deferred_geom_prog.addUniform("uCalcTBN");
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
     gbuffer_debug_prog.init();
-
     gbuffer_debug_prog.addAttribute("vertPos");
     gbuffer_debug_prog.addAttribute("vertTex");
     gbuffer_debug_prog.addUniform("gPosition");

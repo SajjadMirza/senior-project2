@@ -17,11 +17,17 @@ namespace draw {
         GLuint tex_id_diffuse;
         GLuint tex_id_norm;
 
+        GLuint tan_buf;
+        GLuint bitan_buf;
+
     public:
         std::vector<float> vertices;
         std::vector<float> normals;
         std::vector<uint> indices;
         std::vector<float> uvs;
+
+        std::vector<float> tangents;
+        std::vector<float> bitangents;
        
         Shape();
         ~Shape();
@@ -32,6 +38,8 @@ namespace draw {
         void draw(int h_vert, int h_nor) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm) const;
+        void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm,
+                  int h_tan, int h_btan) const;
     };
 
 }

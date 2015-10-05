@@ -8,16 +8,17 @@ layout (location = 2) out vec4 gDiffuse;
 in vec3 fragPos;
 in vec3 fragNor;
 in vec2 fragTex;
+in mat3 TBN;
 
 uniform sampler2D texture0;
 uniform sampler2D texture_norm;
 uniform mat4 M;
 
 uniform int uNormFlag;
+uniform int uCalcTBN;
 
 void main()
 {    
-
     gPosition = fragPos;
 
     if (uNormFlag == 1) {
@@ -27,8 +28,12 @@ void main()
         gNormal = normalize(fragNor);
     }
 
-    gDiffuse.rgb = texture2D(texture0, fragTex).rgb;
+    if (uCalcTBN != 0) {
+        gNormal = normalize(gNormal * 2.0 - 1.0);
+        gNormal = normalize(TBN * gNormal);
+    }
 
+    gDiffuse.rgb = texture2D(texture0, fragTex).rgb;
 
 // ----------------------------
 /*

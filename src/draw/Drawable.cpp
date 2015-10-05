@@ -323,13 +323,17 @@ namespace draw {
         
         for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
             if (texs.normal) {
+                glUniform1i(prog->getUniform("uCalcTBN"), 1);
                 glUniform1i(prog->getUniform("uNormFlag"), 1);
                 it->draw(prog->getAttribute("vertPos"),
                          prog->getAttribute("vertNor"),
                          prog->getAttribute("vertTex"),
                          prog->getUniform("texture0"),
-                         prog->getUniform("texture_norm"));
+                         prog->getUniform("texture_norm"),
+                         prog->getAttribute("tangent"),
+                         prog->getAttribute("bitangent"));
                 glUniform1i(prog->getUniform("uNormFlag"), 0);
+                glUniform1i(prog->getUniform("uCalcTBN"), 0);
             }
             else {
                 it->draw(prog->getAttribute("vertPos"),
