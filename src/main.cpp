@@ -794,7 +794,7 @@ int main(void)
         glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
 
-#if 0
+#if 1
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
@@ -818,6 +818,17 @@ int main(void)
             M.popMatrix();
         }
         
+        for (auto it = floors.begin(); it != floors.end(); it++) {
+            Entity *floor = *it;
+            M.pushMatrix();
+            M.worldTranslate(floor->getPosition(), floor->getRotation());
+            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
+                               M.topMatrix().data());
+            floor->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+            M.popMatrix();
+        }
+        
+        
         // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 
         gbuffer.unbind();
@@ -827,7 +838,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         gbuffer.bindTextures();
 
-        glUniform1i(gbuffer_debug_prog.getUniform("gBufferMode"), 0);
+        glUniform1i(gbuffer_debug_prog.getUniform("gBufferMode"), 2);
         glUniform1i(gbuffer_debug_prog.getUniform("gPosition"), 0); // TEXTURE0
         glUniform1i(gbuffer_debug_prog.getUniform("gNormal"), 1); // TEXTURE1
         glUniform1i(gbuffer_debug_prog.getUniform("gDiffuse"), 2); // TEXTURE2

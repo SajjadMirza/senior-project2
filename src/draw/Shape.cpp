@@ -2,6 +2,8 @@
 
 #include <tuple>
 
+#define LOG_DRAW_CALLS 0
+
 extern int special_texture_handle;
 
 namespace draw {
@@ -146,14 +148,17 @@ namespace draw {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
-    static int logged = 0;
+
     void Shape::draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const {
-//        LOG("DRAW WITHOUT NORMAL MAP");
+#if LOG_DRAW_CALLS
+        static int logged = 0;
+        LOG("DRAW WITHOUT NORMAL MAP");
 //        if (!logged) {
             LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << "u_diffuse "
                 << u_diffuse);
             logged = 1;
 //        }
+#endif
         // Enable diffuse texture
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, tex_id_diffuse);
@@ -194,20 +199,20 @@ namespace draw {
 
 
     void Shape::draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm) const {
+#if LOG_DRAW_CALLS
         static int logged = 0;
-        if (!logged) {
+//        if (!logged) {
             LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
                 << u_diffuse << " u_norm " << u_norm);
             logged = 1;
-        }
+//        }
+#endif
 
 //        LOG("DRAW WITH NORMAL MAP");
         // Enable norm texture
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, tex_id_norm);
         glUniform1i(u_norm, 0);
-
-
 
         // Enable diffuse texture
         glActiveTexture(GL_TEXTURE0 + 1);

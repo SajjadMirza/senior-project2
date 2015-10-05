@@ -28,6 +28,6 @@ void main()
         break;
     }
     
-//    out_color = vec4(data, 1.0f);
+    out_color = vec4(data, 1.0f);
 //    out_color = vec4(fragTex, 0.0f, 1.0f);
 }
