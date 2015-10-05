@@ -20,6 +20,7 @@
 #include <memory>
 #include <utility>
 #include <Gbuffer.hpp>
+#include <draw/RenderCommands.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -49,8 +50,10 @@ int nbFrames = 0;
 // TEMP ON DRAWING GPU
 Program prog;
 Program color_prog;
+
 #if USE_DEFERRED
 Program deferred_geom_prog;
+Program gbuffer_debug_prog;
 #endif
 const uint init_w = 640;
 const uint init_h = 480;
@@ -61,6 +64,9 @@ const uint map_cols = 45;
 const uint map_rows = 45;
 
 ModelConfig config_lava;    
+
+int special_texture_handle = 0;
+
 
 float deg_to_rad(float deg) {
     float rad = (M_PI / 180.0f) * deg;
@@ -256,7 +262,7 @@ static void init_gl() {
 
     /* Sample Creating a Program */
     std::string header = "resources/shaders/";
-    
+#if !USE_DEFERRED
     prog.setShaderNames(header + "text_vert.glsl", header + "text_frag.glsl");
     prog.init();
     prog.addAttribute("vertPos");
@@ -280,7 +286,7 @@ static void init_gl() {
     color_prog.addUniform("P");
     color_prog.addUniform("MV");
     color_prog.addUniform("uColor");
-
+#endif
 #if USE_DEFERRED
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
@@ -295,6 +301,17 @@ static void init_gl() {
     deferred_geom_prog.addUniform("uNormFlag");
     deferred_geom_prog.addUniform("texture0");
     deferred_geom_prog.addUniform("texture_norm");
+
+    gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
+                                      header + "gbuffer_debug_frag.glsl");
+    gbuffer_debug_prog.init();
+
+    gbuffer_debug_prog.addAttribute("vertPos");
+    gbuffer_debug_prog.addAttribute("vertTex");
+    gbuffer_debug_prog.addUniform("gPosition");
+    gbuffer_debug_prog.addUniform("gNormal");
+    gbuffer_debug_prog.addUniform("gDiffuse");
+    gbuffer_debug_prog.addUniform("gBufferMode");
 #endif
     GLSL::checkVersion();
 }
@@ -488,6 +505,8 @@ static void init_walls(std::vector<Entity*> *walls, Map &map) {
     gen_cubes(walls, config_lava, map, HOLE);
 }
 
+
+
 static void init_entities(std::vector<Entity> *entities) {
     std::vector<ModelConfig> configs;
     resource::load_model_configs(&configs, model_config_file);
@@ -626,17 +645,24 @@ int main(void)
 
     ulong num_collisions = 0;
 
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+#if USE_DEFERRED
+    LOG("gbuffer stuff");
     Gbuffer gbuffer;
+    gbuffer.init(width, height);
+    draw::Quad quad;
+    quad.GenerateData(gbuffer_debug_prog.getAttribute("vertPos"),
+                      gbuffer_debug_prog.getAttribute("vertTex"));
+#endif
 
     while (!glfwWindowShouldClose(window)) {
         float ratio;
-        int width, height;
+        
 
         glfwGetFramebufferSize(window, &width, &height);
-
-#if USE_DEERRED
-        gbuffer.init(width, height);
-#endif        
+    
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #if !USE_DEFERRED
@@ -761,13 +787,14 @@ int main(void)
         // Geometry pass
         deferred_geom_prog.bind();
         gbuffer.bind();
-        
+       
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUniformMatrix4fv(deferred_geom_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(deferred_geom_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
-        glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
-        glUniform1i(prog.getUniform("uNormFlag"), 0);
+        glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
+        glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
 
+#if 0
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
@@ -779,6 +806,7 @@ int main(void)
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
+#endif
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
             Entity *wall = *it;
@@ -791,13 +819,22 @@ int main(void)
         }
         
         // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
+                
         gbuffer.unbind();
         deferred_geom_prog.unbind();
 
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG("FRAMEBUFFER NOT COMPLETE");
-        }
+        gbuffer_debug_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        gbuffer.bindTextures();
+
+        glUniform1i(gbuffer_debug_prog.getUniform("gBufferMode"), 0);
+        glUniform1i(gbuffer_debug_prog.getUniform("gPosition"), 0); // TEXTURE0
+        glUniform1i(gbuffer_debug_prog.getUniform("gNormal"), 1); // TEXTURE1
+        glUniform1i(gbuffer_debug_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+        quad.Render();
+        gbuffer.copyDepthBuffer(width, height);       
+
+        gbuffer_debug_prog.unbind();
 #endif
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;

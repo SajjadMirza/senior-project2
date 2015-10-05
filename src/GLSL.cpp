@@ -15,6 +15,8 @@
 #include <iostream>
 #include <cassert>
 
+#include <log.hpp>
+
 static std::string errorStringGL(GLenum err) {
    switch (err) {
    case GL_NO_ERROR: return "GL_NO_ERROR";
@@ -150,8 +152,10 @@ namespace GLSL {
    GLint getAttribLocation(const GLuint program, const char varname[])
    {
       GLint r = glGetAttribLocation(program, varname);
+
       if (r < 0)
          std::cerr << "WARN: "<< varname << " cannot be bound (it either doesn't exist or has been optimized away). safe_glAttrib calls will silently ignore it.\n" << std::endl;
+      LOG("program " << program << " varname " << varname << " location " << r);
       return r;
    }
 

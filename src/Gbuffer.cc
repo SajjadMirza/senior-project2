@@ -14,6 +14,7 @@ bool Gbuffer::init(uint width, uint height)
 
     // - Position color buffer
     glGenTextures(1, &gpos);
+    LOG("GBUFFER POSITION TEXTURE: " << gpos);
     glBindTexture(GL_TEXTURE_2D, gpos);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -23,6 +24,7 @@ bool Gbuffer::init(uint width, uint height)
     // - Normal color buffer
     glGenTextures(1, &gnor);
     glBindTexture(GL_TEXTURE_2D, gnor);
+    LOG("GBUFFER POSITION TEXTURE: " << gnor);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -31,6 +33,7 @@ bool Gbuffer::init(uint width, uint height)
     // - Color + Specular color buffer
     glGenTextures(1, &gcol);
     glBindTexture(GL_TEXTURE_2D, gcol);
+    LOG("GBUFFER POSITION TEXTURE: " << gcol);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -63,5 +66,41 @@ void Gbuffer::bind()
 
 void Gbuffer::unbind()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+extern int special_texture_handle;
+
+void Gbuffer::bindTextures()
+{
+//    LOG("RAWR " << gpos << " " << gnor << " "  << gcol);
+//    LOG("SPECIAL TEXTURE HANDLE " << special_texture_handle);
+#if 1
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gpos);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gnor);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, gcol);
+#else
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, special_texture_handle);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, special_texture_handle);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, special_texture_handle);
+#endif
+}
+
+void Gbuffer::unbindTextures()
+{
+}
+
+void Gbuffer::copyDepthBuffer(uint width, uint height)
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                      GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

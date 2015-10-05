@@ -6,8 +6,7 @@
 
 
 extern draw::DrawableMap drawable_map;
-
-
+extern int special_texture_handle;
 
 
 namespace resource {
@@ -291,6 +290,8 @@ namespace resource {
         tex_image(GL_RGBA, width, height, GL_BGRA, data);
     }
 
+
+
     void load_texture_from_file(const std::string &path, GLuint *tid_ptr) {
         FIBITMAP *img = resource::GenericLoader(path.c_str(), 0);
         uint bit_depth = FreeImage_GetBPP(img);
@@ -298,7 +299,10 @@ namespace resource {
 
         glGenTextures(1, tid_ptr);
         glBindTexture(GL_TEXTURE_2D, *tid_ptr);
-
+        
+        LOG("GENERATE TEXTURE WITH ID: " << *tid_ptr);
+        special_texture_handle = *tid_ptr;
+        
         int width = FreeImage_GetWidth(img);
         int height = FreeImage_GetHeight(img);
 

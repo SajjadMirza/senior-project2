@@ -2,6 +2,8 @@
 
 #include <tuple>
 
+extern int special_texture_handle;
+
 namespace draw {
 
 
@@ -144,7 +146,14 @@ namespace draw {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
+    static int logged = 0;
     void Shape::draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const {
+//        LOG("DRAW WITHOUT NORMAL MAP");
+//        if (!logged) {
+            LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << "u_diffuse "
+                << u_diffuse);
+            logged = 1;
+//        }
         // Enable diffuse texture
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, tex_id_diffuse);
@@ -170,7 +179,7 @@ namespace draw {
         int nIndices = indices.size();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
     
-        // Draw
+       // Draw
         glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
     
         // Disable and unbind
@@ -182,11 +191,23 @@ namespace draw {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+
+
     void Shape::draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm) const {
+        static int logged = 0;
+        if (!logged) {
+            LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
+                << u_diffuse << " u_norm " << u_norm);
+            logged = 1;
+        }
+
+//        LOG("DRAW WITH NORMAL MAP");
         // Enable norm texture
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, tex_id_norm);
         glUniform1i(u_norm, 0);
+
+
 
         // Enable diffuse texture
         glActiveTexture(GL_TEXTURE0 + 1);
@@ -197,7 +218,7 @@ namespace draw {
         GLSL::enableVertexAttribArray(h_vert);
         glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
         glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    
+
         // Enable and bind normal array for drawing
         GLSL::enableVertexAttribArray(h_nor);
         glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
@@ -212,12 +233,13 @@ namespace draw {
         // Bind index array for drawing
         int nIndices = indices.size();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
-    
+   
         // Draw
         glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
-    
+
         // Disable and unbind
         glBindTexture(GL_TEXTURE_2D, 0);
+
         GLSL::disableVertexAttribArray(h_uv);
         GLSL::disableVertexAttribArray(h_nor);
         GLSL::disableVertexAttribArray(h_vert);

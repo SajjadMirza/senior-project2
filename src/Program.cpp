@@ -64,12 +64,14 @@ bool Program::init()
 	glGetProgramiv(pid, GL_LINK_STATUS, &rc);
 	GLSL::printProgramInfoLog(pid);
 	if(!rc) {
-		printf("Error linking shaders %s and %s\n", vShaderName.c_str(), fShaderName.c_str());
+            printf("Error linking shaders %s and %s\n", vShaderName.c_str(), fShaderName.c_str());
 		return false;
 	}
 	
 	GLSL::printError();
 	assert(glGetError() == GL_NO_ERROR);
+
+        
 	
 	return true;
 }

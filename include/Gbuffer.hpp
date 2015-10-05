@@ -20,6 +20,9 @@ public:
     bool init(uint width, uint height);
     void bind();
     void unbind();
+    void bindTextures();
+    void unbindTextures();
+    void copyDepthBuffer(uint width, uint height);
 };
 
 #endif
