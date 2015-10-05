@@ -54,6 +54,7 @@ Program color_prog;
 #if USE_DEFERRED
 Program deferred_geom_prog;
 Program gbuffer_debug_prog;
+int debug_gbuffer_mode = 0;
 #endif
 const uint init_w = 640;
 const uint init_h = 480;
@@ -66,6 +67,8 @@ const uint map_rows = 45;
 ModelConfig config_lava;    
 
 int special_texture_handle = 0;
+
+
 
 
 float deg_to_rad(float deg) {
@@ -216,6 +219,7 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
         if (action == GLFW_RELEASE) {
             std::cout << camera->translations << std::endl;
         }
+        break;
     case GLFW_KEY_T:
         camera->translations = Eigen::Vector3f(-5.0f, -0.7f, -22.0f);
         break;
@@ -227,6 +231,15 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
         break;
     case GLFW_KEY_I:
         camera->translations = Eigen::Vector3f(-24.0f, -0.7f, -42.0f);
+        break;
+    case GLFW_KEY_1:
+        debug_gbuffer_mode = 0;
+        break;
+    case GLFW_KEY_2:
+        debug_gbuffer_mode = 1;
+        break;
+    case GLFW_KEY_3:
+        debug_gbuffer_mode = 2;
         break;
     } // end of switch
 }
@@ -838,7 +851,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         gbuffer.bindTextures();
 
-        glUniform1i(gbuffer_debug_prog.getUniform("gBufferMode"), 2);
+        glUniform1i(gbuffer_debug_prog.getUniform("gBufferMode"), debug_gbuffer_mode);
         glUniform1i(gbuffer_debug_prog.getUniform("gPosition"), 0); // TEXTURE0
         glUniform1i(gbuffer_debug_prog.getUniform("gNormal"), 1); // TEXTURE1
         glUniform1i(gbuffer_debug_prog.getUniform("gDiffuse"), 2); // TEXTURE2
