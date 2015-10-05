@@ -1,6 +1,6 @@
 #include <sound/FMODDriver.hpp>
 
-
+#include <log.hpp>
 
 namespace sound {
 
@@ -11,13 +11,13 @@ namespace sound {
 
         result = FMOD::System_Create(&system); // Create the main system object.
         if (result != FMOD_OK) {
-            printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
+            ERROR("FMOD error! " << result << " " << FMOD_ErrorString(result));
             exit(-1);
         }
 
         result = system->init(512, FMOD_INIT_NORMAL, 0); // Initialize FMOD.
         if (result != FMOD_OK) {
-            printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
+            ERROR("FMOD error! " << result << " " << FMOD_ErrorString(result));
             exit(-1);
         }
     }

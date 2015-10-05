@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#define LOG(x) (std::cout << __FILE__ << ":" << __LINE__ << ": " << x << std::endl)
-#define ERROR(x) (std::cerr << "!! ERROR: " << __FILE__ << __LINE__ << ": " << x << std::endl)
+#define LOG(x) (std::cout << "[LOG]" << __FILE__ << ":" << __LINE__ << ": " << x << std::endl)
+#define ERROR(x) (std::cerr << "[ERROR]" << __FILE__ << __LINE__ << ": " << x << std::endl)
 
 #endif

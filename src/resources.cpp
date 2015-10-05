@@ -332,7 +332,7 @@ namespace resource {
 
         FreeImage_Unload(img);
 
-        std::cout << "done loading texture" << std::endl;
+        LOG("done loading texture");
     }
 
 

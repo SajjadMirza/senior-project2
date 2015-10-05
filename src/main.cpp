@@ -252,7 +252,7 @@ draw::Drawable *import_drawable(std::string file_name) {
 }
 
 static void init_gl() {
-    printf("%s\n", glGetString(GL_VERSION));
+    LOG(glGetString(GL_VERSION));
     
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glEnable(GL_DEPTH_TEST);
