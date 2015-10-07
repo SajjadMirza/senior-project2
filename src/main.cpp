@@ -54,6 +54,7 @@ Program color_prog;
 #if USE_DEFERRED
 Program deferred_geom_prog;
 Program gbuffer_debug_prog;
+Program deferred_lighting_prog;
 int debug_gbuffer_mode = 0;
 #endif
 const uint init_w = 640;
@@ -241,6 +242,15 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_3:
         debug_gbuffer_mode = 2;
         break;
+    case GLFW_KEY_4:
+        debug_gbuffer_mode = 3;
+        break;
+    case GLFW_KEY_5:
+        debug_gbuffer_mode = 4;
+        break;
+    case GLFW_KEY_6:
+        debug_gbuffer_mode = 5;
+        break;
     } // end of switch
 }
 
@@ -327,6 +337,21 @@ static void init_gl() {
     gbuffer_debug_prog.addUniform("gNormal");
     gbuffer_debug_prog.addUniform("gDiffuse");
     gbuffer_debug_prog.addUniform("gBufferMode");
+    
+    deferred_lighting_prog.setShaderNames(header + "deferred_lighting_vert.glsl",
+                                          header + "deferred_lighting_frag.glsl");
+    deferred_lighting_prog.init();
+    deferred_lighting_prog.addAttribute("vertPos");
+    deferred_lighting_prog.addAttribute("vertTex");
+    deferred_lighting_prog.addUniform("light.position");
+    deferred_lighting_prog.addUniform("light.color");
+    deferred_lighting_prog.addUniform("light.quadratic");
+    deferred_lighting_prog.addUniform("light.linear");
+    deferred_lighting_prog.addUniform("gPosition");
+    deferred_lighting_prog.addUniform("gNormal");
+    deferred_lighting_prog.addUniform("gDiffuse");
+    deferred_lighting_prog.addUniform("uDrawMode");
+    deferred_lighting_prog.addUniform("viewPos");
 #endif
     GLSL::checkVersion();
 }
@@ -849,18 +874,29 @@ int main(void)
         gbuffer.unbind();
         deferred_geom_prog.unbind();
 
-        gbuffer_debug_prog.bind();
+        deferred_lighting_prog.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         gbuffer.bindTextures();
 
-        glUniform1i(gbuffer_debug_prog.getUniform("gBufferMode"), debug_gbuffer_mode);
-        glUniform1i(gbuffer_debug_prog.getUniform("gPosition"), 0); // TEXTURE0
-        glUniform1i(gbuffer_debug_prog.getUniform("gNormal"), 1); // TEXTURE1
-        glUniform1i(gbuffer_debug_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+        glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
+        glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
+        glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
+        glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+        
+        glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1,
+                     vec3(6.0f, 1.0f, 28.0f).data());
+        glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1,
+                     vec3(1.0, 0.0, 0.0).data());
+        glUniform1f(deferred_lighting_prog.getUniform("light.linear"), 0.14f);
+        glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"), 0.07f);
+
+        vec3 viewPos = -(camera->translations);
+        glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
+                     viewPos.data());
+        
         quad.Render();
         gbuffer.copyDepthBuffer(width, height);       
-
-        gbuffer_debug_prog.unbind();
+        deferred_lighting_prog.unbind();
 #endif
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
