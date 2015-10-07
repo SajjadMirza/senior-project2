@@ -20,9 +20,10 @@ uniform int uCalcTBN;
 void main()
 {    
     gPosition = fragPos;
+    mat4 normalMatrix = transpose(inverse((M)));
 
     if (uNormFlag == 1) {
-        gNormal = normalize(M * vec4(texture2D(texture_norm, fragTex.st).rgb, 0.0)).xyz;
+        gNormal = (vec4(texture2D(texture_norm, fragTex.st).rgb, 0.0)).xyz;
     }
     else {
         gNormal = normalize(fragNor);

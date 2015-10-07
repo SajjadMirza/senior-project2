@@ -32,11 +32,12 @@ void main()
     mat3 normalMatrix = transpose(inverse(mat3(M)));
     //mat3 normalMatrix = mat3(M);
 
+
     if (uCalcTBN == 0) {
-        
         fragNor = normalMatrix * vertNor;
     }
     else {
+        fragNor = vertNor;
         vec3 T = normalize(vec3(normalMatrix * vec3(tangent)));
         vec3 B = normalize(vec3(normalMatrix * vec3(bitangent)));
         vec3 N = normalize(vec3(normalMatrix * vec3(vertNor)));
