@@ -67,6 +67,8 @@ const uint map_rows = 45;
 
 int special_texture_handle = 0;
 
+sound::FMODDriver sound_driver;
+
 float deg_to_rad(float deg) {
     float rad = (M_PI / 180.0f) * deg;
     return rad;
@@ -76,25 +78,32 @@ static void bufferMovement(GLFWwindow *window,
                            const std::vector<Entity> &entities,
                            const Map &map, int col, int row) {
     char c = 0;
+    bool step = false;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         c = 'w';
         camera->move(c, entities, map, col, row);
+        step = true;
     }
     
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         c = 'a';
         camera->move(c, entities, map, col, row);
+        step = true;
     }
     
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         c = 's';
         camera->move(c, entities, map, col, row);
+        step = true;
     }
     
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         c = 'd';
         camera->move(c, entities, map, col, row);
+        step = true;
     }
+
+    sound_driver.footStep(step);
 }
 
 static void findFPS() {
@@ -529,12 +538,8 @@ static void init_entities(std::vector<Entity> *entities) {
 int main(void)
 {
     GLFWwindow* window;
-    sound::FMODDriver sound_driver;
 
     camera = fp_camera;
-
-    // test sound 
-    sound_driver.testSound();
 
     glfwSetErrorCallback(error_callback);
 
@@ -594,6 +599,9 @@ int main(void)
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
+
+    // test sound 
+    // sound_driver.testSound();
 
 #if USE_DEFERRED
     LOG("gbuffer stuff");
