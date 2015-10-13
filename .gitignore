@@ -17,3 +17,7 @@ tmp/*
 resources/models/*
 
 .idea/*
+
+*.tar.gz
+*.zip
+*.7z
