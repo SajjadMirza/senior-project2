@@ -49,7 +49,7 @@ namespace draw {
 
 		glUniform1i(prog.getUniform("uTextToggle"), 1);
 
-	    glActiveTexture(GL_TEXTURE0 + 1);
+	    glActiveTexture(GL_TEXTURE0);
 	    glGenTextures(1, &tex);
 	    glBindTexture(GL_TEXTURE_2D, tex);
 	   
@@ -68,6 +68,8 @@ namespace draw {
 
 	    glEnable(GL_BLEND);
     	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    	glDisable(GL_DEPTH_TEST);
 
 		int w, h;
 		glfwGetWindowSize(&window, &w, &h);
@@ -89,6 +91,10 @@ namespace draw {
 	    else {   */
     	renderText(cn_str, sx + x_s, sy + y_s, sx, sy);
 	    //} 
+
+    	glEnable(GL_DEPTH_TEST);
+
+	    glDisable(GL_BLEND);
 
 		glUniform1i(prog.getUniform("uTextToggle"), 0);
 	}

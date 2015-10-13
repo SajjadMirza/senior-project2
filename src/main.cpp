@@ -65,12 +65,7 @@ uint new_h = init_h;
 const uint map_cols = 45;
 const uint map_rows = 45;
 
-ModelConfig config_lava;    
-
 int special_texture_handle = 0;
-
-
-
 
 float deg_to_rad(float deg) {
     float rad = (M_PI / 180.0f) * deg;
@@ -117,7 +112,7 @@ static void findFPS() {
 static void draw_text(GLFWwindow& window) {
     std::ostringstream convert; 
     convert << "FPS " << lastFPS;
-    text.draw(prog, window, convert.str(), -0.95f, 0.9f);
+    text.draw(deferred_lighting_prog, window, convert.str(), -0.95f, 0.9f);
 }
 
 static void error_callback(int error, const char* description) {
@@ -357,6 +352,9 @@ static void init_gl() {
     deferred_lighting_prog.addUniform("gSpecular");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
+
+    deferred_lighting_prog.addAttribute("wordCoords");
+    deferred_lighting_prog.addUniform("uTextToggle");
 #endif
     GLSL::checkVersion();
 }
@@ -425,75 +423,6 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
     }
 }
 
-static void gen_cubes_s(std::vector<Entity*> *cubes, const ModelConfig &config, draw::Drawable *drawable, Map &map, CellType type) {
-    uint cols = map.getColumns();
-    uint rows = map.getRows();
-
-    Eigen::Vector3f pos(0,0,0);
-
-    if (config.transforms.xpos != 0.0f) {
-        pos(0) = config.transforms.xpos;
-    }
-
-    if (config.transforms.ypos != 0.0f) {
-        pos(1) = config.transforms.ypos;
-    }
-
-    if (config.transforms.zpos != 0.0f) {
-        pos(2) = config.transforms.zpos;
-    }
-
-    for (int i = 0; i < cols; i++) {
-        for (int j = 0; j < rows; j++) {
-            if (map.getTypeForCell(i, j) == type) {
-                MapCell &cell = map.get(i, j);
-                std::unique_ptr<Entity> temp(new Entity(drawable));
-                cell.component = std::move(temp); // constructor
-                Entity &e = *cell.component.get();
-                e.setName(cell.name);
-                e.setCenter(Eigen::Vector3f(0,0,0));
-                e.setRadius(0);
-                e.setPosition(pos);
-                e.move(Eigen::Vector3f(i, 0, j));
-                e.generateBoundingBox();
-                e.setUseBoundingBox(true);
-                cubes->push_back(cell.component.get());
-            }
-        }
-    }
-}
-
-static void make_hole(const ModelConfig &config, MapCell &map, int i, int j) {
-    draw::Drawable *drawable = new draw::Drawable(config);
-
-    Eigen::Vector3f pos(0,0,0);
-
-    if (config.transforms.xpos != 0.0f) {
-        pos(0) = config.transforms.xpos;
-    }
-
-    if (config.transforms.ypos != 0.0f) {
-        pos(1) = config.transforms.ypos;
-    }
-
-    if (config.transforms.zpos != 0.0f) {
-        pos(2) = config.transforms.zpos;
-    }
-
-    MapCell &cell = map;
-    cell.type = HOLE;
-    Entity &e = *cell.component.get();
-    e.clearDrawable();
-    e.attachDrawable(drawable);
-    e.setName("HOLE");
-    e.setCenter(Eigen::Vector3f(0,0,0));
-    e.setRadius(0);
-    e.setPosition(pos);
-    e.move(Eigen::Vector3f(i, 0, j));
-    e.generateBoundingBox();
-    e.setUseBoundingBox(true);
-}
-
 static void init_floors(std::vector<Entity*> *floors, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
@@ -516,40 +445,10 @@ static void init_floors(std::vector<Entity*> *floors, Map &map) {
 
 }
 
-static void init_floors_s(std::vector<Entity*> *floors, Map &map, draw::Drawable *drawable) {
-    ModelConfig config;
-    resource::load_config(&config, "resources/floor.yaml");
-    gen_cubes(floors, config, map, HALLWAY);
-
-    ModelConfig config_f;
-    resource::load_config(&config_f, "resources/skull.yaml");
-
-    gen_cubes(floors, config_f, map, PUZZLE_FLOOR);
-    gen_cubes(floors, config_f, map, START);
-
-    ModelConfig config_g;
-    resource::load_config(&config_g, "resources/goal.yaml");
-    gen_cubes(floors, config_g, map, GOAL);
-
-    ModelConfig config_e_1;
-    resource::load_config(&config_e_1, "resources/end.yaml");
-
-    ModelConfig config_lava;
-
-    resource::load_config(&config_lava, "resources/lava.yaml");
-    gen_cubes(floors, config_lava, map, HOLE);
-
-    gen_cubes_s(floors, config_lava, drawable, map, END);
-
-}
-
 static void init_walls(std::vector<Entity*> *walls, Map &map) {
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
-
-    resource::load_config(&config_lava, "resources/lava.yaml");
-    gen_cubes(walls, config_lava, map, HOLE);
 }
 
 
@@ -905,8 +804,11 @@ int main(void)
         
         quad.Render();
         gbuffer.copyDepthBuffer(width, height);       
+        
+        draw_text(*window);
         deferred_lighting_prog.unbind();
 #endif
+
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);

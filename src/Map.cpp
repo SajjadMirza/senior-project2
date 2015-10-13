@@ -91,20 +91,20 @@ int Map::loadMapFromFile(std::string filename) {
                 grid[col][row].name = "HALLWAY";
                 break;
             case goal:
-                grid[col][row].type = GOAL;
-                grid[col][row].name = "GOAL";
+                grid[col][row].type = HALLWAY;
+                grid[col][row].name = "HALLWAY";
                 break;
             case puzzle_floor:
-                grid[col][row].type = PUZZLE_FLOOR;
-                grid[col][row].name = "PUZZLE_FLOOR";
+                grid[col][row].type = HALLWAY;
+                grid[col][row].name = "HALLWAY";
                 break;
              case start:
-                grid[col][row].type = START;
-                grid[col][row].name = "START";
+                grid[col][row].type = HALLWAY;
+                grid[col][row].name = "HALLWAY";
                 break;
             case hole:
-                grid[col][row].type = HOLE;
-                grid[col][row].name = "HOLE";
+                grid[col][row].type = HALLWAY;
+                grid[col][row].name = "HALLWAY";
                 break;
             case end:
                 grid[col][row].type = END;
