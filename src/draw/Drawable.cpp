@@ -115,6 +115,15 @@ namespace draw {
             texs.normal = dt;
         }
 
+        if (!texconf.specular.empty()) {
+            Texture dt;
+            dt.filename = texconf.specular;
+            dt.type = TexType::SPECULAR;
+            resource::load_texture_from_file(config.directory+"/"+texconf.specular,
+                                             &dt.tid);
+            texs.specular = dt;
+        }
+
         LOG("loading scene through assimp");
         LOG(config.directory+"/"+config.file);
         // load Assimp scene from file
@@ -323,6 +332,7 @@ namespace draw {
         
         for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
             if (texs.normal) {
+#if 1
                 glUniform1i(prog->getUniform("uCalcTBN"), 1);
                 glUniform1i(prog->getUniform("uNormFlag"), 1);
                 it->draw(prog->getAttribute("vertPos"),
@@ -330,16 +340,25 @@ namespace draw {
                          prog->getAttribute("vertTex"),
                          prog->getUniform("texture0"),
                          prog->getUniform("texture_norm"),
+                         prog->getUniform("texture_spec"),
                          prog->getAttribute("tangent"),
                          prog->getAttribute("bitangent"));
                 glUniform1i(prog->getUniform("uNormFlag"), 0);
                 glUniform1i(prog->getUniform("uCalcTBN"), 0);
+#else
+                it->drawSpec(prog->getAttribute("vertPos"),
+                             prog->getAttribute("vertNor"),
+                             prog->getAttribute("vertTex"),
+                             prog->getUniform("texture0"),
+                             prog->getUniform("texture_spec"));
+#endif
             }
             else {
-                it->draw(prog->getAttribute("vertPos"),
-                         prog->getAttribute("vertNor"),
-                         prog->getAttribute("vertTex"),
-                         prog->getUniform("texture0"));
+                it->drawSpec(prog->getAttribute("vertPos"),
+                             prog->getAttribute("vertNor"),
+                             prog->getAttribute("vertTex"),
+                             prog->getUniform("texture0"),
+                             prog->getUniform("texture_spec"));
             }
         }
 

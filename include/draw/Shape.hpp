@@ -16,6 +16,7 @@ namespace draw {
 
         GLuint tex_id_diffuse;
         GLuint tex_id_norm;
+        GLuint tex_id_specular;
 
         GLuint tan_buf;
         GLuint bitan_buf;
@@ -39,7 +40,8 @@ namespace draw {
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm) const;
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm,
-                  int h_tan, int h_btan) const;
+                  int u_specular, int h_tan, int h_btan) const;
+        void drawSpec(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_spec) const;
     };
 
 }

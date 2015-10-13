@@ -5,9 +5,11 @@ directory: resources/models/cube
 format: obj
 textures:
   diffuse:
-    cavewall01.dds
+    HAE_RockWall/HAE_RockWall_Diff.dds
   normal:
-    cavewall01_n.dds
+    HAE_RockWall/HAE_RockWall_Norm.dds
+  specular:
+    HAE_RockWall/HAE_RockWall_Msk.dds
 transforms:
   translations:
     xaxis: -0.5

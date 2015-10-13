@@ -5,9 +5,11 @@ directory: resources/models/cube
 format: obj
 textures:
   diffuse:
-    cavefloor01.dds
+    Ground_Texture_2/DiffuseMap.jpg
   normal:
-    cavefloor01_n.dds
+    Ground_Texture_2/NormalMap.png
+  specular:
+    Ground_Texture_2/SpecularMap.png
 transforms:
   translations:
     xaxis: -0.5

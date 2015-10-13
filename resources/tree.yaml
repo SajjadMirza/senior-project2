@@ -5,6 +5,7 @@ directory: resources/models/tree1_3ds
 format: 3ds
 textures:
   diffuse: bark_loo.jpg
+  specular: bark_spec.png
 overrides:
   radius: 0.5
   center: position
@@ -33,4 +34,20 @@ transforms:
     xaxis: -0.5
     zaxis: 0.5
     yaxis: 1.0
+---
+# required information
+model: orange
+file: Orange.dae
+directory: resources/models/orange
+format: dae
+# optional information
+textures:
+  diffuse: Color.jpg
+  normal: Normal.jpg
+  specular: Specular.png
+transforms:
+  translations:
+    xaxis: 6.0
+    yaxis: 1.0
+    zaxis: 26.0
 ...

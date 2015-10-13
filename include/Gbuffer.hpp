@@ -12,9 +12,10 @@ class Gbuffer {
     GLuint gpos;
     GLuint gnor;
     GLuint gcol;
+    GLuint gspc;
     GLuint zbuf;
     // attachment points
-    GLuint attachments[3]; // initialized in init
+    GLuint attachments[4]; // initialized in init
 public:
 
     bool init(uint width, uint height);

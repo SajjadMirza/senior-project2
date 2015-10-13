@@ -155,6 +155,11 @@ namespace resource {
             if (tex[key]) {
                 conf.textures.light = tex[key].as<std::string>();
             }
+
+            key = "specular";
+            if (tex[key]) {
+                conf.textures.specular = tex[key].as<std::string>();
+            }
         }
 
         *config = conf;
@@ -259,6 +264,11 @@ namespace resource {
                 key = "light";
                 if (tex[key]) {
                     conf.textures.light = tex[key].as<std::string>();
+                }
+
+                key = "specular";
+                if (tex[key]) {
+                    conf.textures.specular = tex[key].as<std::string>();
                 }
             }
 

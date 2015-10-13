@@ -72,6 +72,10 @@ namespace draw {
             tex_id_norm = textures.normal->tid;
         }
 
+        if (textures.specular) {
+            tex_id_specular = textures.specular->tid;
+        }
+
         LOG("shape 3");
         // copy uv coordinates
         
@@ -272,13 +276,13 @@ namespace draw {
     }
 
     void Shape::draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm,
-                     int h_tan, int h_btan) const
+                     int u_specular, int h_tan, int h_btan) const
     {
 #if LOG_DRAW_CALLS
         static int logged = 0;
 //        if (!logged) {
             LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
-                << u_diffuse << " u_norm " << u_norm);
+                << u_diffuse << " u_norm " << u_norm << " u_specular " << u_specular);
             logged = 1;
 //        }
 #endif
@@ -293,6 +297,11 @@ namespace draw {
         glActiveTexture(GL_TEXTURE0 + 1);
         glBindTexture(GL_TEXTURE_2D, tex_id_diffuse);
         glUniform1i(u_diffuse, 1);
+
+        // Enable specular texture
+        glActiveTexture(GL_TEXTURE0 + 2);
+        glBindTexture(GL_TEXTURE_2D, tex_id_specular);
+        glUniform1i(u_specular, 2);
         
         // Enable and bind verticies array for drawing
         GLSL::enableVertexAttribArray(h_vert);
@@ -331,6 +340,58 @@ namespace draw {
 
         GLSL::disableVertexAttribArray(h_btan);
         GLSL::disableVertexAttribArray(h_tan);
+        GLSL::disableVertexAttribArray(h_uv);
+        GLSL::disableVertexAttribArray(h_nor);
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void Shape::drawSpec(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_spec) const
+    {
+#if LOG_DRAW_CALLS
+        static int logged = 0;
+        LOG("DRAW WITHOUT NORMAL MAP");
+//        if (!logged) {
+        LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << "u_diffuse "
+            << u_diffuse << "u_spec" << u_spec);
+        logged = 1;
+//        }
+#endif
+        // Enable diffuse texture
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, tex_id_diffuse);
+        glUniform1i(u_diffuse, 0);
+
+        glActiveTexture(GL_TEXTURE0 + 1);
+        glBindTexture(GL_TEXTURE_2D, tex_id_specular);
+        glUniform1i(u_spec, 1);
+        
+    	// Enable and bind verticies array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    
+        // Enable and bind normal array for drawing
+        GLSL::enableVertexAttribArray(h_nor);
+        glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
+        glVertexAttribPointer(h_nor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    
+    	// TODO: Enable and bind texcoord array (if it exists) for drawing
+        GLSL::enableVertexAttribArray(h_uv);
+        glBindBuffer(GL_ARRAY_BUFFER, uv_buf);
+        glVertexAttribPointer(h_uv, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+    	// Bind index array for drawing
+        int nIndices = indices.size();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+    
+        // Draw
+        glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
+    
+        // Disable and unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
         GLSL::disableVertexAttribArray(h_uv);
         GLSL::disableVertexAttribArray(h_nor);
         GLSL::disableVertexAttribArray(h_vert);

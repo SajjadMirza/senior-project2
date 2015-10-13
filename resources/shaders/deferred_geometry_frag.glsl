@@ -4,6 +4,7 @@
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gDiffuse;
+layout (location = 3) out float gSpecular;
 
 in vec3 fragPos;
 in vec3 fragNor;
@@ -12,6 +13,7 @@ in mat3 TBN;
 
 uniform sampler2D texture0;
 uniform sampler2D texture_norm;
+uniform sampler2D texture_spec;
 uniform mat4 M;
 
 uniform int uNormFlag;
@@ -34,7 +36,11 @@ void main()
         gNormal = normalize(TBN * gNormal);
     }
 
+//    gDiffuse.rgb = vec3(0.0f, 1.0f, 0.0f);
     gDiffuse.rgb = texture2D(texture0, fragTex).rgb;
+
+    gSpecular = texture2D(texture_spec, fragTex).r;
+    // gSpecular = 0.0;
 
 // ----------------------------
 /*

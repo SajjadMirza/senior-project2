@@ -57,8 +57,8 @@ Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
 int debug_gbuffer_mode = 0;
 #endif
-const uint init_w = 640;
-const uint init_h = 480;
+const uint init_w = 1024;
+const uint init_h = 768;
 uint new_w = init_w;
 uint new_h = init_h;
 
@@ -251,6 +251,9 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_6:
         debug_gbuffer_mode = 5;
         break;
+    case GLFW_KEY_7:
+        debug_gbuffer_mode = 6;
+        break;
     } // end of switch
 }
 
@@ -326,6 +329,7 @@ static void init_gl() {
     deferred_geom_prog.addUniform("uNormFlag");
     deferred_geom_prog.addUniform("texture0");
     deferred_geom_prog.addUniform("texture_norm");
+    deferred_geom_prog.addUniform("texture_spec");
     deferred_geom_prog.addUniform("uCalcTBN");
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
@@ -350,6 +354,7 @@ static void init_gl() {
     deferred_lighting_prog.addUniform("gPosition");
     deferred_lighting_prog.addUniform("gNormal");
     deferred_lighting_prog.addUniform("gDiffuse");
+    deferred_lighting_prog.addUniform("gSpecular");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
 #endif
@@ -379,7 +384,9 @@ static uint getUniqueColor(int index) {
     return color;
  }
 
-static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, Map &map, CellType type) {
+static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, 
+                      Map &map, CellType type) 
+{
     draw::Drawable *drawable = new draw::Drawable(config);
     uint cols = map.getColumns();
     uint rows = map.getRows();
@@ -636,7 +643,7 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    window = glfwCreateWindow(init_w, init_h, "Simple example", NULL, NULL);
     if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -655,15 +662,16 @@ int main(void)
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-    std::vector<Entity> entities;
-    init_entities(&entities);
+    
 
     Map map(map_cols, map_rows);
     map.loadMapFromFile("resources/maps/our_map.txt");
     std::vector<Entity*> floors;
-    init_floors(&floors, map);
     std::vector<Entity*> walls;
     init_walls(&walls, map);
+    init_floors(&floors, map);
+    std::vector<Entity> entities;
+    init_entities(&entities);
 
     ColRow logic_tl = col_row(31, 18);
     ColRow logic_br = col_row(41, 26);
@@ -882,11 +890,12 @@ int main(void)
         glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
         glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
         glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+        glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
         
         glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1,
                      vec3(6.0f, 1.0f, 28.0f).data());
         glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1,
-                     vec3(1.0, 0.0, 0.0).data());
+                     vec3(0.3, 0.5, 0.7).data());
         glUniform1f(deferred_lighting_prog.getUniform("light.linear"), 0.14f);
         glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"), 0.07f);
 

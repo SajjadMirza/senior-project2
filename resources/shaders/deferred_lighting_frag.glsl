@@ -13,6 +13,7 @@ uniform Light light;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gDiffuse;
+uniform sampler2D gSpecular;
 
 uniform int uDrawMode;
 const int DISPLAY_POSITION = 0;
@@ -21,6 +22,7 @@ const int DISPLAY_COLOR = 2;
 const int DISPLAY_DIFFUSE = 3;
 const int DISPLAY_SPECULAR = 4;
 const int DISPLAY_SHADING = 5;
+const int DISPLAY_SPECULAR_BUFFER = 6;
 
 uniform vec3 viewPos;
 
@@ -32,7 +34,8 @@ void main()
     vec3 fragPos = texture(gPosition, fragTex).rgb;
     vec3 fragNor = texture(gNormal, fragTex).rgb;
     vec3 fragCol = texture(gDiffuse, fragTex).rgb;
-    vec3 fragSpc = vec3(1.0, 1.0, 1.0);
+    float spc = texture(gSpecular, fragTex).r;
+    vec3 fragSpc = vec3(spc, spc, spc);
 
     vec3 ambient = fragCol * 0.1;
     vec3 viewDir = normalize(viewPos - fragPos);
@@ -69,6 +72,9 @@ void main()
         break;
     case DISPLAY_SHADING:
         data = light;
+        break;
+    case DISPLAY_SPECULAR_BUFFER:
+        data = fragSpc;
         break;
     }
 

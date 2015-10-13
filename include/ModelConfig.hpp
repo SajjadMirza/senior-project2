@@ -12,6 +12,7 @@ struct ModelTextureConfig {
     std::string occlusion;
     std::string shadow;
     std::string light;
+    std::string specular;
 };
 
 struct TransformConfig {

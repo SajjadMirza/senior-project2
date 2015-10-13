@@ -4,7 +4,7 @@ Camera::Camera() :
     aspect(1.0f),
     fovy(45.0f/180.0f*M_PI),
     znear(0.1f),
-    zfar(1000.0f),
+    zfar(100.0f),
     rotations(0.0, 0.0),
     //translations(-19.0f, -0.7f, -18.0f),
     //translations(-27.0f, -0.7f, -14.0f),

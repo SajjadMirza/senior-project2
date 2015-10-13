@@ -44,6 +44,7 @@ namespace draw {
         boost::optional<Texture> occlusion;
         boost::optional<Texture> shadow;
         boost::optional<Texture> light;
+        boost::optional<Texture> specular;
     };
       
 
