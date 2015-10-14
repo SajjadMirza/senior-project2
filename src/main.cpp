@@ -125,6 +125,7 @@ static void resize_window(GLFWwindow *window, int w, int h) {
     camera->setAspect((float)w / (float)h);
     new_w = w;
     new_h = h;
+
 }
 
 static Eigen::Vector3f selection_coords;
