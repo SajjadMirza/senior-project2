@@ -729,6 +729,8 @@ int main(void)
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
         camera->applyViewMatrix(&V);
+
+        gbuffer.startFrame();
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
@@ -782,6 +784,11 @@ int main(void)
         gbuffer.unbind();
         deferred_geom_prog.unbind();
 
+        // Stencil pass
+        glEnable(GL_STENCIL_TEST);
+        glDisable(GL_STENCIL_TEST);
+
+        // Point light pass
         deferred_lighting_prog.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         gbuffer.bindTextures();
@@ -808,6 +815,8 @@ int main(void)
         
         draw_text(*window);
         deferred_lighting_prog.unbind();
+
+        // Final pass
 #endif
 
         if (camera == fp_camera) {

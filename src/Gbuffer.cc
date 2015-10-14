@@ -150,7 +150,7 @@ void Gbuffer::unbindFinalBuffer()
     glDrawBuffer(GL_NONE);
 }
 
-void Gbuffer::copyFinalBuffer(uint widt, uint height)
+void Gbuffer::copyFinalBuffer(uint width, uint height)
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
