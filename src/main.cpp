@@ -55,6 +55,7 @@ Program color_prog;
 Program deferred_geom_prog;
 Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
+Program null_prog;
 int debug_gbuffer_mode = 0;
 #endif
 const uint init_w = 1024;
@@ -356,6 +357,14 @@ static void init_gl() {
 
     deferred_lighting_prog.addAttribute("wordCoords");
     deferred_lighting_prog.addUniform("uTextToggle");
+
+    null_prog.setShaderNames(header + "null_vert.glsl",
+                             header + "null_frag.glsl");
+    null_prog.init();
+    null_prog.addAttribute("vertPos");
+    null_prog.addUniform("M");
+    null_prog.addUniform("V");
+    null_prog.addUniform("P");
 #endif
     GLSL::checkVersion();
 }
@@ -785,8 +794,12 @@ int main(void)
         deferred_geom_prog.unbind();
 
         // Stencil pass
+        null_prog.bind();
         glEnable(GL_STENCIL_TEST);
+
+        
         glDisable(GL_STENCIL_TEST);
+        null_prog.unbind();
 
         // Point light pass
         deferred_lighting_prog.bind();
@@ -807,8 +820,7 @@ int main(void)
         glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"), 0.07f);
 
         vec3 viewPos = -(camera->translations);
-        glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
-                     viewPos.data());
+        glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1, viewPos.data());
         
         quad.Render();
         gbuffer.copyDepthBuffer(width, height);       
