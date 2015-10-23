@@ -1,0 +1,6 @@
+---
+model: sphere
+file: sphere.obj
+directory: resources/models/sphere
+format: obj
+...    

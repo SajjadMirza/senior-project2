@@ -6,7 +6,7 @@
 
 #include <resources.hpp>
 
-
+#include <log.hpp>
 
 using draw::Node;
 
@@ -372,5 +372,28 @@ namespace draw {
     void Drawable::drawDeferred(Program *prog, MatrixStack *M, Camera *cam)
     {
         draw_node_deferred(root, prog, M, cam, texs);
+    }
+
+   static void draw_node_light_volume(Node *current, Program *prog, MatrixStack *M, Camera *cam)
+    {
+        M->pushMatrix();
+        //    M->multMatrix(current->transform);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        
+        for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
+            it->drawLightVolume(prog->getAttribute("vertPos"));
+        }
+
+        for (auto it = current->children.begin(); it != current->children.end(); it++) {
+            draw_node_light_volume(*it, prog, M, cam);
+        }
+
+        M->popMatrix();
+    }
+    
+    void Drawable::drawAsLightVolume(Program *prog, MatrixStack *M, Camera *cam)
+    {
+        //LOG("Drawable::drawAsLightVolume");
+        draw_node_light_volume(root, prog, M, cam);
     }
 };

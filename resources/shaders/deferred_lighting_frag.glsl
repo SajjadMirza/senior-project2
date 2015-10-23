@@ -5,6 +5,8 @@ in vec2 fragTex;
 struct Light {
     vec3 position;
     vec3 color;
+    vec3 specular;
+    vec3 ambient;
     float quadratic;
     float linear;
 };
@@ -25,6 +27,7 @@ const int DISPLAY_SHADING = 5;
 const int DISPLAY_SPECULAR_BUFFER = 6;
 
 uniform vec3 viewPos;
+uniform vec2 uScreenSize;
 
 out vec4 out_color;
 
@@ -33,13 +36,14 @@ uniform int uTextToggle;
 void main()
 {
     if (uTextToggle == 0) {
-        vec3 fragPos = texture(gPosition, fragTex).rgb;
-        vec3 fragNor = texture(gNormal, fragTex).rgb;
-        vec3 fragCol = texture(gDiffuse, fragTex).rgb;
-        float spc = texture(gSpecular, fragTex).r;
+        vec2 texCoord = gl_FragCoord.xy / uScreenSize;
+        vec3 fragPos = texture(gPosition, texCoord).rgb;
+        vec3 fragNor = texture(gNormal, texCoord).rgb;
+        vec3 fragCol = texture(gDiffuse, texCoord).rgb;
+        float spc = texture(gSpecular, texCoord).r;
         vec3 fragSpc = vec3(spc, spc, spc);
 
-        vec3 ambient = fragCol * 0.1;
+        vec3 ambient = fragCol * 0.1 * light.ambient;
         vec3 viewDir = normalize(viewPos - fragPos);
         
         float dist = length(light.position - fragPos);
@@ -48,7 +52,7 @@ void main()
     //    vec3 diffuse = fragCol * light.color;
         vec3 halfDir = normalize(lightDir + viewDir);  
         float spec = pow(max(dot(fragNor, halfDir), 0.0), 16.0);
-        vec3 specular = vec3(1.0, 1.0, 1.0) * spec * fragSpc;
+        vec3 specular = light.specular * spec * fragSpc;
         float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);
         diffuse *= attenuation;
     //    diffuse * (1.0 / (1.0 + dist));
@@ -81,6 +85,7 @@ void main()
         }
 
         out_color = vec4(data, 1.0);
+//        out_color = vec4(1.0, 0.0, 1.0, 1.0);
     }
     else {
         out_color = vec4(1.0, 0.0, 0.0, texture2D(gPosition, fragTex.st).a);

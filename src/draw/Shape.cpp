@@ -1,6 +1,7 @@
 #include <draw/Shape.hpp>
 
 #include <tuple>
+#include <log.hpp>
 
 #define LOG_DRAW_CALLS 0
 
@@ -394,6 +395,26 @@ namespace draw {
         glBindTexture(GL_TEXTURE_2D, 0);
         GLSL::disableVertexAttribArray(h_uv);
         GLSL::disableVertexAttribArray(h_nor);
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void Shape::drawLightVolume(int h_vert) const
+    {
+        //LOG("drawAsLightVolume indices.size()" << indices.size());
+        // Enable vertices array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Bind index buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+        // Draw
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        // Disable and unbind
         GLSL::disableVertexAttribArray(h_vert);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

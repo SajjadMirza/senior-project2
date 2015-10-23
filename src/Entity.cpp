@@ -9,7 +9,9 @@ Entity::Entity() : name(""),
                    drawable(NULL),
                    use_bounding_box(false),
                    selected(false),
-                   id(entity_uid_counter++)
+                   id(entity_uid_counter++),
+                   simple_draw(false)
+                   
 {
 }
 
@@ -19,7 +21,8 @@ Entity::Entity(draw::Drawable *d) : name(""),
                                     drawable(d),
                                     use_bounding_box(false),
                                     selected(false),
-                                    id(entity_uid_counter++)
+                                    id(entity_uid_counter++),
+                                    simple_draw(false)
 {
 }
 
@@ -158,4 +161,9 @@ bool Entity::useBoundingBox() const {
 
 void Entity::setUseBoundingBox(bool use) {
     use_bounding_box = use;
+}
+
+void Entity::setSimpleDraw(bool simple)
+{
+    simple_draw = simple;
 }

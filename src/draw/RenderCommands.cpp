@@ -37,4 +37,8 @@ namespace draw {
 	glBindVertexArray(0);
     }
 
+    void Sphere::Render()
+    {
+    }
+
 };

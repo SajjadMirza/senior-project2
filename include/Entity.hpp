@@ -16,6 +16,7 @@ private:
     draw::Drawable *drawable;
     BoundingBox bounding_box;
     bool use_bounding_box;
+    bool simple_draw;
 public:
     bool selected;
     uint id;
@@ -52,6 +53,7 @@ public:
     void generateBoundingBox();
     bool useBoundingBox() const;
     void setUseBoundingBox(bool use);
+    void setSimpleDraw(bool simple);
 };
 
 #endif

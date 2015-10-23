@@ -49,7 +49,7 @@ bool Gbuffer::init(uint width, uint height)
     // Specular buffer
     glGenTextures(1, &gspc);
     glBindTexture(GL_TEXTURE_2D, gspc);
-    LOG("GBUFFER SPECULAR TEXTURE " << gspc);
+    LOG("GBUFFER SPECULAR TEXTURE: " << gspc);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -57,7 +57,7 @@ bool Gbuffer::init(uint width, uint height)
 #endif
 
     // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    glDrawBuffers(5, attachments);
+    glDrawBuffers(4, attachments);
 
     // - Create and attach depth buffer (renderbuffer)
     glGenRenderbuffers(1, &zbuf);
@@ -68,6 +68,7 @@ bool Gbuffer::init(uint width, uint height)
     // Final buffer
     glGenTextures(1, &gfinal);
     glBindTexture(GL_TEXTURE_2D, gfinal);
+    LOG("GBUFFER FINAL TEXTURE: " << gfinal);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -87,7 +88,7 @@ bool Gbuffer::init(uint width, uint height)
 void Gbuffer::bind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glDrawBuffers(5, attachments);
+    glDrawBuffers(4, attachments);
 }
 
 void Gbuffer::unbind()
@@ -142,6 +143,7 @@ void Gbuffer::startFrame()
 
 void Gbuffer::bindFinalBuffer()
 {
+//    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glDrawBuffer(GL_COLOR_ATTACHMENT4);
 }
 

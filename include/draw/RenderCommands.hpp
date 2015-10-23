@@ -14,6 +14,13 @@ namespace draw {
         void Render();
     };
 
+    class Sphere {
+        GLuint vao;
+        GLuint vbo;
+    public:
+        void GenerateData(int h_vert);
+        void Render();
+    };
 };
 
 

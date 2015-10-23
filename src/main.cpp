@@ -21,6 +21,7 @@
 #include <utility>
 #include <Gbuffer.hpp>
 #include <draw/RenderCommands.hpp>
+#include <draw/Light.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -57,7 +58,9 @@ Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
 Program null_prog;
 int debug_gbuffer_mode = 0;
+std::vector<PointLight> point_lights;
 #endif
+
 const uint init_w = 1024;
 const uint init_h = 768;
 uint new_w = init_w;
@@ -348,12 +351,18 @@ static void init_gl() {
     deferred_lighting_prog.addUniform("light.color");
     deferred_lighting_prog.addUniform("light.quadratic");
     deferred_lighting_prog.addUniform("light.linear");
+    deferred_lighting_prog.addUniform("light.specular");
+    deferred_lighting_prog.addUniform("light.ambient");
+    deferred_lighting_prog.addUniform("uScreenSize");
     deferred_lighting_prog.addUniform("gPosition");
     deferred_lighting_prog.addUniform("gNormal");
     deferred_lighting_prog.addUniform("gDiffuse");
     deferred_lighting_prog.addUniform("gSpecular");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
+    deferred_lighting_prog.addUniform("M");
+    deferred_lighting_prog.addUniform("V");
+    deferred_lighting_prog.addUniform("P");
 
     deferred_lighting_prog.addAttribute("wordCoords");
     deferred_lighting_prog.addUniform("uTextToggle");
@@ -440,7 +449,6 @@ static void init_floors(std::vector<Entity*> *floors, Map &map) {
 
     ModelConfig config_f;
     resource::load_config(&config_f, "resources/skull.yaml");
-
     gen_cubes(floors, config_f, map, PUZZLE_FLOOR);
     gen_cubes(floors, config_f, map, START);
 
@@ -536,6 +544,37 @@ static void init_entities(std::vector<Entity> *entities) {
     }
 }
 
+static void init_lights()
+{
+    PointLight pl;
+    
+    pl.ambient = vec3(0.05, 0.05, 0.05);
+    pl.diffuse = vec3(0.3, 0.5, 0.7);
+    pl.specular = vec3(1.0, 1.0, 1.0);
+    pl.intensity = 1.0;
+    pl.linear = 0.14;
+    pl.quadratic = 0.07;
+    pl.position = vec3(6.0f, 1.0f, 28.0f);
+
+    point_lights.push_back(pl);
+}
+
+std::unique_ptr<Entity> init_sphere_light_volume()
+{
+    ModelConfig sphere_config;
+    resource::load_config(&sphere_config, "resources/sphere.yaml");
+    draw::Drawable *sphere_drawable = new draw::Drawable(sphere_config);
+    std::unique_ptr<Entity> sphere(new Entity(sphere_drawable));
+
+    TransformConfig &transforms = sphere_config.transforms;
+    vec3 pos(transforms.xpos, transforms.ypos, transforms.zpos);
+    sphere->setPosition(pos);
+
+    sphere->setSimpleDraw(true);
+    
+    return sphere;
+}
+
 int main(void)
 {
     GLFWwindow* window;
@@ -581,6 +620,8 @@ int main(void)
     init_floors(&floors, map);
     std::vector<Entity> entities;
     init_entities(&entities);
+    std::unique_ptr<Entity> sphere = init_sphere_light_volume();
+    init_lights();
 
     ColRow logic_tl = col_row(31, 18);
     ColRow logic_br = col_row(41, 26);
@@ -793,40 +834,89 @@ int main(void)
         gbuffer.unbind();
         deferred_geom_prog.unbind();
 
-        // Stencil pass
-        null_prog.bind();
-        glEnable(GL_STENCIL_TEST);
 
-        
-        glDisable(GL_STENCIL_TEST);
-        null_prog.unbind();
+        for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+            glEnable(GL_STENCIL_TEST);
+            // Stencil pass
+            null_prog.bind();
+            glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+            glUniformMatrix4fv(null_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
-        // Point light pass
-        deferred_lighting_prog.bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        gbuffer.bindTextures();
+            glDrawBuffer(GL_NONE);
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            glClear(GL_STENCIL_BUFFER_BIT);
+            glStencilFunc(GL_ALWAYS, 0, 0);
+            glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+            glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+            
+            // set up and render sphere
+            M.pushMatrix();
+            M.scale(calculate_point_light_radius(*it));
+            M.translate(it->position); // set the sphere's position to the light's pos
+            sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
+            
+            
+            null_prog.unbind();
 
-        glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
-        glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
-        glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
-        glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
-        glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
-        
-        glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1,
-                     vec3(6.0f, 1.0f, 28.0f).data());
-        glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1,
-                     vec3(0.3, 0.5, 0.7).data());
-        glUniform1f(deferred_lighting_prog.getUniform("light.linear"), 0.14f);
-        glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"), 0.07f);
+            // Point light pass
+            deferred_lighting_prog.bind();
+            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            gbuffer.bindTextures();
+            gbuffer.bindFinalBuffer();
+            glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendEquation(GL_FUNC_ADD);
+            glBlendFunc(GL_ONE, GL_ONE);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
 
-        vec3 viewPos = -(camera->translations);
-        glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1, viewPos.data());
+            glUniformMatrix4fv(deferred_lighting_prog.getUniform("P"), 
+                               1, GL_FALSE, P.topMatrix().data());
+            glUniformMatrix4fv(deferred_lighting_prog.getUniform("V"), 
+                               1, GL_FALSE, V.topMatrix().data());
+            glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
+            glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
+            glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
+            glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+            glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
+
+            glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
+                         it->position.data());
+            glUniform3fv(deferred_lighting_prog.getUniform("light.ambient"), 1, 
+                         it->ambient.data());
+            glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1, 
+                         it->diffuse.data());
+            glUniform3fv(deferred_lighting_prog.getUniform("light.specular"), 1, 
+                         it->specular.data());
+            glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"),
+                        it->quadratic);
+            glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
+                        it->linear);
+            vec3 viewPos = -(camera->translations);
+            glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
+                         viewPos.data());
+            glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+            glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), width, height);
+            sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
+
+            glCullFace(GL_BACK);
+            glDisable(GL_BLEND);
+
+            
+            M.popMatrix();
+            deferred_lighting_prog.unbind();
+            glDisable(GL_STENCIL_TEST);
+            gbuffer.unbindFinalBuffer();
+        }
+
+        gbuffer.copyFinalBuffer(width, height);
         
-        quad.Render();
-        gbuffer.copyDepthBuffer(width, height);       
+        //gbuffer.copyDepthBuffer(width, height);       
         
-        draw_text(*window);
-        deferred_lighting_prog.unbind();
+        //draw_text(*window);
+        
 
         // Final pass
 #endif
