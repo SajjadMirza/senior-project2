@@ -91,10 +91,6 @@ void Gbuffer::bind()
     glDrawBuffers(4, attachments);
 }
 
-void Gbuffer::unbind()
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
 
 extern int special_texture_handle;
 
@@ -143,8 +139,13 @@ void Gbuffer::startFrame()
 
 void Gbuffer::bindFinalBuffer()
 {
-//    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glDrawBuffer(GL_COLOR_ATTACHMENT4);
+    int x;
+    glGetIntegerv(GL_DRAW_BUFFER, &x);
+    if (x != GL_COLOR_ATTACHMENT4) {
+        LOG("GL_DRAW_BUFFER not correctly set! " << x);
+    }
 }
 
 void Gbuffer::unbindFinalBuffer()
@@ -154,6 +155,15 @@ void Gbuffer::unbindFinalBuffer()
 
 void Gbuffer::copyFinalBuffer(uint width, uint height)
 {
+/*
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    glDrawBuffer(GL_COLOR_ATTACHMENT4);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+*/
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glReadBuffer(GL_COLOR_ATTACHMENT4);

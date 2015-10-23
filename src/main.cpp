@@ -831,7 +831,7 @@ int main(void)
         
         // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 
-        gbuffer.unbind();
+
         deferred_geom_prog.unbind();
 
 
@@ -842,6 +842,7 @@ int main(void)
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
             glUniformMatrix4fv(null_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
+//            glDrawBuffer(GL_COLOR_ATTACHMENT4);
             glDrawBuffer(GL_NONE);
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
@@ -864,6 +865,7 @@ int main(void)
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gbuffer.bindTextures();
             gbuffer.bindFinalBuffer();
+//            glDisable(GL_STENCIL_TEST);
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
@@ -881,7 +883,7 @@ int main(void)
             glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
             glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
             glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
-
+ 
             glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
                          it->position.data());
             glUniform3fv(deferred_lighting_prog.getUniform("light.ambient"), 1, 
