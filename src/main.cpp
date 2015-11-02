@@ -622,6 +622,7 @@ int main(void)
     init_entities(&entities);
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     init_lights();
+    LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
     ColRow logic_tl = col_row(31, 18);
     ColRow logic_br = col_row(41, 26);
@@ -848,17 +849,23 @@ int main(void)
             glDisable(GL_CULL_FACE);
             glClear(GL_STENCIL_BUFFER_BIT);
             glStencilFunc(GL_ALWAYS, 0, 0);
-            glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-            glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+#if 1
+            //glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+            //glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+#else
+            glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+            glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+#endif
             
             // set up and render sphere
             M.pushMatrix();
             M.scale(calculate_point_light_radius(*it));
             M.translate(it->position); // set the sphere's position to the light's pos
-            sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
-            
+            //sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
+            quad.Render();
             
             null_prog.unbind();
+
 
             // Point light pass
             deferred_lighting_prog.bind();
@@ -867,6 +874,7 @@ int main(void)
             gbuffer.bindFinalBuffer();
 //            glDisable(GL_STENCIL_TEST);
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+//            glStencilFunc(GL_EQUAL, 1, 0xFF);
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendEquation(GL_FUNC_ADD);
@@ -900,9 +908,11 @@ int main(void)
             glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
                          viewPos.data());
             glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
-            glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), width, height);
-            sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
-
+            glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
+                        static_cast<float>(width), static_cast<float>(height));
+            //sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
+            quad.Render();
+            
             glCullFace(GL_BACK);
             glDisable(GL_BLEND);
 
