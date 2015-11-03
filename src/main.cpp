@@ -66,8 +66,8 @@ const uint init_h = 768;
 uint new_w = init_w;
 uint new_h = init_h;
 
-const uint map_cols = 45;
-const uint map_rows = 45;
+const uint map_cols = 50;
+const uint map_rows = 50;
 
 int special_texture_handle = 0;
 
@@ -552,11 +552,23 @@ static void init_lights()
     pl.diffuse = vec3(1.0, 1.0, 1.0);
     pl.specular = vec3(1.0, 1.0, 1.0);
     pl.intensity = pl.constant = 1.0;
-    pl.linear = 0.7;
-    pl.quadratic = 1.8;
-    pl.position = vec3(6.0f, 1.0f, 28.0f);
+    pl.linear = 0.35;
+    pl.quadratic = 0.9;
+    pl.position = vec3(3.0f, 1.0f, 25.0f);
 
     point_lights.push_back(pl);
+    
+    pl.position = vec3(6.0f, 1.0, 25.0f);
+    point_lights.push_back(pl);
+
+    pl.position = vec3(3.0f, 1.0, 30.0f);
+    point_lights.push_back(pl);
+
+    pl.position = vec3(6.0f, 1.0, 30.0f);
+    point_lights.push_back(pl);
+
+    pl.position = vec3(7.0f, 1.0, 25.0f);
+//    point_lights.push_back(pl);
 }
 
 std::unique_ptr<Entity> init_sphere_light_volume()
@@ -613,7 +625,8 @@ int main(void)
     
 
     Map map(map_cols, map_rows);
-    map.loadMapFromFile("resources/maps/our_map.txt");
+    //map.loadMapFromFile("resources/maps/our_map.txt");
+    map.loadMapFromImage("resources/maps/map_level_0_L.tga");
     std::vector<Entity*> floors;
     std::vector<Entity*> walls;
     init_walls(&walls, map);

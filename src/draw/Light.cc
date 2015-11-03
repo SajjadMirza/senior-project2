@@ -12,7 +12,7 @@ float calculate_point_light_radius(const PointLight &light)
     float Kc = light.constant;
     
     float radius = (-Kl + std::sqrt(Kl * Kl - 4 * Kq * (Kc - (256.0/cutoff) * Imax))) / (2 * Kq);
-    LOG("radius " << radius);
+//    LOG("radius " << radius);
     return radius;
 //    return 30;
 }

@@ -345,5 +345,4 @@ namespace resource {
         LOG("done loading texture");
     }
 
-
 }

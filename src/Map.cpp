@@ -3,6 +3,10 @@
 #include <fstream>
 #include <cassert>
 
+#include <resources.hpp>
+#include <log.hpp>
+
+
 const char hallway_marker = '#';
 const char empty_marker = ' ';
 const char sentinel = '.';
@@ -66,6 +70,89 @@ void Map::initWalls() {
             }
         }
     }
+}
+
+static const uint32_t RED_SHIFT    = 16;
+static const uint32_t GREEN_SHIFT  = 8;
+static const uint32_t BLUE_SHIFT   = 0;
+
+static const uint32_t COLOR_ROOM_FLOOR   = 0x0000FF;
+static const uint32_t COLOR_BIG_LIGHT    = 0xFFFF00;
+static const uint32_t COLOR_SMALL_LIGHT  = 0x00FFFF;
+static const uint32_t COLOR_BOSS_FLOOR   = 0xFF0000;
+static const uint32_t COLOR_START_POS    = 0x00FF00;
+static const uint32_t COLOR_CORRIDOR     = 0x808080;
+static const uint32_t COLOR_EMPTY        = 0xFFFFFF;
+
+int Map::loadMapFromImage(const char *filename)
+{
+    FIBITMAP *img = resource::GenericLoader(filename, 0);
+    uint bpp = FreeImage_GetBPP(img);
+//    BYTE *data = FreeImage_GetBits(img);
+
+    uint width = FreeImage_GetWidth(img);
+    uint height = FreeImage_GetHeight(img);
+    uint pitch = FreeImage_GetPitch(img);
+    uint line = FreeImage_GetLine(img); // Line means "width measured in bytes"
+    uint bytespp = line / width;
+
+    FREE_IMAGE_TYPE imgtype = FreeImage_GetImageType(img);
+
+    if (bpp < 24) {
+        ERROR("Map file bit depth < 24: " << bpp);
+        exit(-1);
+    }
+
+    if (imgtype != FIT_BITMAP) {
+        ERROR("Map file is not bitmap!");
+        exit(-1);
+    }
+    
+    
+    for (uint y = 0; y < height; y++) {\
+        BYTE *bits = FreeImage_GetScanLine(img, y);
+        for (uint x = 0; x < width; x++) {
+            uint32_t pixel = 0;
+            pixel |= (bits[FI_RGBA_RED] << RED_SHIFT);
+            pixel |= (bits[FI_RGBA_GREEN] << GREEN_SHIFT);
+            pixel |= (bits[FI_RGBA_BLUE] << BLUE_SHIFT);
+            bits += bytespp;
+
+            switch (pixel) {
+            case COLOR_EMPTY: // Nothing to do
+                break;
+            case COLOR_ROOM_FLOOR:
+                grid[x][y].type = HALLWAY;
+                grid[x][y].name = "HALLWAY";
+                break;
+            case COLOR_BIG_LIGHT:
+                grid[x][y].type = HALLWAY;
+                grid[x][y].name = "HALLWAY";
+                break;
+            case COLOR_SMALL_LIGHT:
+                grid[x][y].type = HALLWAY;
+                grid[x][y].name = "HALLWAY";
+                break;
+            case COLOR_BOSS_FLOOR:
+                grid[x][y].type = HALLWAY;
+                grid[x][y].name = "HALLWAY";
+                break;
+            case COLOR_START_POS:
+                grid[x][y].type = HALLWAY;
+                grid[x][y].name = "HALLWAY";
+                break;
+            case COLOR_CORRIDOR:
+                grid[x][y].type = HALLWAY;
+                grid[x][y].name = "HALLWAY";
+                break;
+            default:
+                ERROR("Pixel value not from accepted set " << std::hex << pixel);
+                assert(0 && __FILE__ && __LINE__);
+            }
+        }
+    }
+
+    initWalls();
 }
 
 int Map::loadMapFromFile(std::string filename) {

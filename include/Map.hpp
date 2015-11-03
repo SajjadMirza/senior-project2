@@ -54,6 +54,7 @@ public:
     ~Map();
 
     int loadMapFromFile(std::string filename);
+    int loadMapFromImage(const char *filename);
 
     CellType getTypeForCell(uint col, uint row) const;
     Entity *getMapComponentForCell(uint col, uint row) const;
