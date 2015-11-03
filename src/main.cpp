@@ -549,11 +549,11 @@ static void init_lights()
     PointLight pl;
     
     pl.ambient = vec3(0.05, 0.05, 0.05);
-    pl.diffuse = vec3(0.3, 0.5, 0.7);
+    pl.diffuse = vec3(1.0, 1.0, 1.0);
     pl.specular = vec3(1.0, 1.0, 1.0);
-    pl.intensity = 1.0;
-    pl.linear = 0.14;
-    pl.quadratic = 0.07;
+    pl.intensity = pl.constant = 1.0;
+    pl.linear = 0.7;
+    pl.quadratic = 1.8;
     pl.position = vec3(6.0f, 1.0f, 28.0f);
 
     point_lights.push_back(pl);
@@ -920,7 +920,6 @@ int main(void)
             glCullFace(GL_BACK);
             glDisable(GL_BLEND);
 
-            
             M.popMatrix();
             deferred_lighting_prog.unbind();
             glDisable(GL_STENCIL_TEST);
@@ -932,6 +931,7 @@ int main(void)
         gbuffer.copyDepthBuffer(width, height);       
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
         draw_text(*window);
         glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);

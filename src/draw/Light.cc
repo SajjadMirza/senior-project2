@@ -1,5 +1,8 @@
 #include <draw/Light.hpp>
 #include <cmath>
+#include <log.hpp>
+
+static const float cutoff = 5.0;
 
 float calculate_point_light_radius(const PointLight &light)
 {
@@ -8,8 +11,8 @@ float calculate_point_light_radius(const PointLight &light)
     float Kq = light.quadratic;
     float Kc = light.constant;
     
-    float radius = (-Kl + std::sqrt(Kl * Kl - 4 * Kq * (Kc - (256.0/5.0) * Imax))) / (2 * Kq);
-    
+    float radius = (-Kl + std::sqrt(Kl * Kl - 4 * Kq * (Kc - (256.0/cutoff) * Imax))) / (2 * Kq);
+    LOG("radius " << radius);
     return radius;
 //    return 30;
 }
