@@ -55,6 +55,7 @@ Program color_prog;
 Program deferred_geom_prog;
 Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
+Program null_prog;
 int debug_gbuffer_mode = 0;
 #endif
 const uint init_w = 1024;
@@ -356,6 +357,12 @@ static void init_gl() {
 
     deferred_lighting_prog.addAttribute("wordCoords");
     deferred_lighting_prog.addUniform("uTextToggle");
+
+    null_prog.setShaderNames(header + "null_vert.glsl",
+                             header + "null_frag.glsl");
+    null_prog.init();
+    null_prog.addAttribute("vertPos");
+    null_prog.addUniform("scale");
 #endif
     GLSL::checkVersion();
 }
@@ -738,7 +745,7 @@ int main(void)
         deferred_geom_prog.bind();
         gbuffer.bind();
        
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glUniformMatrix4fv(deferred_geom_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(deferred_geom_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
         glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
@@ -786,12 +793,34 @@ int main(void)
 
         // Stencil pass
         glEnable(GL_STENCIL_TEST);
-        glDisable(GL_STENCIL_TEST);
+        //glClear(GL_STENCIL_BUFFER_BIT);
+        GLenum error = glGetError();
+        if (error == GL_INVALID_VALUE) {
+            LOG("Failed to clear stencil buffer");
+        }
+
+
+        glDisable(GL_DEPTH_TEST);
+#if 1
+        //glDrawBuffer(GL_NONE);
+        glStencilFunc(GL_ALWAYS, 1, 0);
+        glStencilMask(0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        null_prog.bind();
+        glUniform1f(null_prog.getUniform("scale"), 0.5);
+        quad.Render();
+        null_prog.unbind();
+#endif
+        //glDisable(GL_STENCIL_TEST);
+        glDisable(GL_DEPTH_TEST);
 
         // Point light pass
         deferred_lighting_prog.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         gbuffer.bindTextures();
+        gbuffer.bindFinalBuffer();
+        glStencilFunc(GL_EQUAL, 1, 0xFF);
+        glStencilMask(0);
 
         glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
         glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
@@ -811,10 +840,16 @@ int main(void)
                      viewPos.data());
         
         quad.Render();
+        gbuffer.copyFinalBuffer(width, height);
         gbuffer.copyDepthBuffer(width, height);       
         
+        glDisable(GL_STENCIL_TEST);
+        glEnable(GL_DEPTH_TEST);
+
         draw_text(*window);
         deferred_lighting_prog.unbind();
+
+        
 
         // Final pass
 #endif

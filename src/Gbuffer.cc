@@ -142,6 +142,7 @@ void Gbuffer::startFrame()
 
 void Gbuffer::bindFinalBuffer()
 {
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
     glDrawBuffer(GL_COLOR_ATTACHMENT4);
 }
 
