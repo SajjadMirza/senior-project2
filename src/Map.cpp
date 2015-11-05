@@ -107,16 +107,22 @@ int Map::loadMapFromImage(const char *filename)
         ERROR("Map file is not bitmap!");
         exit(-1);
     }
+
+    vec3 base_light_pos(0.5, 1.0, 0.5);
     
     
-    for (uint y = 0; y < height; y++) {\
-        BYTE *bits = FreeImage_GetScanLine(img, y);
-        for (uint x = 0; x < width; x++) {
+    
+    for (uint j = 0; j < height; j++) {
+        BYTE *bits = FreeImage_GetScanLine(img, j);
+        for (uint i = 0; i < width; i++) {
             uint32_t pixel = 0;
             pixel |= (bits[FI_RGBA_RED] << RED_SHIFT);
             pixel |= (bits[FI_RGBA_GREEN] << GREEN_SHIFT);
             pixel |= (bits[FI_RGBA_BLUE] << BLUE_SHIFT);
             bits += bytespp;
+
+            uint x = i;
+            uint y = height - j;
 
             switch (pixel) {
             case COLOR_EMPTY: // Nothing to do
@@ -128,10 +134,12 @@ int Map::loadMapFromImage(const char *filename)
             case COLOR_BIG_LIGHT:
                 grid[x][y].type = HALLWAY;
                 grid[x][y].name = "HALLWAY";
+                major_light_positions.push_back(base_light_pos + vec3(x, 0, y));
                 break;
             case COLOR_SMALL_LIGHT:
                 grid[x][y].type = HALLWAY;
                 grid[x][y].name = "HALLWAY";
+                minor_light_positions.push_back(base_light_pos + vec3(x, 0, y));
                 break;
             case COLOR_BOSS_FLOOR:
                 grid[x][y].type = HALLWAY;
@@ -146,7 +154,8 @@ int Map::loadMapFromImage(const char *filename)
                 grid[x][y].name = "HALLWAY";
                 break;
             default:
-                ERROR("Pixel value not from accepted set " << std::hex << pixel);
+                ERROR("Pixel value not from accepted set (" << x << ", " <<  y << "): " 
+                      << std::hex << pixel);
                 assert(0 && __FILE__ && __LINE__);
             }
         }
@@ -276,4 +285,14 @@ MapCell& Map::get(uint col, uint row) {
 
 const MapCell& Map::cget(uint col, uint row) const {
     return grid[col][row];
+}
+
+const std::vector<Eigen::Vector3f>& Map::getMajorLightPositions() const
+{
+    return major_light_positions;
+}
+
+const std::vector<Eigen::Vector3f>& Map::getMinorLightPositions() const
+{
+    return minor_light_positions;
 }

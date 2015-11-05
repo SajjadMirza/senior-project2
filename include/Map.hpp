@@ -46,6 +46,8 @@ private:
     boost::multi_array<MapCell, MAP_DIM> grid;
     uint columns;
     uint rows;
+    std::vector<Eigen::Vector3f> major_light_positions;
+    std::vector<Eigen::Vector3f> minor_light_positions;
 
     void initWalls();
 
@@ -65,6 +67,8 @@ public:
 
     MapCell& get(uint col, uint row);
     const MapCell& cget(uint col, uint row) const;
+    const std::vector<Eigen::Vector3f>& getMajorLightPositions() const;
+    const std::vector<Eigen::Vector3f>& getMinorLightPositions() const;
 };
 
 #undef MAP_DIM // 

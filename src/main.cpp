@@ -71,14 +71,29 @@ const uint map_rows = 50;
 
 int special_texture_handle = 0;
 
-float deg_to_rad(float deg) {
+inline float deg_to_rad(float deg) 
+{
     float rad = (M_PI / 180.0f) * deg;
     return rad;
 }
 
+inline vec3 make_color(int red, int green, int blue)
+{
+    return vec3(red/255.0, green/255.0, blue/255.0);
+}
+
+inline vec3 make_color(int hex)
+{
+    return vec3(((hex >> 16) & 0xFF) / 255.0, 
+                ((hex >> 8) & 0xFF) / 255.0, 
+                ((hex & 0xFF)) / 255.0);
+}
+
+
 static void bufferMovement(GLFWwindow *window,
                            const std::vector<Entity> &entities,
-                           const Map &map, int col, int row) {
+                           const Map &map, int col, int row) 
+{
     char c = 0;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         c = 'w';
@@ -544,7 +559,7 @@ static void init_entities(std::vector<Entity> *entities) {
     }
 }
 
-static void init_lights()
+static void init_lights(const Map &map)
 {
     PointLight pl;
     
@@ -554,21 +569,28 @@ static void init_lights()
     pl.intensity = pl.constant = 1.0;
     pl.linear = 0.35;
     pl.quadratic = 0.9;
-    pl.position = vec3(3.0f, 1.0f, 25.0f);
-
-    point_lights.push_back(pl);
     
-    pl.position = vec3(6.0f, 1.0, 25.0f);
-    point_lights.push_back(pl);
+    for (auto it = map.getMajorLightPositions().cbegin(); 
+         it != map.getMajorLightPositions().cend();
+         it++) {
+        pl.position = *it;
+        point_lights.push_back(pl);
+    }
 
-    pl.position = vec3(3.0f, 1.0, 30.0f);
-    point_lights.push_back(pl);
+    PointLight smallpl;
+    smallpl.ambient = pl.ambient;
+    smallpl.diffuse = make_color(0, 216, 230);
+    smallpl.specular = pl.specular;
+    smallpl.intensity = smallpl.constant = 1.0;
+    smallpl.linear = 0.7;
+    smallpl.quadratic = 1.8;
 
-    pl.position = vec3(6.0f, 1.0, 30.0f);
-    point_lights.push_back(pl);
-
-    pl.position = vec3(7.0f, 1.0, 25.0f);
-//    point_lights.push_back(pl);
+    for (auto it = map.getMinorLightPositions().cbegin(); 
+         it != map.getMinorLightPositions().cend();
+         it++) {
+        smallpl.position = *it;
+        point_lights.push_back(smallpl);
+    }
 }
 
 std::unique_ptr<Entity> init_sphere_light_volume()
@@ -634,7 +656,7 @@ int main(void)
     std::vector<Entity> entities;
     init_entities(&entities);
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
-    init_lights();
+    init_lights(map);
     LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
     ColRow logic_tl = col_row(31, 18);
@@ -674,13 +696,14 @@ int main(void)
         
 
         glfwGetFramebufferSize(window, &width, &height);
-    
+        glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #if !USE_DEFERRED
         // P is the projection matrix
         // MV is the model-view matrix
         MatrixStack P, MV;
+
 
 
         // Apply camera transforms
@@ -846,12 +869,12 @@ int main(void)
         
         // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 
-
+        glDepthMask(GL_FALSE);
         deferred_geom_prog.unbind();
 
-
+        glEnable(GL_STENCIL_TEST);
         for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
-            glEnable(GL_STENCIL_TEST);
+
             // Stencil pass
             null_prog.bind();
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
@@ -861,8 +884,10 @@ int main(void)
             glDrawBuffer(GL_NONE);
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
+
             glClear(GL_STENCIL_BUFFER_BIT);
             glStencilFunc(GL_ALWAYS, 0, 0);
+            glStencilMask(0xff);
 #if 1
             glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
             glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
@@ -891,8 +916,11 @@ int main(void)
             gbuffer.bindFinalBuffer();
 //            glDisable(GL_STENCIL_TEST);
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+            //glStencilMask(0);
 //            glStencilFunc(GL_EQUAL, 1, 0xFF);
             glDisable(GL_DEPTH_TEST);
+//            glDepthMask(GL_FALSE);
+//            glDepthFunc(GL_GREATER);
             glEnable(GL_BLEND);
             glBlendEquation(GL_FUNC_ADD);
             glBlendFunc(GL_ONE, GL_ONE);
@@ -930,14 +958,18 @@ int main(void)
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
 //            quad.Render();
             
+//            glDepthMask(GL_TRUE);
+            glDepthFunc(GL_LESS);
             glCullFace(GL_BACK);
             glDisable(GL_BLEND);
 
             M.popMatrix();
             deferred_lighting_prog.unbind();
-            glDisable(GL_STENCIL_TEST);
+
             gbuffer.unbindFinalBuffer();
+//            break;
         }
+        glDisable(GL_STENCIL_TEST);
 
         gbuffer.copyFinalBuffer(width, height);
         
