@@ -48,18 +48,12 @@ double lastTime = glfwGetTime();
 int lastFPS = 0;
 int nbFrames = 0;
 
-// TEMP ON DRAWING GPU
-Program prog;
-Program color_prog;
-
-#if USE_DEFERRED
 Program deferred_geom_prog;
 Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
 Program null_prog;
 int debug_gbuffer_mode = 0;
 std::vector<PointLight> point_lights;
-#endif
 
 const uint init_w = 1600;
 const uint init_h = 900;
@@ -70,7 +64,6 @@ const uint map_cols = 50;
 const uint map_rows = 50;
 
 int special_texture_handle = 0;
-
 
 sound::FMODDriver sound_driver;
 
@@ -313,32 +306,6 @@ static void init_gl() {
 
     /* Sample Creating a Program */
     std::string header = "resources/shaders/";
-#if !USE_DEFERRED
-    prog.setShaderNames(header + "text_vert.glsl", header + "text_frag.glsl");
-    prog.init();
-    prog.addAttribute("vertPos");
-    prog.addAttribute("vertNor");
-    prog.addAttribute("vertTex");
-    prog.addAttribute("wordCoords");
-    prog.addUniform("P");
-    prog.addUniform("MV");
-    prog.addUniform("mode");
-    prog.addUniform("color");
-    prog.addUniform("texture0");
-    prog.addUniform("textureNorm");
-    prog.addUniform("uLightPos");
-    prog.addUniform("uTextToggle");
-    prog.addUniform("uNormFlag");
-    prog.addUniform("uRedder");
-
-    color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
-    color_prog.init();
-    color_prog.addAttribute("vertPos");
-    color_prog.addUniform("P");
-    color_prog.addUniform("MV");
-    color_prog.addUniform("uColor");
-#endif
-#if USE_DEFERRED
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
     deferred_geom_prog.init();
@@ -400,7 +367,7 @@ static void init_gl() {
     null_prog.addUniform("M");
     null_prog.addUniform("V");
     null_prog.addUniform("P");
-#endif
+
     GLSL::checkVersion();
 }
 
@@ -716,135 +683,19 @@ int main(void)
     // test sound 
     // sound_driver.testSound();
 
-#if USE_DEFERRED
     LOG("gbuffer stuff");
     Gbuffer gbuffer;
     gbuffer.init(width, height);
     draw::Quad quad;
     quad.GenerateData(gbuffer_debug_prog.getAttribute("vertPos"),
                       gbuffer_debug_prog.getAttribute("vertTex"));
-#endif
 
     while (!glfwWindowShouldClose(window)) {
         float ratio;
-        
-
         glfwGetFramebufferSize(window, &width, &height);
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#if !USE_DEFERRED
-        // P is the projection matrix
-        // MV is the model-view matrix
-        MatrixStack P, MV;
-
-
-
-        // Apply camera transforms
-        P.pushMatrix();
-        camera->applyProjectionMatrix(&P);
-        MV.pushMatrix();
-        camera->applyViewMatrix(&MV);
-
-        /* Beginning main render path */
-        prog.bind();
-
-        /* Send projection matrix */
-        glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-        glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
-        glUniform1i(prog.getUniform("uTextToggle"), 0);
-        glUniform1i(prog.getUniform("uNormFlag"), 0);
-
-        for (auto it = entities.begin(); it != entities.end(); it++) {
-            if (it->selected == true) {
-                glUniform1i(prog.getUniform("uRedder"), 1);
-            }
-            else {
-                glUniform1i(prog.getUniform("uRedder"), 0);
-            }
-
-            if (it->getName() == "player" && camera == fp_camera) {
-                Eigen::Vector3f change = -camera->translations;
-                
-                change(0) = std::round(change(0)) - 0.5f;
-                change(1) -= 1.0f;
-                change(2) = std::round(change(2) - 1) + 0.5f;
-
-                it->setPosition(change);
-            }
-            else {
-                if (it->getName() == "player") {
-
-                }
-                MV.pushMatrix();
-                MV.multMatrix(it->getRotation());
-                MV.worldTranslate(it->getPosition(), it->getRotation());
-                MV.scale(0.5f);
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                                   MV.topMatrix().data());
-                it->getDrawable().draw(&prog, &P, &MV, camera);
-                MV.popMatrix();
-            }
-        }
-        glUniform1i(prog.getUniform("uRedder"), 0);
-
-
-        for (auto it = floors.begin(); it != floors.end(); it++) {
-            if ((*it)->selected == true) {
-                glUniform1i(prog.getUniform("uRedder"), 1);
-            }
-            else {
-                glUniform1i(prog.getUniform("uRedder"), 0);
-            }
-            Entity *fl = *it;
-            MV.pushMatrix();
-            MV.worldTranslate(fl->getPosition(), fl->getRotation());
-
-            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                               MV.topMatrix().data());
-            fl->getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-        }
-        glUniform1i(prog.getUniform("uRedder"), 0);
-
-
-        for (auto it = walls.begin(); it != walls.end(); it++) {
-            if ((*it)->selected == true) {
-                glUniform1i(prog.getUniform("uRedder"), 1);
-            }
-            else {
-                glUniform1i(prog.getUniform("uRedder"), 0);
-            }
-            Entity *wall = *it;
-            MV.pushMatrix();
-            MV.worldTranslate(wall->getPosition(), wall->getRotation());
-
-            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                               MV.topMatrix().data());
-            wall->getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-        }
-        glUniform1i(prog.getUniform("uRedder"), 0);
-
-        draw_text(*window);
-
-        logic->draw(&prog, &P, &MV, camera, &text, window);
-
-        if (camera == fp_camera) {
-            Eigen::Vector3f campos = -camera->translations;
-            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-            pattern->notifyPosition(col_row(col, row));
-        }
-        
-        //LOG("pattern->draw()");
-        pattern->draw(&prog, &P, &MV, camera, &text, window);
-        //LOG("after pattern->draw()");
-        
-        // Unbind the program
-        prog.unbind();
-
-#else
-        // Deferred shading code
         MatrixStack P, M, V;
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
@@ -866,7 +717,7 @@ int main(void)
         glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
 
-#if 1
+
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
@@ -878,7 +729,7 @@ int main(void)
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
-#endif
+
 
         for (auto it = walls.begin(); it != walls.end(); it++) {
             Entity *wall = *it;
@@ -900,21 +751,18 @@ int main(void)
             M.popMatrix();
         }
         
-        
-        // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // Second step: per-light calculations
                 
         glDepthMask(GL_FALSE);
         deferred_geom_prog.unbind();
 
         glEnable(GL_STENCIL_TEST);
         for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
-
             // Stencil pass
             null_prog.bind();
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
             glUniformMatrix4fv(null_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
-//            glDrawBuffer(GL_COLOR_ATTACHMENT4);
             glDrawBuffer(GL_NONE);
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
@@ -922,39 +770,30 @@ int main(void)
             glClear(GL_STENCIL_BUFFER_BIT);
             glStencilFunc(GL_ALWAYS, 0, 0);
             glStencilMask(0xff);
-#if 1
+
             glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
             glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-#else
-            glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-            glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-#endif
+
             
             // set up and render sphere
             M.pushMatrix();
-            //M.scale(calculate_point_light_radius(*it));
-            //M.scale(5);
             M.translate(it->position); // set the sphere's position to the light's pos
-//            M.scale(5);
             M.scale(calculate_point_light_radius(*it));
+
             sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
-            //quad.Render();
             
             null_prog.unbind();
 
-
             // Point light pass
             deferred_lighting_prog.bind();
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
             gbuffer.bindTextures();
             gbuffer.bindFinalBuffer();
-//            glDisable(GL_STENCIL_TEST);
+
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-            //glStencilMask(0);
-//            glStencilFunc(GL_EQUAL, 1, 0xFF);
+
             glDisable(GL_DEPTH_TEST);
-//            glDepthMask(GL_FALSE);
-//            glDepthFunc(GL_GREATER);
+
             glEnable(GL_BLEND);
             glBlendEquation(GL_FUNC_ADD);
             glBlendFunc(GL_ONE, GL_ONE);
@@ -991,6 +830,7 @@ int main(void)
             glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
             glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
                         static_cast<float>(width), static_cast<float>(height));
+
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
 
             glDepthFunc(GL_LESS);
@@ -1001,7 +841,6 @@ int main(void)
             deferred_lighting_prog.unbind();
 
             gbuffer.unbindFinalBuffer();
-//            break;
         }
         glDisable(GL_STENCIL_TEST);
 
@@ -1017,32 +856,18 @@ int main(void)
         deferred_lighting_prog.unbind();
 
         // Final pass
-#endif
 
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-
-//            light_pos(0) = campos(0);
-//            light_pos(2) = campos(2);
-
-//            std::cout << col << " " << row << std::endl;
-//            std::cout << campos(0) << " " << campos(2) << std::endl;
-
             bufferMovement(window, entities, map, col, row);
         }
         else {
             bufferMovement(window, entities, map, -1, -1);
         }
 
-
-#if USE_DEFERRED
         V.popMatrix();
-#else
-        MV.popMatrix();
-#endif        
         P.popMatrix();
-
 
         findFPS();        
 
