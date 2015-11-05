@@ -15,6 +15,7 @@ namespace sound {
             FMOD::System *system;
             
             void testSound();
+            void footStep(bool step);
     };
 }
 
