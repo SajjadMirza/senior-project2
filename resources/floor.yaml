@@ -5,11 +5,18 @@ directory: resources/models/cube
 format: obj
 textures:
   diffuse:
-    Ground_Texture_2/DiffuseMap.jpg
+    New_Texture/tile_blue_color.png
+#    white-square.jpg
+#    New_Texture/tile_blue_color_big.png
+#    character.jpg
+#    Ground_Texture_2/DiffuseMap.jpg 
   normal:
-    Ground_Texture_2/NormalMap.png
+    New_Texture/NormalMap.png
+#    Ground_Texture/NormalMap.png
   specular:
-    Ground_Texture_2/SpecularMap.png
+    New_Texture/SpecularMap.png
+#    white-square.jpg
+#    Ground_Texture/SpecularMap.png 
 transforms:
   translations:
     xaxis: -0.5

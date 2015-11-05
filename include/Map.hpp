@@ -48,6 +48,8 @@ private:
     uint rows;
     std::vector<Eigen::Vector3f> major_light_positions;
     std::vector<Eigen::Vector3f> minor_light_positions;
+    std::vector<Eigen::Vector3f> tiny_light_positions;
+    Eigen::Vector3f player_start;
 
     void initWalls();
 
@@ -69,6 +71,8 @@ public:
     const MapCell& cget(uint col, uint row) const;
     const std::vector<Eigen::Vector3f>& getMajorLightPositions() const;
     const std::vector<Eigen::Vector3f>& getMinorLightPositions() const;
+    const std::vector<Eigen::Vector3f>& getTinyLightPositions() const;
+    const Eigen::Vector3f& getPlayerStart() const;
 };
 
 #undef MAP_DIM // 

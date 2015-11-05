@@ -33,9 +33,17 @@ Map::~Map() {
 }
 
 void Map::initWalls() {
+    vec3 light_pos;
+    vec3 up_pos(0, 0, 0);
+    vec3 left_pos(-1, 0, 1);
+    vec3 right_pos(1, 0, 1);
+    vec3 down_pos(0, 0, 2);
     for (int col = 0; col < columns; col++) {
         for (int row = 0; row < rows; row++) {
             MapCell &current = grid[col][row];
+            light_pos(0) = col;
+            light_pos(1) = 0.2;
+            light_pos(2) = row;
             if (current.type != EMPTY) {
                 continue;
             }
@@ -45,6 +53,7 @@ void Map::initWalls() {
                 if (left.type != EMPTY && left.type != WALL) {
                     current.type = WALL;
                     current.name = "WALL";
+                    tiny_light_positions.push_back(light_pos + left_pos);
                 }
             }
             if (row != 0) {
@@ -52,6 +61,11 @@ void Map::initWalls() {
                 if (up.type != EMPTY && up.type != WALL) {
                     current.type = WALL;
                     current.name = "WALL";
+                    tiny_light_positions.push_back(light_pos + up_pos);
+                    if (row == 49 || row == 50) {
+                        LOG("found upward floor at (" << col << ", " << row << ") "
+                            << up.type);
+                    }
                 }
             }
             if (col != columns - 1) {
@@ -59,6 +73,7 @@ void Map::initWalls() {
                 if (right.type != EMPTY && right.type != WALL) {
                     current.type = WALL;
                     current.name = "WALL";
+                    tiny_light_positions.push_back(light_pos + right_pos);
                 }
             }
             if (row != rows - 1) {
@@ -66,6 +81,7 @@ void Map::initWalls() {
                 if (down.type != EMPTY && down.type != WALL) {
                     current.type = WALL;
                     current.name = "WALL";
+                    tiny_light_positions.push_back(light_pos + down_pos);
                 }
             }
         }
@@ -108,7 +124,7 @@ int Map::loadMapFromImage(const char *filename)
         exit(-1);
     }
 
-    vec3 base_light_pos(0.5, 1.0, 0.5);
+    vec3 base_light_pos(0, 1.0, 0);
     
     
     
@@ -122,7 +138,7 @@ int Map::loadMapFromImage(const char *filename)
             bits += bytespp;
 
             uint x = i;
-            uint y = height - j;
+            uint y = (height - j) - 1;
 
             switch (pixel) {
             case COLOR_EMPTY: // Nothing to do
@@ -148,6 +164,7 @@ int Map::loadMapFromImage(const char *filename)
             case COLOR_START_POS:
                 grid[x][y].type = HALLWAY;
                 grid[x][y].name = "HALLWAY";
+                player_start = vec3(x, 0.0f, y);
                 break;
             case COLOR_CORRIDOR:
                 grid[x][y].type = HALLWAY;
@@ -295,4 +312,14 @@ const std::vector<Eigen::Vector3f>& Map::getMajorLightPositions() const
 const std::vector<Eigen::Vector3f>& Map::getMinorLightPositions() const
 {
     return minor_light_positions;
+}
+
+const std::vector<Eigen::Vector3f>& Map::getTinyLightPositions() const
+{
+    return tiny_light_positions;
+}
+
+const Eigen::Vector3f& Map::getPlayerStart() const
+{
+    return player_start;
 }

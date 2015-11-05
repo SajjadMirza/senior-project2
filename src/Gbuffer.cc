@@ -30,7 +30,7 @@ bool Gbuffer::init(uint width, uint height)
     glGenTextures(1, &gnor);
     glBindTexture(GL_TEXTURE_2D, gnor);
     LOG("GBUFFER POSITION TEXTURE: " << gnor);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 //    gluBuild2DMipmaps(GL_TEXTURE_2D, GLU_RGB, width, height, GLU_RGB, GLU_FLOAT, NULL);

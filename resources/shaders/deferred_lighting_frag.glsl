@@ -9,6 +9,7 @@ struct Light {
     vec3 ambient;
     float quadratic;
     float linear;
+    float intensity;
 };
 uniform Light light;
 
@@ -38,26 +39,31 @@ void main()
     if (uTextToggle == 0) {
         vec2 texCoord = gl_FragCoord.xy / uScreenSize;
         vec3 fragPos = texture(gPosition, texCoord).rgb;
-        vec3 fragNor = texture(gNormal, texCoord).rgb;
+        vec3 fragNor = (texture(gNormal, texCoord).rgb);
         vec3 fragCol = texture(gDiffuse, texCoord).rgb;
         float spc = texture(gSpecular, texCoord).r;
-        vec3 fragSpc = vec3(spc, spc, spc);
+//        vec3 fragSpc = vec3(spc, spc, spc);
+        vec3 fragSpc = vec3(0, 0, spc);
 
         vec3 ambient = fragCol * 0.1 * light.ambient;
         vec3 viewDir = normalize(viewPos - fragPos);
         
         float dist = length(light.position - fragPos);
         vec3 lightDir = normalize(light.position - fragPos);
-        vec3 diffuse = max(dot(fragNor, lightDir), 0.0) * fragCol * light.color;
+        vec3 diffuse = max(dot(fragNor, lightDir), 0.0) * fragCol * light.color * 1.0;
     //    vec3 diffuse = fragCol * light.color;
-        vec3 halfDir = normalize(lightDir + viewDir);  
+        vec3 halfDir = normalize(lightDir + viewDir);
+        vec3 reflectDir = reflect(-lightDir, fragNor);
         float spec = pow(max(dot(fragNor, halfDir), 0.0), 16.0);
+//        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
         vec3 specular = light.specular * spec * fragSpc;
         float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);
         diffuse *= attenuation;
     //    diffuse * (1.0 / (1.0 + dist));
         specular *= attenuation;
-        vec3 light = diffuse + specular + ambient;
+//        vec3 light = diffuse + specular + ambient;
+        vec3 light = diffuse + specular;        
+//        light = diffuse * 4.0;
 
         vec3 data = vec3(1.0, 0.0, 1.0);
         switch (uDrawMode) {
@@ -65,7 +71,7 @@ void main()
             data = fragPos;
             break;
         case DISPLAY_NORMALS:
-            data = fragNor;
+            data = (fragNor);
             break;
         case DISPLAY_COLOR:
             data = fragCol;

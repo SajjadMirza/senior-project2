@@ -5,6 +5,8 @@
 
 #define LOG_DRAW_CALLS 0
 
+#define LOG(x)
+
 extern int special_texture_handle;
 
 namespace draw {

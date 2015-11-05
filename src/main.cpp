@@ -61,8 +61,8 @@ int debug_gbuffer_mode = 0;
 std::vector<PointLight> point_lights;
 #endif
 
-const uint init_w = 1024;
-const uint init_h = 768;
+const uint init_w = 1600;
+const uint init_h = 900;
 uint new_w = init_w;
 uint new_h = init_h;
 
@@ -591,6 +591,19 @@ static void init_lights(const Map &map)
         smallpl.position = *it;
         point_lights.push_back(smallpl);
     }
+
+    PointLight tinypl = smallpl;
+    tinypl.diffuse = make_color(230, 30, 30);
+    tinypl.linear = 4.5;
+    tinypl.quadratic = 6.7;
+
+    for (auto it = map.getTinyLightPositions().cbegin(); 
+         it != map.getTinyLightPositions().cend();
+         it++) {
+        tinypl.position = *it;
+        point_lights.push_back(tinypl);
+    }
+    
 }
 
 std::unique_ptr<Entity> init_sphere_light_volume()
@@ -609,12 +622,21 @@ std::unique_ptr<Entity> init_sphere_light_volume()
     return sphere;
 }
 
+static void init_camera(const Map& map)
+{
+    fp_camera->translations = -(map.getPlayerStart());
+    fp_camera->translations += (vec3(0, -0.7f, 0));
+    ov_camera->translations = -(map.getPlayerStart());
+    ov_camera->translations += (vec3(0, -30.0f, 0));
+}
+
 int main(void)
 {
     GLFWwindow* window;
     sound::FMODDriver sound_driver;
 
     camera = fp_camera;
+    
 
     // test sound 
     sound_driver.testSound();
@@ -657,6 +679,7 @@ int main(void)
     init_entities(&entities);
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     init_lights(map);
+    init_camera(map);
     LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
     ColRow logic_tl = col_row(31, 18);

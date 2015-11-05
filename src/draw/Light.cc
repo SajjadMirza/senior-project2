@@ -2,7 +2,7 @@
 #include <cmath>
 #include <log.hpp>
 
-static const float cutoff = 5.0;
+static const float cutoff = 3.0;
 
 float calculate_point_light_radius(const PointLight &light)
 {
