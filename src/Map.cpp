@@ -34,15 +34,15 @@ Map::~Map() {
 
 void Map::initWalls() {
     vec3 light_pos;
-    vec3 up_pos(0, 0, 0);
-    vec3 left_pos(-1, 0, 1);
-    vec3 right_pos(1, 0, 1);
-    vec3 down_pos(0, 0, 2);
+    vec3 up_pos(0, 0, 0.40);
+    vec3 left_pos(-.60, 0, 1);
+    vec3 right_pos(.60, 0, 1);
+    vec3 down_pos(0, 0, 1.60);
     for (int col = 0; col < columns; col++) {
         for (int row = 0; row < rows; row++) {
             MapCell &current = grid[col][row];
             light_pos(0) = col;
-            light_pos(1) = 0.2;
+            light_pos(1) = 0.02;
             light_pos(2) = row;
             if (current.type != EMPTY) {
                 continue;

@@ -368,6 +368,7 @@ static void init_gl() {
     deferred_lighting_prog.addUniform("light.linear");
     deferred_lighting_prog.addUniform("light.specular");
     deferred_lighting_prog.addUniform("light.ambient");
+    deferred_lighting_prog.addUniform("light.intensity");    
     deferred_lighting_prog.addUniform("uScreenSize");
     deferred_lighting_prog.addUniform("gPosition");
     deferred_lighting_prog.addUniform("gNormal");
@@ -580,7 +581,7 @@ static void init_lights(const Map &map)
     PointLight smallpl;
     smallpl.ambient = pl.ambient;
     smallpl.diffuse = make_color(0, 216, 230);
-    smallpl.specular = pl.specular;
+    smallpl.specular = smallpl.diffuse;
     smallpl.intensity = smallpl.constant = 1.0;
     smallpl.linear = 0.7;
     smallpl.quadratic = 1.8;
@@ -594,6 +595,7 @@ static void init_lights(const Map &map)
 
     PointLight tinypl = smallpl;
     tinypl.diffuse = make_color(230, 30, 30);
+    tinypl.specular = tinypl.diffuse;
     tinypl.linear = 4.5;
     tinypl.quadratic = 6.7;
 
@@ -972,6 +974,8 @@ int main(void)
                         it->quadratic);
             glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
                         it->linear);
+            glUniform1f(deferred_lighting_prog.getUniform("light.intensity"), 
+                        it->intensity);
             vec3 viewPos = -(camera->translations);
             glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
                          viewPos.data());
@@ -979,9 +983,7 @@ int main(void)
             glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
                         static_cast<float>(width), static_cast<float>(height));
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
-//            quad.Render();
-            
-//            glDepthMask(GL_TRUE);
+
             glDepthFunc(GL_LESS);
             glCullFace(GL_BACK);
             glDisable(GL_BLEND);
