@@ -4,7 +4,11 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
 
+#include <Eigen/Dense>
+
 namespace draw {
+
+    
 
     class Quad {
         GLuint vao;

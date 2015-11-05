@@ -323,6 +323,7 @@ static void init_gl() {
     deferred_geom_prog.addUniform("texture_norm");
     deferred_geom_prog.addUniform("texture_spec");
     deferred_geom_prog.addUniform("uCalcTBN");
+    deferred_geom_prog.addUniform("uInstanced");
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
@@ -689,14 +690,25 @@ int main(void)
     draw::Quad quad;
     quad.GenerateData(gbuffer_debug_prog.getAttribute("vertPos"),
                       gbuffer_debug_prog.getAttribute("vertTex"));
-
+    MatrixStack P, M, V;
+    // Prepare for instancing
+    for (auto it = walls.begin(); it != walls.end(); it++) {
+        Entity *wall = *it;
+        M.pushMatrix();
+        M.worldTranslate(wall->getPosition(), wall->getRotation());
+        glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
+                           M.topMatrix().data());
+        wall->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+        M.popMatrix();
+    }
+        
     while (!glfwWindowShouldClose(window)) {
         float ratio;
         glfwGetFramebufferSize(window, &width, &height);
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        MatrixStack P, M, V;
+
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
@@ -731,16 +743,7 @@ int main(void)
         }
 
 
-        for (auto it = walls.begin(); it != walls.end(); it++) {
-            Entity *wall = *it;
-            M.pushMatrix();
-            M.worldTranslate(wall->getPosition(), wall->getRotation());
-            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
-                               M.topMatrix().data());
-            wall->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
-            M.popMatrix();
-        }
-        
+       
         for (auto it = floors.begin(); it != floors.end(); it++) {
             Entity *floor = *it;
             M.pushMatrix();

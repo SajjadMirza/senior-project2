@@ -21,6 +21,9 @@ namespace draw {
         GLuint tan_buf;
         GLuint bitan_buf;
 
+        friend void instanced_draw(const Shape &shape, const Eigen::Matrix4f *model_matrices, 
+                                   int amount, GLuint h_M);
+
     public:
         std::vector<float> vertices;
         std::vector<float> normals;
@@ -44,6 +47,8 @@ namespace draw {
         void drawSpec(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_spec) const;
         void drawLightVolume(int h_vert) const;
     };
+
+    void instanced_draw(const Shape &shape, const Eigen::Matrix4f *model_matrices, int amount);
 
 }
 

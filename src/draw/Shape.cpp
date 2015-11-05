@@ -11,8 +11,15 @@ extern int special_texture_handle;
 
 namespace draw {
 
+    void instanced_draw(const Shape &shape, const Eigen::Matrix4f *model_matrices, int amount,
+                        GLuint h_M)
+    {
+        
+    }
 
-    void flatten_array(std::vector<float> *dst, const aiVector3D *src, std::size_t num) {
+
+    static void flatten_array(std::vector<float> *dst, const aiVector3D *src, std::size_t num) 
+    {
         dst->reserve(3 * num);
         for (int i = 0; i < num; i++) {
             const aiVector3D v = src[i];
@@ -22,7 +29,8 @@ namespace draw {
         }
     }
 
-    void flatten_array2D(std::vector<float> *dst, const aiVector3D *src, std::size_t num) {
+    static void flatten_array2D(std::vector<float> *dst, const aiVector3D *src, std::size_t num) 
+    {
         dst->reserve(2 * num);
         for (int i = 0; i < num; i++) {
             const aiVector3D &v = src[i];
@@ -31,7 +39,9 @@ namespace draw {
         }
     }
 
-    void flatten_indices(std::vector<unsigned int> *dst, const aiFace *src, std::size_t num) {
+    static void flatten_indices(std::vector<unsigned int> *dst, const aiFace *src, 
+                                std::size_t num) 
+    {
         dst->reserve(3 * num);
         for (int i = 0; i < num; i++) {
             const aiFace f = src[i];

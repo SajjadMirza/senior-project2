@@ -13,6 +13,8 @@ GLfloat quadVertices[] = {
 
 namespace draw {
 
+  
+
     void Quad::GenerateData(int h_vert, int h_uv)
     {
         LOG("h_vert " << h_vert << " h_uv " << h_uv);
