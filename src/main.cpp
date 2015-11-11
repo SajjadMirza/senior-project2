@@ -22,6 +22,7 @@
 #include <Gbuffer.hpp>
 #include <draw/RenderCommands.hpp>
 #include <draw/Light.hpp>
+#include <draw/ShapeBatch.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -539,6 +540,26 @@ static void init_entities(std::vector<Entity> *entities) {
     }
 }
 
+static void setup_batch(draw::ShapeBatch *batch, const std::vector<Entity*> &entities)
+{
+    MatrixStack M;
+    for (auto it = entities.begin(); it != entities.end(); it++) {
+        Entity *e = *it;
+        M.pushMatrix();
+        M.worldTranslate(e->getPosition(), e->getRotation());
+        batch->addTransform(M.topMatrix());
+        M.popMatrix();
+    }
+    batch->init(deferred_geom_prog.getAttribute("iM"));
+    if (entities.size() > 0 ) {
+        Entity *e = entities[0];
+        draw::Drawable &drawable = e->getDrawable();
+        const draw::Shape *mesh = drawable.find_first_shape();
+        batch->target_shape = mesh;
+    }
+
+}
+
 static void init_lights(const Map &map)
 {
     PointLight pl;
@@ -582,9 +603,10 @@ static void init_lights(const Map &map)
          it != map.getTinyLightPositions().cend();
          it++) {
         tinypl.position = *it;
-        point_lights.push_back(tinypl);
+//        point_lights.push_back(tinypl);
     }
     
+    LOG("Initialized " << point_lights.size() << " point lights");
 }
 
 std::unique_ptr<Entity> init_sphere_light_volume()
@@ -699,57 +721,18 @@ int main(void)
                       gbuffer_debug_prog.getAttribute("vertTex"));
     MatrixStack P, M, V;
 
+
     // Prepare for instancing
-    std::vector<mat4> wall_matrices;
-    for (auto it = walls.begin(); it != walls.end(); it++) {
-        Entity *wall = *it;
-        M.pushMatrix();
-        M.worldTranslate(wall->getPosition(), wall->getRotation());
-        wall_matrices.push_back(M.topMatrix());
-        M.popMatrix();
-    }
+    draw::ShapeBatch wall_batch;
+    setup_batch(&wall_batch, walls);
 
-#if 1
-    GLuint wall_vao;
-    glGenVertexArrays(1, &wall_vao);
-    GLuint model_matrix_buffer;
-    glGenBuffers(1, &model_matrix_buffer);
-#endif
-#if 1
-    glBindVertexArray(wall_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, model_matrix_buffer);
-    glBufferData(GL_ARRAY_BUFFER, walls.size() * sizeof(mat4), &wall_matrices[0], GL_STATIC_DRAW);
+    draw::ShapeBatch floor_batch;
+    setup_batch(&floor_batch, floors);
 
-
-    GLsizei vec4size = sizeof(vec4);
-    GLuint matrix_attribute = deferred_geom_prog.getAttribute("iM");
-    glEnableVertexAttribArray(matrix_attribute);
-    glVertexAttribPointer(matrix_attribute, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)0);
-
-    glEnableVertexAttribArray(matrix_attribute + 1);
-    glVertexAttribPointer(matrix_attribute + 1, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, 
-                          (GLvoid*)vec4size);
-
-    glEnableVertexAttribArray(matrix_attribute+2);
-    glVertexAttribPointer(matrix_attribute+2, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, 
-                          (GLvoid*)(2*vec4size));
-
-    glEnableVertexAttribArray(matrix_attribute+3);
-    glVertexAttribPointer(matrix_attribute+3, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, 
-                          (GLvoid*)(3*vec4size));
-
-    glVertexAttribDivisor(matrix_attribute, 1);
-    glVertexAttribDivisor(matrix_attribute+1, 1);
-    glVertexAttribDivisor(matrix_attribute+2, 1);
-    glVertexAttribDivisor(matrix_attribute+3, 1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
     GLuint universal_vao;
     glGenVertexArrays(1, &universal_vao);
     glBindVertexArray(universal_vao);
-#endif
         
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -781,27 +764,32 @@ int main(void)
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
         glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
 
-#if 1
+
         // Draw walls with instancing
         if (walls.size() > 0) {
-            Entity *wall = walls[0];
-            draw::Drawable &wall_drawable = wall->getDrawable();
-            const draw::Shape *wall_mesh = wall_drawable.find_first_shape();
             glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
             glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 1);
             glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 1);
-#if 1
-            wall_mesh->instanced_draw(model_matrix_buffer, walls.size(), &deferred_geom_prog, 
-                                      wall_vao);
-#endif
+            wall_batch.drawAll(&deferred_geom_prog);
             glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 0);
             glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
             glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
         }
-#endif
-#if 1
+
+        if (floors.size() > 0) {
+            glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
+            glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 1);
+            glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 1);
+            floor_batch.drawAll(&deferred_geom_prog);
+            glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 0);
+            glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
+            glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+        }
+
+
         glBindVertexArray(universal_vao);
-#endif
+
+/*
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
@@ -813,7 +801,7 @@ int main(void)
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
-
+*/
 
        
         for (auto it = floors.begin(); it != floors.end(); it++) {
