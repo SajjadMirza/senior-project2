@@ -23,6 +23,7 @@
 #include <draw/RenderCommands.hpp>
 #include <draw/Light.hpp>
 #include <draw/ShapeBatch.hpp>
+#include <Geometry.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -748,6 +749,7 @@ int main(void)
         V.pushMatrix();
         camera->applyViewMatrix(&V);
 
+
         gbuffer.startFrame();
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -819,9 +821,37 @@ int main(void)
         glDepthMask(GL_FALSE);
         deferred_geom_prog.unbind();
 
+        Eigen::Matrix4f matV = V.topMatrix();
+        Eigen::Matrix4f matP = P.topMatrix();
+        Eigen::Matrix4f matVP = matV * matP;
+        Eigen::Matrix4f matPV = matP * matV;
+        
 
+        int light_draw_count = 0;
         glEnable(GL_STENCIL_TEST);
         for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+            float light_radius = calculate_point_light_radius(*it);
+            M.pushMatrix();
+            M.translate(it->position); // set the sphere's position to the light's pos
+            Eigen::Matrix4f matM = M.topMatrix();
+
+            Eigen::Matrix4f matVM = matV * matM;
+            Eigen::Matrix4f matPVM = matP * matVM;
+            Eigen::Matrix4f matMV = matM * matV;
+            Eigen::Matrix4f matMVP = matMV * matP;
+
+            Frustum frustum;
+            extract_planes(&frustum, matPV);
+            normalize(&frustum);
+
+            
+            //if (check_frustum_sphere(frustum, it->position, light_radius) == OUTSIDE) {
+            if (check_frustum_point(frustum, it->position) == OUTSIDE) {
+                M.popMatrix();
+                continue;
+            }
+
+            light_draw_count++;
             // Stencil pass
             null_prog.bind();
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
@@ -840,9 +870,7 @@ int main(void)
 
             
             // set up and render sphere
-            M.pushMatrix();
-            M.translate(it->position); // set the sphere's position to the light's pos
-            M.scale(calculate_point_light_radius(*it));
+            M.scale(light_radius);
 
             sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
             
@@ -906,6 +934,7 @@ int main(void)
 
             gbuffer.unbindFinalBuffer();
         }
+        LOG("Drew: " << light_draw_count << " lights this frame");
         glDisable(GL_STENCIL_TEST);
 
         gbuffer.copyFinalBuffer(width, height);
