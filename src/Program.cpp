@@ -89,11 +89,13 @@ void Program::unbind()
 void Program::addAttribute(const string &name)
 {
     attributes[name] = GLSL::getAttribLocation(pid, name.c_str());
+    LOG("Added attribute: " << name << ": " << attributes[name]);
 }
 
 void Program::addUniform(const string &name)
 {
     uniforms[name] = GLSL::getUniformLocation(pid, name.c_str());
+    LOG("Added uniform: " << name << ": " << uniforms[name]);
 }
 
 GLint Program::getAttribute(const string &name) const

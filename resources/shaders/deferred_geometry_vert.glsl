@@ -22,7 +22,7 @@ uniform int uInstanced;
 
 void main()
 {
-    mat4 modelMatrix = uInstanced ? iM : M;
+    mat4 modelMatrix = uInstanced != 0 ? iM : M;
     vec4 worldPos = modelMatrix * vec4(vertPos, 1.0f);
     
 //2    worldPos = worldPos - vec4(0, 0, 0, 0);
