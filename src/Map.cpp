@@ -99,6 +99,7 @@ static const uint32_t COLOR_BOSS_FLOOR   = 0xFF0000;
 static const uint32_t COLOR_START_POS    = 0x00FF00;
 static const uint32_t COLOR_CORRIDOR     = 0x808080;
 static const uint32_t COLOR_EMPTY        = 0xFFFFFF;
+static const uint32_t COLOR_NODRAW_FLOOR = 0x000000;
 
 int Map::loadMapFromImage(const char *filename)
 {
@@ -169,6 +170,10 @@ int Map::loadMapFromImage(const char *filename)
             case COLOR_CORRIDOR:
                 grid[x][y].type = HALLWAY;
                 grid[x][y].name = "HALLWAY";
+                break;
+            case COLOR_NODRAW_FLOOR:
+                grid[x][y].type = NODRAW;
+                grid[x][y].name = "NODRAW";
                 break;
             default:
                 ERROR("Pixel value not from accepted set (" << x << ", " <<  y << "): " 

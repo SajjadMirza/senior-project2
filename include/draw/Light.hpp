@@ -16,6 +16,9 @@ struct PointLight {
     float linear;
     float quadratic;
     vec3 position;
+    bool shadow;
+    uint depthCubemap;
+    uint depthFBO;
 };
 
 struct DirectionalLight {

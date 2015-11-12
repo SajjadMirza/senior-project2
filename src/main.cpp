@@ -26,6 +26,7 @@
 #include <draw/Light.hpp>
 #include <draw/ShapeBatch.hpp>
 #include <Geometry.hpp>
+#include <GameMath.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -71,11 +72,6 @@ int special_texture_handle = 0;
 
 sound::FMODDriver sound_driver;
 
-inline float deg_to_rad(float deg)
-{
-    float rad = (M_PI / 180.0f) * deg;
-    return rad;
-}
 
 inline vec3 make_color(int red, int green, int blue)
 {
@@ -186,11 +182,13 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action, in
 
 }
 
-static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
+static void cursor_pos_callback(GLFWwindow *window, double x, double y) 
+{
     camera->mouseMoved(std::floor(x), std::floor(y));
 }
 
-static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) 
+{
     switch (key) {
     case GLFW_KEY_G:
         logic->notifyKey('G');
@@ -279,7 +277,8 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     } // end of switch
 }
 
-draw::Drawable *import_drawable(std::string file_name, uint *handle) {
+draw::Drawable *import_drawable(std::string file_name, uint *handle) 
+{
     uint orange_handle = resource::import_object(file_name);
     if (orange_handle) {
         std::cout << "successful import" << std::endl;
@@ -294,12 +293,14 @@ draw::Drawable *import_drawable(std::string file_name, uint *handle) {
     return drawable_map[orange_handle];
 }
 
-draw::Drawable *import_drawable(std::string file_name) {
+draw::Drawable *import_drawable(std::string file_name) 
+{
     uint useless;
     return import_drawable(file_name, &useless);
 }
 
-static void init_gl() {
+static void init_gl() 
+{
     LOG(glGetString(GL_VERSION));
     
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -381,7 +382,8 @@ static const std::string model_config_file = "resources/tree.yaml";
 
 static int unique_color_index = 0;
 
-static uint getUniqueColor(int index) {
+static uint getUniqueColor(int index) 
+{
     const int num_channels = 3;
     char r,g,b;
     r = g = b = 20;
@@ -441,7 +443,8 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
     }
 }
 
-static void init_floors(std::vector<Entity*> *floors, Map &map) {
+static void init_floors(std::vector<Entity*> *floors, Map &map) 
+{
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
     gen_cubes(floors, config, map, HALLWAY);
@@ -462,7 +465,8 @@ static void init_floors(std::vector<Entity*> *floors, Map &map) {
 
 }
 
-static void init_walls(std::vector<Entity*> *walls, Map &map) {
+static void init_walls(std::vector<Entity*> *walls, Map &map) 
+{
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
@@ -470,7 +474,8 @@ static void init_walls(std::vector<Entity*> *walls, Map &map) {
 
 
 
-static void init_entities(std::vector<Entity> *entities) {
+static void init_entities(std::vector<Entity> *entities) 
+{
     std::vector<ModelConfig> configs;
     resource::load_model_configs(&configs, model_config_file);
     
@@ -573,6 +578,7 @@ static void init_lights(const Map &map)
     pl.intensity = pl.constant = 1.0;
     pl.linear = 0.35;
     pl.quadratic = 0.9;
+    pl.shadow = true;
     
     for (auto it = map.getMajorLightPositions().cbegin(); 
          it != map.getMajorLightPositions().cend();
@@ -583,6 +589,7 @@ static void init_lights(const Map &map)
 
     PointLight smallpl;
     smallpl.ambient = pl.ambient;
+    smallpl.shadow = false;
     smallpl.diffuse = make_color(0, 216, 230);
     smallpl.specular = smallpl.diffuse;
     smallpl.intensity = smallpl.constant = 1.0;
@@ -731,6 +738,37 @@ int main(void)
     GLuint universal_vao;
     glGenVertexArrays(1, &universal_vao);
     glBindVertexArray(universal_vao);
+
+    bool generate_shadowmaps = true;
+    const GLuint shadow_width = 1024, shadow_height = 1024;
+    for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+        if (it->shadow) {
+            glGenFramebuffers(1, &it->depthFBO);
+            glGenTextures(1, &it->depthCubemap);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, it->depthCubemap);
+            for (int i = 0; i < 6; i++) {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+                             shadow_width, shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            }
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, it->depthFBO);
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, it->depthCubemap, 0);
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+            
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                ERROR("Incomplete framebuffer: " << it->depthFBO);
+                exit(-1);
+            }
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+    }
         
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -746,6 +784,16 @@ int main(void)
         gbuffer.startFrame();
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        if (generate_shadowmaps) {
+            generate_shadowmaps = false;
+            // Make the shadow maps for the relevant lights
+            for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+                if (it->shadow) {
+
+                }
+            }
+        }
         
         // Geometry pass
         deferred_geom_prog.bind();
@@ -797,21 +845,7 @@ int main(void)
             M.popMatrix();
         }
 
-
-#if 0       
-        for (auto it = floors.begin(); it != floors.end(); it++) {
-            Entity *floor = *it;
-            M.pushMatrix();
-            M.worldTranslate(floor->getPosition(), floor->getRotation());
-            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
-                               M.topMatrix().data());
-            floor->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
-            M.popMatrix();
-        }
-#endif
-        
         // Second step: per-light calculations
-                
         glDepthMask(GL_FALSE);
         deferred_geom_prog.unbind();
 
