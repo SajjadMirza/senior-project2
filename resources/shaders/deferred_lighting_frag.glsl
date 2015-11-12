@@ -37,8 +37,14 @@ uniform int uTextToggle;
 void main()
 {
     if (uTextToggle == 0) {
+       
+  
+        
         vec2 texCoord = gl_FragCoord.xy / uScreenSize;
         vec3 fragPos = texture(gPosition, texCoord).rgb;
+        float dist = length(light.position - fragPos);
+        float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);
+
         vec3 fragNor = (texture(gNormal, texCoord).rgb);
         vec3 fragCol = texture(gDiffuse, texCoord).rgb;
         float spc = texture(gSpecular, texCoord).r;
@@ -47,14 +53,13 @@ void main()
         vec3 ambient = fragCol * 0.1 * light.ambient;
         vec3 viewDir = normalize(viewPos - fragPos);
         
-        float dist = length(light.position - fragPos);
         vec3 lightDir = normalize(light.position - fragPos);
         vec3 diffuse = max(dot(fragNor, lightDir), 0.0) * fragCol * light.color * light.intensity;
         vec3 halfDir = normalize(lightDir + viewDir);
         vec3 reflectDir = reflect(-lightDir, fragNor);
         float spec = pow(max(dot(fragNor, halfDir), 0.0), 16.0);
         vec3 specular = light.specular * spec * fragSpc * light.intensity;
-        float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);
+        
         diffuse *= attenuation;
         specular *= attenuation;
 //        vec3 light = diffuse + specular + ambient;

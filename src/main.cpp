@@ -5,6 +5,8 @@
 
 #include <cmath>
 
+#define FRUSTUM_CULLING 0
+
 // Internal headers
 #include <draw/Drawable.hpp>
 #include <draw/Text.hpp>
@@ -604,7 +606,7 @@ static void init_lights(const Map &map)
          it != map.getTinyLightPositions().cend();
          it++) {
         tinypl.position = *it;
-//        point_lights.push_back(tinypl);
+        point_lights.push_back(tinypl);
     }
     
     LOG("Initialized " << point_lights.size() << " point lights");
@@ -637,9 +639,7 @@ static void init_camera(const Map& map)
 int main(void)
 {
     GLFWwindow* window;
-
     camera = fp_camera;
-    
 
     glfwSetErrorCallback(error_callback);
 
@@ -647,11 +647,11 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    // Window hints
 //    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 //    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
 
     window = glfwCreateWindow(init_w, init_h, "Simple example", NULL, NULL);
     if (!window) {
@@ -672,7 +672,6 @@ int main(void)
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-    
 
     Map map(map_cols, map_rows);
     //map.loadMapFromFile("resources/maps/our_map.txt");
@@ -720,16 +719,14 @@ int main(void)
     draw::Quad quad;
     quad.GenerateData(gbuffer_debug_prog.getAttribute("vertPos"),
                       gbuffer_debug_prog.getAttribute("vertTex"));
-    MatrixStack P, M, V;
 
+    MatrixStack P, M, V;
 
     // Prepare for instancing
     draw::ShapeBatch wall_batch;
     setup_batch(&wall_batch, walls);
-
     draw::ShapeBatch floor_batch;
     setup_batch(&floor_batch, floors);
-
 
     GLuint universal_vao;
     glGenVertexArrays(1, &universal_vao);
@@ -741,14 +738,10 @@ int main(void)
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
-
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
         camera->applyViewMatrix(&V);
-
 
         gbuffer.startFrame();
         
@@ -791,7 +784,7 @@ int main(void)
 
         glBindVertexArray(universal_vao);
 
-/*
+
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
@@ -803,9 +796,9 @@ int main(void)
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
-*/
 
-       
+
+#if 0       
         for (auto it = floors.begin(); it != floors.end(); it++) {
             Entity *floor = *it;
             M.pushMatrix();
@@ -815,6 +808,7 @@ int main(void)
             floor->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
+#endif
         
         // Second step: per-light calculations
                 
@@ -825,16 +819,26 @@ int main(void)
         Eigen::Matrix4f matP = P.topMatrix();
         Eigen::Matrix4f matVP = matV * matP;
         Eigen::Matrix4f matPV = matP * matV;
+
+        Eigen::Vector3f current_position = -camera->translations;
         
 
         int light_draw_count = 0;
         glEnable(GL_STENCIL_TEST);
+        deferred_lighting_prog.bind();
         for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
             float light_radius = calculate_point_light_radius(*it);
             M.pushMatrix();
             M.translate(it->position); // set the sphere's position to the light's pos
-            Eigen::Matrix4f matM = M.topMatrix();
+            Eigen::Vector3f light_vector = current_position - it->position;
+            float dist = abs(light_vector.norm());
+            if (dist > 15 && camera == fp_camera) {
+                M.popMatrix();
+                continue;
+            }
 
+#if FRUSTUM_CULLING
+            Eigen::Matrix4f matM = M.topMatrix();
             Eigen::Matrix4f matVM = matV * matM;
             Eigen::Matrix4f matPVM = matP * matVM;
             Eigen::Matrix4f matMV = matM * matV;
@@ -843,15 +847,19 @@ int main(void)
             Frustum frustum;
             extract_planes(&frustum, matPV);
             normalize(&frustum);
-
-            
+           
             //if (check_frustum_sphere(frustum, it->position, light_radius) == OUTSIDE) {
             if (check_frustum_point(frustum, it->position) == OUTSIDE) {
                 M.popMatrix();
                 continue;
             }
+#endif
 
             light_draw_count++;
+
+            // set up and render sphere
+            M.scale(light_radius);
+#if 1
             // Stencil pass
             null_prog.bind();
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
@@ -867,14 +875,13 @@ int main(void)
 
             glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
             glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-
             
-            // set up and render sphere
-            M.scale(light_radius);
+
 
             sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
             
             null_prog.unbind();
+#endif
 
             // Point light pass
             deferred_lighting_prog.bind();
@@ -883,6 +890,7 @@ int main(void)
             gbuffer.bindFinalBuffer();
 
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+//            glDisable(GL_STENCIL_TEST);
 
             glDisable(GL_DEPTH_TEST);
 
@@ -934,7 +942,7 @@ int main(void)
 
             gbuffer.unbindFinalBuffer();
         }
-        LOG("Drew: " << light_draw_count << " lights this frame");
+//        LOG("Drew: " << light_draw_count << " lights this frame");
         glDisable(GL_STENCIL_TEST);
 
         gbuffer.copyFinalBuffer(width, height);
