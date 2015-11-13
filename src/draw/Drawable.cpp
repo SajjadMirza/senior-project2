@@ -400,6 +400,7 @@ namespace draw {
     static void draw_node_depth(Node *current, Program *prog, MatrixStack *M)
     {
         M->pushMatrix();
+        M->multMatrix(current->transform);
         glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
         
         for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {

@@ -84,7 +84,8 @@ void main()
         diffuse *= attenuation;
         specular *= attenuation;
 //        vec3 light = diffuse + specular + ambient;
-        vec3 light = (diffuse + specular) * (1.0 - shadow);        
+        vec3 light = (diffuse + specular * 0.5) * (1.0 - shadow);
+//        vec3 light = (diffuse * 2.0) * (1.0 - shadow);        
 
         vec3 data = vec3(1.0, 0.0, 1.0);
         switch (uDrawMode) {

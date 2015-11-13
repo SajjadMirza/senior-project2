@@ -151,12 +151,12 @@ int Map::loadMapFromImage(const char *filename)
             case COLOR_BIG_LIGHT:
                 grid[x][y].type = HALLWAY;
                 grid[x][y].name = "HALLWAY";
-                major_light_positions.push_back(base_light_pos + vec3(x, 0, y));
+                major_light_positions.push_back(base_light_pos + vec3(x, 0, y+1));
                 break;
             case COLOR_SMALL_LIGHT:
                 grid[x][y].type = HALLWAY;
                 grid[x][y].name = "HALLWAY";
-                minor_light_positions.push_back(base_light_pos + vec3(x, 0, y));
+                minor_light_positions.push_back(base_light_pos + vec3(x, 0, y+1));
                 break;
             case COLOR_BOSS_FLOOR:
                 grid[x][y].type = HALLWAY;

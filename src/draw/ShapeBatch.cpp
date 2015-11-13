@@ -52,6 +52,7 @@ namespace draw {
 
     void ShapeBatch::drawAllDepth(Program *prog)
     {
+        LOG("calls draw all depth");
         target_shape->instanced_draw_depth(trans_vbo, transforms.size(), prog, vao);
     }
 

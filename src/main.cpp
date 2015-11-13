@@ -403,6 +403,7 @@ static void init_gl()
     depth_prog.addUniform("shadowMatrices[5]");
     depth_prog.addUniform("lightPos");
     depth_prog.addUniform("far_plane");
+    depth_prog.addUniform("uInstanced");
 
     debug_depth_prog.setShaderNames(header + "debug_depth.vs.glsl",
                                     header + "debug_depth.fs.glsl");
@@ -634,9 +635,10 @@ static void init_lights(std::vector<PointLight> *point_lights,
 
     }
 
+
     PointLight smallpl;
     smallpl.ambient = pl.ambient;
-    smallpl.shadow = false;
+    smallpl.shadow = true;
     smallpl.diffuse = make_color(0, 216, 230);
     smallpl.specular = smallpl.diffuse;
     smallpl.intensity = smallpl.constant = 1.0;
@@ -646,22 +648,32 @@ static void init_lights(std::vector<PointLight> *point_lights,
     for (auto it = map.getMinorLightPositions().cbegin(); 
          it != map.getMinorLightPositions().cend();
          it++) {
+        if (smallpl.shadow) {
+            shadow_maps->push_back(sm);
+            smallpl.shadowMap = shadow_maps->size() - 1;
+        }
         smallpl.position = *it;
-//        point_lights->push_back(smallpl);
+        point_lights->push_back(smallpl);
     }
 
     PointLight tinypl = smallpl;
+    tinypl.shadow = true;
     tinypl.diffuse = make_color(230, 30, 30);
     tinypl.specular = tinypl.diffuse;
     tinypl.linear = 4.5;
     tinypl.quadratic = 6.7;
-
+#if 0
     for (auto it = map.getTinyLightPositions().cbegin(); 
          it != map.getTinyLightPositions().cend();
          it++) {
+        if (tinypl.shadow) {
+            shadow_maps->push_back(sm);
+            tinypl.shadowMap = shadow_maps->size() - 1;
+        }
         tinypl.position = *it;
-//        point_lights->push_back(tinypl);
+        point_lights->push_back(tinypl);
     }
+#endif
     
     LOG("Initialized " << point_lights->size() << " point lights");
 }
@@ -766,7 +778,8 @@ int main(void)
 
     Map map(map_cols, map_rows);
     //map.loadMapFromFile("resources/maps/our_map.txt");
-    map.loadMapFromImage("resources/maps/map_level_0_L_onelight.tga");
+    //map.loadMapFromImage("resources/maps/map_level_0_L_onelight.tga");
+    map.loadMapFromImage("resources/maps/map_level_0_L.tga");
     std::vector<Entity*> floors;
     std::vector<Entity*> walls;
     init_walls(&walls, map);
@@ -889,38 +902,43 @@ int main(void)
                     glViewport(0, 0, shadow_width, shadow_height);
                     glBindFramebuffer(GL_FRAMEBUFFER, sm.fbo);
                     glClear(GL_DEPTH_BUFFER_BIT);
-
+//                    glCullFace(GL_FRONT);
+                    
+                    // Set up the matrices for every face of the cube map
                     char matstr[] = "shadowMatrices[x]";
                     char *cidx = &matstr[15];
                     for (int i = 0; i < 6; ++i) {
                         *cidx = '0' + i; // Create the correct string
-                        // Render the scene for a specific face of the cube map
+
                         glUniformMatrix4fv(depth_prog.getUniform(matstr), 1, GL_FALSE, 
                                            sm.transforms[i].data());
-                        glUniform1f(depth_prog.getUniform("far_plane"), shadow_far);
-                        glUniform3fv(depth_prog.getUniform("lightPos"), 1, lpos.data());
+                    }
+                    glUniform1f(depth_prog.getUniform("far_plane"), shadow_far);
+                    glUniform3fv(depth_prog.getUniform("lightPos"), 1, lpos.data());
 
-                        glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
-                        if (walls.size() > 0) {
-                            wall_batch.drawAllDepth(&depth_prog);
-                        }                                  
-                        if (floors.size() > 0) {
-//                            floor_batch.drawAllDepth(&depth_prog);
-                        }
-                        glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+                    glUniform1i(depth_prog.getUniform("uInstanced"), 1);
+                    if (walls.size() > 0) {
+//                        glCullFace(GL_FRONT);
+                        wall_batch.drawAllDepth(&depth_prog);
+//                        glCullFace(GL_BACK);
+                    }                                  
+                    if (floors.size() > 0) {
+                        floor_batch.drawAllDepth(&depth_prog);
+                    }
+                    glUniform1i(depth_prog.getUniform("uInstanced"), 0);
 
-                        for (auto it = entities.begin(); it != entities.end(); it++) {
-                            M.pushMatrix();
-                            M.multMatrix(it->getRotation());
-                            M.worldTranslate(it->getPosition(), it->getRotation());
-                            M.scale(0.5f);
-                            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
-                                               M.topMatrix().data());
-                            it->getDrawable().drawDepth(&depth_prog, &M);
-                            M.popMatrix();
-                        }
+                    for (auto it = entities.begin(); it != entities.end(); it++) {
+                        M.pushMatrix();
+                        M.multMatrix(it->getRotation());
+                        M.worldTranslate(it->getPosition(), it->getRotation());
+                        M.scale(0.5f);
+                        glUniformMatrix4fv(depth_prog.getUniform("M"), 1, GL_FALSE, 
+                                           M.topMatrix().data());
+                        it->getDrawable().drawDepth(&depth_prog, &M);
+                        M.popMatrix();
                     }
                     
+//                    glCullFace(GL_BACK);
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glViewport(0, 0, width, height); 
                 }
@@ -1117,6 +1135,7 @@ int main(void)
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+//        break;
     }
 
     glfwDestroyWindow(window);
