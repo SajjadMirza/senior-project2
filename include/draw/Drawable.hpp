@@ -47,6 +47,7 @@ namespace draw {
                        Camera *cam);
         void drawDeferred(Program *prog, MatrixStack *M, Camera *cam);
         void drawAsLightVolume(Program *prog, MatrixStack *M, Camera *cam);
+        void drawDepth(Program *prog, MatrixStack *M);
     };
 
     typedef std::unordered_map<uint, Drawable*> DrawableMap; 

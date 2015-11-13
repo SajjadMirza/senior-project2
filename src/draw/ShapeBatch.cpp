@@ -50,4 +50,9 @@ namespace draw {
         target_shape->instanced_draw(trans_vbo, transforms.size(), prog, vao);
     }
 
+    void ShapeBatch::drawAllDepth(Program *prog)
+    {
+        target_shape->instanced_draw_depth(trans_vbo, transforms.size(), prog, vao);
+    }
+
 };

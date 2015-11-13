@@ -25,6 +25,7 @@
 #include <draw/RenderCommands.hpp>
 #include <draw/Light.hpp>
 #include <draw/ShapeBatch.hpp>
+#include <draw/ShadowMap.hpp>
 #include <Geometry.hpp>
 #include <GameMath.hpp>
 
@@ -57,8 +58,10 @@ Program deferred_geom_prog;
 Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
 Program null_prog;
+Program depth_prog;
+Program debug_depth_prog;
 int debug_gbuffer_mode = 0;
-std::vector<PointLight> point_lights;
+
 
 const uint init_w = 1600;
 const uint init_h = 900;
@@ -71,7 +74,12 @@ const uint map_rows = 50;
 int special_texture_handle = 0;
 
 sound::FMODDriver sound_driver;
-
+/*
+  inline static std::string foo(std::string name, int index)
+  {
+  return name + "[" + std::to_string(static_cast<int>(index)) + "]";
+  }
+*/
 
 inline vec3 make_color(int red, int green, int blue)
 {
@@ -375,6 +383,30 @@ static void init_gl()
     null_prog.addUniform("V");
     null_prog.addUniform("P");
 
+    depth_prog.setShaderNames(header + "cube_depth.vs.glsl",
+                              header + "cube_depth.fs.glsl",
+                              header + "cube_depth.gs.glsl");
+    depth_prog.init();
+    depth_prog.addAttribute("vertPos");
+    depth_prog.addAttribute("iM");
+    depth_prog.addUniform("M");
+    depth_prog.addUniform("shadowMatrices[0]");
+    depth_prog.addUniform("shadowMatrices[1]");
+    depth_prog.addUniform("shadowMatrices[2]");
+    depth_prog.addUniform("shadowMatrices[3]");
+    depth_prog.addUniform("shadowMatrices[4]");
+    depth_prog.addUniform("shadowMatrices[5]");
+    depth_prog.addUniform("lightPos");
+    depth_prog.addUniform("far_plane");
+
+    debug_depth_prog.setShaderNames(header + "debug_depth.vs.glsl",
+                                    header + "debug_depth.fs.glsl");
+    debug_depth_prog.init();
+    debug_depth_prog.addAttribute("vertPos");
+    debug_depth_prog.addAttribute("vertTex");
+    debug_depth_prog.addUniform("depthTexture");
+ 
+
     GLSL::checkVersion();
 }
 
@@ -400,7 +432,7 @@ static uint getUniqueColor(int index)
     int color = 0;
     color = (r << 16) | (g << 8) | b;
     return color;
- }
+}
 
 static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, 
                       Map &map, CellType type) 
@@ -500,14 +532,14 @@ static void init_entities(std::vector<Entity> *entities)
         
         if (it->transforms.xrot != 0.0f) {
             Eigen::Quaternionf q;
-            float angle = deg_to_rad(it->transforms.xrot);
+            float angle = math::deg_to_rad(it->transforms.xrot);
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitX());
             qrot = q * qrot;
         }
 
         if (it->transforms.yrot != 0.0f) {
             Eigen::Quaternionf q;
-            float angle = deg_to_rad(it->transforms.yrot);
+            float angle = math::deg_to_rad(it->transforms.yrot);
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitY());
             qrot = q * qrot;
         }
@@ -515,7 +547,7 @@ static void init_entities(std::vector<Entity> *entities)
         if (it->transforms.zrot != 0.0f) {
             std::cout << "multiplied by z rotation" << std::endl;
             Eigen::Quaternionf q;
-            float angle = deg_to_rad(it->transforms.zrot);
+            float angle = math::deg_to_rad(it->transforms.zrot);
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitZ());
             qrot = q * qrot;
         }
@@ -568,7 +600,8 @@ static void setup_batch(draw::ShapeBatch *batch, const std::vector<Entity*> &ent
 
 }
 
-static void init_lights(const Map &map)
+static void init_lights(std::vector<PointLight> *point_lights, 
+                        std::vector<draw::ShadowMap> *shadow_maps, const Map &map)
 {
     PointLight pl;
     
@@ -579,12 +612,20 @@ static void init_lights(const Map &map)
     pl.linear = 0.35;
     pl.quadratic = 0.9;
     pl.shadow = true;
+
+    draw::ShadowMap sm;
+    sm.cubemap = 0;
+    sm.fbo = 0;
     
     for (auto it = map.getMajorLightPositions().cbegin(); 
          it != map.getMajorLightPositions().cend();
          it++) {
+        if (pl.shadow) {
+            shadow_maps->push_back(sm);
+            pl.shadowMap = shadow_maps->size() - 1;
+        }
         pl.position = *it;
-        point_lights.push_back(pl);
+        point_lights->push_back(pl);
     }
 
     PointLight smallpl;
@@ -600,7 +641,7 @@ static void init_lights(const Map &map)
          it != map.getMinorLightPositions().cend();
          it++) {
         smallpl.position = *it;
-        point_lights.push_back(smallpl);
+        point_lights->push_back(smallpl);
     }
 
     PointLight tinypl = smallpl;
@@ -613,10 +654,10 @@ static void init_lights(const Map &map)
          it != map.getTinyLightPositions().cend();
          it++) {
         tinypl.position = *it;
-        point_lights.push_back(tinypl);
+        point_lights->push_back(tinypl);
     }
     
-    LOG("Initialized " << point_lights.size() << " point lights");
+    LOG("Initialized " << point_lights->size() << " point lights");
 }
 
 std::unique_ptr<Entity> init_sphere_light_volume()
@@ -690,7 +731,9 @@ int main(void)
     std::vector<Entity> entities;
     init_entities(&entities);
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
-    init_lights(map);
+    std::vector<PointLight> point_lights;
+    std::vector<draw::ShadowMap> shadow_maps;
+    init_lights(&point_lights, &shadow_maps, map);
     init_camera(map);
     LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
@@ -726,6 +769,9 @@ int main(void)
     draw::Quad quad;
     quad.GenerateData(gbuffer_debug_prog.getAttribute("vertPos"),
                       gbuffer_debug_prog.getAttribute("vertTex"));
+    draw::Quad depth_quad;
+    depth_quad.GenerateData(debug_depth_prog.getAttribute("vertPos"),
+                            debug_depth_prog.getAttribute("vertTex"));
 
     MatrixStack P, M, V;
 
@@ -739,36 +785,25 @@ int main(void)
     glGenVertexArrays(1, &universal_vao);
     glBindVertexArray(universal_vao);
 
-    bool generate_shadowmaps = true;
+
+    // Allocate buffers for depth maps
     const GLuint shadow_width = 1024, shadow_height = 1024;
     for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
         if (it->shadow) {
-            glGenFramebuffers(1, &it->depthFBO);
-            glGenTextures(1, &it->depthCubemap);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, it->depthCubemap);
-            for (int i = 0; i < 6; i++) {
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
-                             shadow_width, shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-            }
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-            glBindFramebuffer(GL_FRAMEBUFFER, it->depthFBO);
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, it->depthCubemap, 0);
-            glDrawBuffer(GL_NONE);
-            glReadBuffer(GL_NONE);
-            
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                ERROR("Incomplete framebuffer: " << it->depthFBO);
-                exit(-1);
-            }
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+            sm.allocateBuffers(shadow_width, shadow_height);
         }
     }
+
+    // Set up shadow projection matrix
+    float shadow_aspect = static_cast<float>(shadow_width) / static_cast<float>(shadow_height);
+    float shadow_near = 1.0f;
+    float shadow_far = 25.0f;
+    Eigen::Matrix4f shadowP = math::perspective(90.0f, shadow_aspect, shadow_near, shadow_far);
+
+    // Set the flag so that the first iteration of the game loop will
+    // generate the depth cube map data
+    bool generate_shadowmaps = true;
         
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -785,15 +820,70 @@ int main(void)
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+        // If the depth cube maps do not exist or have been invalidated, regenerate them
         if (generate_shadowmaps) {
             generate_shadowmaps = false;
             // Make the shadow maps for the relevant lights
+            depth_prog.bind();
             for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
                 if (it->shadow) {
+                    draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+                    mat4 trans;
+                    vec3 lpos = it->position;
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 1, 0, 0), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3(-1, 0, 0), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0, 1, 0), vec3(0, 0, 1));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0,-1, 0), vec3(0, 0,-1));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0, 0, 1), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0, 0,-1), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
 
+                    glViewport(0, 0, shadow_width, shadow_height);
+                    glBindFramebuffer(GL_FRAMEBUFFER, sm.fbo);
+                    glClear(GL_DEPTH_BUFFER_BIT);
+
+                    char matstr[] = "shadowMatrices[x]";
+                    char *cidx = &matstr[15];
+                    for (int i = 0; i < 6; ++i) {
+                        *cidx = '0' + i; // Create the correct string
+                        // Render the scene for a specific face of the cube map
+                        glUniformMatrix4fv(depth_prog.getUniform(matstr), 1, GL_FALSE, 
+                                           sm.transforms[i].data());
+                        glUniform1f(depth_prog.getUniform("far_plane"), shadow_far);
+                        glUniform3fv(depth_prog.getUniform("lightPos"), 1, lpos.data());
+
+                        glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
+                        if (walls.size() > 0) {
+                            wall_batch.drawAllDepth(&depth_prog);
+                        }                                  
+                        if (floors.size() > 0) {
+                            floor_batch.drawAllDepth(&depth_prog);
+                        }
+                        glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+
+                        for (auto it = entities.begin(); it != entities.end(); it++) {
+                            M.pushMatrix();
+                            M.multMatrix(it->getRotation());
+                            M.worldTranslate(it->getPosition(), it->getRotation());
+                            M.scale(0.5f);
+                            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
+                                               M.topMatrix().data());
+                            it->getDrawable().drawDepth(&depth_prog, &M);
+                            M.popMatrix();
+                        }
+                    }
+                    
+                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                    glViewport(0, 0, width, height); 
                 }
             }
-        }
+            depth_prog.unbind();
+        } // END OF DEPTH MAP GENERATION
         
         // Geometry pass
         deferred_geom_prog.bind();
@@ -980,8 +1070,19 @@ int main(void)
         glDisable(GL_STENCIL_TEST);
 
         gbuffer.copyFinalBuffer(width, height);
-        
         gbuffer.copyDepthBuffer(width, height);       
+
+        // Debug depth cube map code
+        debug_depth_prog.bind();
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_maps[0].fbo);
+        glDrawBuffer(0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, shadow_maps[0].cubemap);
+        glUniform1i(debug_depth_prog.getUniform("depthTexture"), 0);
+        //        depth_quad.Render();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        debug_depth_prog.unbind();
+
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);

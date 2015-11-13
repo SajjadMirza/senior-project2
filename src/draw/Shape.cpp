@@ -11,6 +11,33 @@ extern int special_texture_handle;
 
 namespace draw {
 
+    void Shape::instanced_draw_depth(GLuint matrix_buffer, int amount, Program *prog, GLuint vao)
+        const
+    {
+        GLuint h_vert = prog->getAttribute("vertPos");
+        GLuint h_M = prog->getAttribute("iM");
+        
+        glBindVertexArray(vao);
+        
+         // Enable and bind verticies array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Bind index array for drawing
+        int nIndices = indices.size();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+        // Draw
+        glDrawElementsInstanced(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0, amount);
+
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        glBindVertexArray(0);
+    }
+
     void Shape::instanced_draw(GLuint matrix_buffer, int amount, Program *prog, GLuint vao) const
     {
         GLuint h_vert = prog->getAttribute("vertPos");
@@ -521,4 +548,24 @@ namespace draw {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+
+    void Shape::drawDepth(int h_vert) const
+    {
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+     
+        // Bind index buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+        // Draw
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        // Disable and unbind
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+   
+    }
+
 }

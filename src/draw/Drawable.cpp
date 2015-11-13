@@ -396,4 +396,25 @@ namespace draw {
         //LOG("Drawable::drawAsLightVolume");
         draw_node_light_volume(root, prog, M, cam);
     }
+
+    static void draw_node_depth(Node *current, Program *prog, MatrixStack *M)
+    {
+        M->pushMatrix();
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        
+        for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
+            it->drawDepth(prog->getAttribute("vertPos"));
+        }
+
+        for (auto it = current->children.begin(); it != current->children.end(); it++) {
+            draw_node_depth(*it, prog, M);
+        }
+
+        M->popMatrix();
+    }
+
+    void Drawable::drawDepth(Program *prog, MatrixStack *M)
+    {
+        draw_node_depth(root, prog, M);
+    }
 };

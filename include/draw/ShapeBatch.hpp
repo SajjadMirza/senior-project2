@@ -21,6 +21,7 @@ namespace draw {
         void init(GLuint matrix_attribute);
         void addTransform(const Eigen::Matrix4f &trans);
         void drawAll(Program *prog);
+        void drawAllDepth(Program *prog);
     };
 
 };
