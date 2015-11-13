@@ -282,6 +282,9 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_7:
         debug_gbuffer_mode = 6;
         break;
+    case GLFW_KEY_8:
+        debug_gbuffer_mode = 7;
+        break;
     } // end of switch
 }
 
@@ -371,6 +374,8 @@ static void init_gl()
     deferred_lighting_prog.addUniform("M");
     deferred_lighting_prog.addUniform("V");
     deferred_lighting_prog.addUniform("P");
+    deferred_lighting_prog.addUniform("depthMap");
+    deferred_lighting_prog.addUniform("far_plane");
 
     deferred_lighting_prog.addAttribute("wordCoords");
     deferred_lighting_prog.addUniform("uTextToggle");
@@ -626,6 +631,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
         }
         pl.position = *it;
         point_lights->push_back(pl);
+
     }
 
     PointLight smallpl;
@@ -641,7 +647,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
          it != map.getMinorLightPositions().cend();
          it++) {
         smallpl.position = *it;
-        point_lights->push_back(smallpl);
+//        point_lights->push_back(smallpl);
     }
 
     PointLight tinypl = smallpl;
@@ -654,7 +660,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
          it != map.getTinyLightPositions().cend();
          it++) {
         tinypl.position = *it;
-        point_lights->push_back(tinypl);
+//        point_lights->push_back(tinypl);
     }
     
     LOG("Initialized " << point_lights->size() << " point lights");
@@ -674,6 +680,43 @@ std::unique_ptr<Entity> init_sphere_light_volume()
     sphere->setSimpleDraw(true);
     
     return sphere;
+}
+
+void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, const MatrixStack &V,
+                                 uint width, uint height, float light_far_plane)
+{
+    glUniformMatrix4fv(deferred_lighting_prog.getUniform("P"), 
+                       1, GL_FALSE, P.topMatrix().data());
+    glUniformMatrix4fv(deferred_lighting_prog.getUniform("V"), 
+                       1, GL_FALSE, V.topMatrix().data());
+    glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
+    glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
+    glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
+    glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+    glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
+ 
+    glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
+                 pl.position.data());
+    glUniform3fv(deferred_lighting_prog.getUniform("light.ambient"), 1, 
+                 pl.ambient.data());
+    glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1, 
+                 pl.diffuse.data());
+    glUniform3fv(deferred_lighting_prog.getUniform("light.specular"), 1, 
+                 pl.specular.data());
+    glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"),
+                pl.quadratic);
+    glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
+                pl.linear);
+    glUniform1f(deferred_lighting_prog.getUniform("light.intensity"), 
+                pl.intensity);
+    vec3 viewPos = -(camera->translations);
+    glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
+                 viewPos.data());
+    glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+    glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
+                static_cast<float>(width), static_cast<float>(height));
+    glUniform1f(deferred_lighting_prog.getUniform("far_plane"), light_far_plane);
+    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 4);
 }
 
 static void init_camera(const Map& map)
@@ -723,7 +766,7 @@ int main(void)
 
     Map map(map_cols, map_rows);
     //map.loadMapFromFile("resources/maps/our_map.txt");
-    map.loadMapFromImage("resources/maps/map_level_0_L.tga");
+    map.loadMapFromImage("resources/maps/map_level_0_L_onelight.tga");
     std::vector<Entity*> floors;
     std::vector<Entity*> walls;
     init_walls(&walls, map);
@@ -862,7 +905,7 @@ int main(void)
                             wall_batch.drawAllDepth(&depth_prog);
                         }                                  
                         if (floors.size() > 0) {
-                            floor_batch.drawAllDepth(&depth_prog);
+//                            floor_batch.drawAllDepth(&depth_prog);
                         }
                         glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
 
@@ -1013,6 +1056,11 @@ int main(void)
             gbuffer.bindTextures();
             gbuffer.bindFinalBuffer();
 
+            // Prepare to use shadows
+            draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
+
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 //            glDisable(GL_STENCIL_TEST);
 
@@ -1024,36 +1072,7 @@ int main(void)
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
 
-            glUniformMatrix4fv(deferred_lighting_prog.getUniform("P"), 
-                               1, GL_FALSE, P.topMatrix().data());
-            glUniformMatrix4fv(deferred_lighting_prog.getUniform("V"), 
-                               1, GL_FALSE, V.topMatrix().data());
-            glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
-            glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
-            glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
-            glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
-            glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
- 
-            glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
-                         it->position.data());
-            glUniform3fv(deferred_lighting_prog.getUniform("light.ambient"), 1, 
-                         it->ambient.data());
-            glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1, 
-                         it->diffuse.data());
-            glUniform3fv(deferred_lighting_prog.getUniform("light.specular"), 1, 
-                         it->specular.data());
-            glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"),
-                        it->quadratic);
-            glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
-                        it->linear);
-            glUniform1f(deferred_lighting_prog.getUniform("light.intensity"), 
-                        it->intensity);
-            vec3 viewPos = -(camera->translations);
-            glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
-                         viewPos.data());
-            glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
-            glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
-                        static_cast<float>(width), static_cast<float>(height));
+            set_light_volume_parameters(*it, P, V, width, height, shadow_far);
 
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
 
@@ -1071,17 +1090,6 @@ int main(void)
 
         gbuffer.copyFinalBuffer(width, height);
         gbuffer.copyDepthBuffer(width, height);       
-
-        // Debug depth cube map code
-        debug_depth_prog.bind();
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow_maps[0].fbo);
-        glDrawBuffer(0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, shadow_maps[0].cubemap);
-        glUniform1i(debug_depth_prog.getUniform("depthTexture"), 0);
-        //        depth_quad.Render();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        debug_depth_prog.unbind();
 
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);
