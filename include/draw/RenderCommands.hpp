@@ -4,7 +4,11 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
 
+#include <Eigen/Dense>
+
 namespace draw {
+
+    
 
     class Quad {
         GLuint vao;
@@ -14,6 +18,13 @@ namespace draw {
         void Render();
     };
 
+    class Sphere {
+        GLuint vao;
+        GLuint vbo;
+    public:
+        void GenerateData(int h_vert);
+        void Render();
+    };
 };
 
 

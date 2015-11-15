@@ -20,7 +20,8 @@ enum CellType {
     PUZZLE_FLOOR,
     START,
     HOLE,
-    END
+    END,
+    NODRAW,
  };
 
 struct MapCell {
@@ -46,6 +47,10 @@ private:
     boost::multi_array<MapCell, MAP_DIM> grid;
     uint columns;
     uint rows;
+    std::vector<Eigen::Vector3f> major_light_positions;
+    std::vector<Eigen::Vector3f> minor_light_positions;
+    std::vector<Eigen::Vector3f> tiny_light_positions;
+    Eigen::Vector3f player_start;
 
     void initWalls();
 
@@ -54,6 +59,7 @@ public:
     ~Map();
 
     int loadMapFromFile(std::string filename);
+    int loadMapFromImage(const char *filename);
 
     CellType getTypeForCell(uint col, uint row) const;
     Entity *getMapComponentForCell(uint col, uint row) const;
@@ -64,6 +70,10 @@ public:
 
     MapCell& get(uint col, uint row);
     const MapCell& cget(uint col, uint row) const;
+    const std::vector<Eigen::Vector3f>& getMajorLightPositions() const;
+    const std::vector<Eigen::Vector3f>& getMinorLightPositions() const;
+    const std::vector<Eigen::Vector3f>& getTinyLightPositions() const;
+    const Eigen::Vector3f& getPlayerStart() const;
 };
 
 #undef MAP_DIM // 

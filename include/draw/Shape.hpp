@@ -1,3 +1,4 @@
+
 #ifndef _SHAPE_H
 #define _SHAPE_H
 
@@ -42,7 +43,14 @@ namespace draw {
         void draw(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_norm,
                   int u_specular, int h_tan, int h_btan) const;
         void drawSpec(int h_vert, int h_nor, int h_uv, int u_diffuse, int u_spec) const;
+        void drawLightVolume(int h_vert) const;
+        void drawDepth(int h_vert) const;
+        void instanced_draw(GLuint matrix_buffer, int amount, Program *prog, GLuint vao) const;
+        void instanced_draw_depth(GLuint matrix_buffer, int amount, Program *prog, 
+                                         GLuint vao) const;
     };
+
+    
 
 }
 

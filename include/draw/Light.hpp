@@ -4,11 +4,6 @@
 #include <types.h>
 #include <Eigen/Dense>
 
-struct BaseLight {
-   
-protected:
-    BaseLight();
-};
 
 struct PointLight {
     vec3 ambient;
@@ -21,6 +16,10 @@ struct PointLight {
     float linear;
     float quadratic;
     vec3 position;
+
+    // Shadow information
+    bool shadow;
+    uint shadowMap;
 };
 
 struct DirectionalLight {
@@ -43,5 +42,7 @@ struct SpotLight {
     float innerCutoff;
     float outerCutoff;
 };
+
+float calculate_point_light_radius(const PointLight &light);
 
 #endif

@@ -6,7 +6,7 @@
 
 #include <resources.hpp>
 
-
+#include <log.hpp>
 
 using draw::Node;
 
@@ -220,7 +220,7 @@ namespace draw {
             // When MINifying the image, use a LINEAR blend of two mipmaps, each filtered LINEARLY too
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             // Generate mipmaps, by the way.
-            glGenerateMipmap(GL_TEXTURE_2D);
+             glGenerateMipmap(GL_TEXTURE_2D);
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -372,5 +372,50 @@ namespace draw {
     void Drawable::drawDeferred(Program *prog, MatrixStack *M, Camera *cam)
     {
         draw_node_deferred(root, prog, M, cam, texs);
+    }
+
+   static void draw_node_light_volume(Node *current, Program *prog, MatrixStack *M, Camera *cam)
+    {
+        M->pushMatrix();
+        //    M->multMatrix(current->transform);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        
+        for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
+            it->drawLightVolume(prog->getAttribute("vertPos"));
+        }
+
+        for (auto it = current->children.begin(); it != current->children.end(); it++) {
+            draw_node_light_volume(*it, prog, M, cam);
+        }
+
+        M->popMatrix();
+    }
+    
+    void Drawable::drawAsLightVolume(Program *prog, MatrixStack *M, Camera *cam)
+    {
+        //LOG("Drawable::drawAsLightVolume");
+        draw_node_light_volume(root, prog, M, cam);
+    }
+
+    static void draw_node_depth(Node *current, Program *prog, MatrixStack *M)
+    {
+        M->pushMatrix();
+        M->multMatrix(current->transform);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        
+        for (auto it = current->meshes.begin(); it != current->meshes.end(); it++) {
+            it->drawDepth(prog->getAttribute("vertPos"));
+        }
+
+        for (auto it = current->children.begin(); it != current->children.end(); it++) {
+            draw_node_depth(*it, prog, M);
+        }
+
+        M->popMatrix();
+    }
+
+    void Drawable::drawDepth(Program *prog, MatrixStack *M)
+    {
+        draw_node_depth(root, prog, M);
     }
 };

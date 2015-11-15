@@ -5,11 +5,14 @@ directory: resources/models/cube
 format: obj
 textures:
   diffuse:
-    HAE_RockWall/HAE_RockWall_Diff.dds
+#    HAE_RockWall/HAE_RockWall_Diff.dds
+    New_Texture/tile_blue_color.png
   normal:
-    HAE_RockWall/HAE_RockWall_Norm.dds
+#    HAE_RockWall/HAE_RockWall_Norm.dds
+    New_Texture/NormalMap.png
   specular:
-    HAE_RockWall/HAE_RockWall_Msk.dds
+#    HAE_RockWall/HAE_RockWall_Msk.dds
+    New_Texture/SpecularMap.png
 transforms:
   translations:
     xaxis: -0.5

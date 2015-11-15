@@ -1,15 +1,193 @@
 #include <draw/Shape.hpp>
 
 #include <tuple>
+#include <log.hpp>
 
 #define LOG_DRAW_CALLS 0
+
+#if 0
+#define LOG(x)
+#endif
 
 extern int special_texture_handle;
 
 namespace draw {
 
+    void Shape::instanced_draw_depth(GLuint matrix_buffer, int amount, Program *prog, GLuint vao)
+        const
+    {
+        LOG("HELLO FROM Shape::instanced_draw_depth");
+        GLuint h_vert = prog->getAttribute("vertPos");
+        GLuint h_M = prog->getAttribute("iM");
+        LOG("vertPos handle for depth draw: " << h_vert);
+        LOG("iM handle for depth draw: " << h_M);
+        
+        glBindVertexArray(vao);
+        
+#if 1
+         // Enable and bind verticies array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+#if 1
+        // Bind instanced model matrix array
+        glBindBuffer(GL_ARRAY_BUFFER, matrix_buffer);
+        // Enable the matrix array as multiple arrays of vec4
+        GLsizei vec4size = sizeof(vec4);
+        glEnableVertexAttribArray(h_M+0);
+        glVertexAttribPointer(h_M+0, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)0);
 
-    void flatten_array(std::vector<float> *dst, const aiVector3D *src, std::size_t num) {
+        glEnableVertexAttribArray(h_M+1);
+        glVertexAttribPointer(h_M+1, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)vec4size);
+        glEnableVertexAttribArray(h_M+2);
+        glVertexAttribPointer(h_M+2, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)(2*vec4size));
+        glEnableVertexAttribArray(h_M+3);
+        glVertexAttribPointer(h_M+3, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)(3*vec4size));
+/**/
+        // Enable divisors
+
+        glVertexAttribDivisor(h_M+0, 1);
+        glVertexAttribDivisor(h_M+1, 1);
+        glVertexAttribDivisor(h_M+2, 1);
+        glVertexAttribDivisor(h_M+3, 1);
+#endif
+#endif
+
+        // Bind index array for drawing
+        int nIndices = indices.size();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+        // Draw
+        glDrawElementsInstanced(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0, amount);
+
+        glVertexAttribDivisor(h_M+0, 0);
+        glVertexAttribDivisor(h_M+1, 0);
+        glVertexAttribDivisor(h_M+2, 0);
+        glVertexAttribDivisor(h_M+3, 0);
+
+        GLSL::disableVertexAttribArray(h_M+3);
+        GLSL::disableVertexAttribArray(h_M+2);
+        GLSL::disableVertexAttribArray(h_M+1);
+        GLSL::disableVertexAttribArray(h_M+0);
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        glBindVertexArray(0);
+    }
+
+    void Shape::instanced_draw(GLuint matrix_buffer, int amount, Program *prog, GLuint vao) const
+    {
+        GLuint h_vert = prog->getAttribute("vertPos");
+        GLuint h_nor =  prog->getAttribute("vertNor");
+        GLuint h_uv = prog->getAttribute("vertTex");
+        GLuint u_diffuse = prog->getUniform("texture0");
+        GLuint u_norm = prog->getUniform("texture_norm");
+        GLuint u_specular = prog->getUniform("texture_spec");
+        GLuint h_tan = prog->getAttribute("tangent");
+        GLuint h_btan = prog->getAttribute("bitangent");
+        GLuint h_M = prog->getAttribute("iM");
+
+//        LOG("iM handle for gbuffer draw: " << h_M);
+
+        glBindVertexArray(vao);
+        
+        // Enable norm texture
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, tex_id_norm);
+        glUniform1i(u_norm, 0);
+
+        // Enable diffuse texture
+        glActiveTexture(GL_TEXTURE0 + 1);
+        glBindTexture(GL_TEXTURE_2D, tex_id_diffuse);
+        glUniform1i(u_diffuse, 1);
+
+        // Enable specular texture
+        glActiveTexture(GL_TEXTURE0 + 2);
+        glBindTexture(GL_TEXTURE_2D, tex_id_specular);
+        glUniform1i(u_specular, 2);
+        
+        // Enable and bind verticies array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Enable and bind normal array for drawing
+        GLSL::enableVertexAttribArray(h_nor);
+        glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
+        glVertexAttribPointer(h_nor, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    
+        // TODO: Enable and bind texcoord array (if it exists) for drawing
+        GLSL::enableVertexAttribArray(h_uv);
+        glBindBuffer(GL_ARRAY_BUFFER, uv_buf);
+        glVertexAttribPointer(h_uv, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Enable and bind tangent array for drawing
+        GLSL::enableVertexAttribArray(h_tan);
+        glBindBuffer(GL_ARRAY_BUFFER, tan_buf);
+        glVertexAttribPointer(h_tan, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Enable and bind bitangent array for drawing
+        GLSL::enableVertexAttribArray(h_btan);
+        glBindBuffer(GL_ARRAY_BUFFER, bitan_buf);
+        glVertexAttribPointer(h_btan, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Bind index array for drawing
+        int nIndices = indices.size();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+/**/
+        // Bind instanced model matrix array
+        glBindBuffer(GL_ARRAY_BUFFER, matrix_buffer);
+        // Enable the matrix array as multiple arrays of vec4
+        GLsizei vec4size = sizeof(vec4);
+        glEnableVertexAttribArray(h_M+0);
+        glVertexAttribPointer(h_M+0, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)0);
+        glEnableVertexAttribArray(h_M+1);
+        glVertexAttribPointer(h_M+1, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)vec4size);
+        glEnableVertexAttribArray(h_M+2);
+        glVertexAttribPointer(h_M+2, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)(2*vec4size));
+        glEnableVertexAttribArray(h_M+3);
+        glVertexAttribPointer(h_M+3, 4, GL_FLOAT, GL_FALSE, 4 * vec4size, (GLvoid*)(3*vec4size));
+        // Enable divisors
+
+        glVertexAttribDivisor(h_M+0, 1);
+        glVertexAttribDivisor(h_M+1, 1);
+        glVertexAttribDivisor(h_M+2, 1);
+        glVertexAttribDivisor(h_M+3, 1);
+
+/**/
+//        glBindVertexArray(0);
+        
+        // Draw
+        glDrawElementsInstanced(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0, amount);
+
+        // Disable and unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+
+        glVertexAttribDivisor(h_M+0, 0);
+        glVertexAttribDivisor(h_M+1, 0);
+        glVertexAttribDivisor(h_M+2, 0);
+        glVertexAttribDivisor(h_M+3, 0);
+
+        GLSL::disableVertexAttribArray(h_M+3);
+        GLSL::disableVertexAttribArray(h_M+2);
+        GLSL::disableVertexAttribArray(h_M+1);
+        GLSL::disableVertexAttribArray(h_M+0);
+        GLSL::disableVertexAttribArray(h_btan);
+        GLSL::disableVertexAttribArray(h_tan);
+        GLSL::disableVertexAttribArray(h_uv);
+        GLSL::disableVertexAttribArray(h_nor);
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        glBindVertexArray(0);
+    }
+
+
+    static void flatten_array(std::vector<float> *dst, const aiVector3D *src, std::size_t num) 
+    {
         dst->reserve(3 * num);
         for (int i = 0; i < num; i++) {
             const aiVector3D v = src[i];
@@ -19,7 +197,8 @@ namespace draw {
         }
     }
 
-    void flatten_array2D(std::vector<float> *dst, const aiVector3D *src, std::size_t num) {
+    static void flatten_array2D(std::vector<float> *dst, const aiVector3D *src, std::size_t num) 
+    {
         dst->reserve(2 * num);
         for (int i = 0; i < num; i++) {
             const aiVector3D &v = src[i];
@@ -28,7 +207,9 @@ namespace draw {
         }
     }
 
-    void flatten_indices(std::vector<unsigned int> *dst, const aiFace *src, std::size_t num) {
+    static void flatten_indices(std::vector<unsigned int> *dst, const aiFace *src, 
+                                std::size_t num) 
+    {
         dst->reserve(3 * num);
         for (int i = 0; i < num; i++) {
             const aiFace f = src[i];
@@ -398,4 +579,44 @@ namespace draw {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+
+    void Shape::drawLightVolume(int h_vert) const
+    {
+        //LOG("drawAsLightVolume indices.size()" << indices.size());
+        // Enable vertices array for drawing
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        // Bind index buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+        // Draw
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        // Disable and unbind
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void Shape::drawDepth(int h_vert) const
+    {
+        GLSL::enableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
+        glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
+     
+        // Bind index buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
+
+        // Draw
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        // Disable and unbind
+        GLSL::disableVertexAttribArray(h_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+   
+    }
+
 }

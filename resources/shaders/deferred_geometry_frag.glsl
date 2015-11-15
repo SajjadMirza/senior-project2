@@ -28,7 +28,15 @@ void main()
         gNormal = (vec4(texture2D(texture_norm, fragTex.st).rgb, 0.0)).xyz;
     }
     else {
-        gNormal = normalize(fragNor);
+        gNormal = (fragNor);
+        float e = 0.1;
+/*
+        if (gNormal.x <= e && gNormal.y <= e && gNormal.z <= e &&
+            gNormal.x >= -e && gNormal.y >= -e && gNormal.z >= -e) {
+            gNormal.xyz = vec3(0, 0.5, 0.5);
+        }
+*/
+//        gNormal = abs(gNormal);
     }
 
     if (uCalcTBN != 0) {

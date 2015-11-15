@@ -34,6 +34,8 @@ public:
     void applyViewMatrix(MatrixStack *MV) const;
     Eigen::Vector2f rotations;
     Eigen::Vector3f translations;
+
+    // DON'T CALL THIS FUNCTION!!!!!!!!!!!!!!!!!!!!!!!!!!
     void move(char c, const std::vector<Entity> &entities,
               const Map &map, int col, int row);
 

@@ -5,6 +5,8 @@
 
 #include <cmath>
 
+#define FRUSTUM_CULLING 0
+
 // Internal headers
 #include <draw/Drawable.hpp>
 #include <draw/Text.hpp>
@@ -21,6 +23,11 @@
 #include <utility>
 #include <Gbuffer.hpp>
 #include <draw/RenderCommands.hpp>
+#include <draw/Light.hpp>
+#include <draw/ShapeBatch.hpp>
+#include <draw/ShadowMap.hpp>
+#include <Geometry.hpp>
+#include <GameMath.hpp>
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -47,36 +54,50 @@ double lastTime = glfwGetTime();
 int lastFPS = 0;
 int nbFrames = 0;
 
-// TEMP ON DRAWING GPU
-Program prog;
-Program color_prog;
-
-#if USE_DEFERRED
 Program deferred_geom_prog;
 Program gbuffer_debug_prog;
 Program deferred_lighting_prog;
+Program null_prog;
+Program depth_prog;
+Program debug_depth_prog;
 int debug_gbuffer_mode = 0;
-#endif
-const uint init_w = 1024;
-const uint init_h = 768;
+
+
+const uint init_w = 1600;
+const uint init_h = 900;
 uint new_w = init_w;
 uint new_h = init_h;
 
-const uint map_cols = 45;
-const uint map_rows = 45;
+const uint map_cols = 50;
+const uint map_rows = 50;
 
 int special_texture_handle = 0;
 
 sound::FMODDriver sound_driver;
+/*
+  inline static std::string foo(std::string name, int index)
+  {
+  return name + "[" + std::to_string(static_cast<int>(index)) + "]";
+  }
+*/
 
-float deg_to_rad(float deg) {
-    float rad = (M_PI / 180.0f) * deg;
-    return rad;
+inline vec3 make_color(int red, int green, int blue)
+{
+    return vec3(red/255.0, green/255.0, blue/255.0);
 }
+
+inline vec3 make_color(int hex)
+{
+    return vec3(((hex >> 16) & 0xFF) / 255.0, 
+                ((hex >> 8) & 0xFF) / 255.0, 
+                ((hex & 0xFF)) / 255.0);
+}
+
 
 static void bufferMovement(GLFWwindow *window,
                            const std::vector<Entity> &entities,
-                           const Map &map, int col, int row) {
+                           const Map &map, int col, int row) 
+{
     char c = 0;
     bool step = false;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -134,6 +155,7 @@ static void resize_window(GLFWwindow *window, int w, int h) {
     camera->setAspect((float)w / (float)h);
     new_w = w;
     new_h = h;
+
 }
 
 static Eigen::Vector3f selection_coords;
@@ -168,11 +190,13 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action, in
 
 }
 
-static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
+static void cursor_pos_callback(GLFWwindow *window, double x, double y) 
+{
     camera->mouseMoved(std::floor(x), std::floor(y));
 }
 
-static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) 
+{
     switch (key) {
     case GLFW_KEY_G:
         logic->notifyKey('G');
@@ -258,10 +282,14 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_7:
         debug_gbuffer_mode = 6;
         break;
+    case GLFW_KEY_8:
+        debug_gbuffer_mode = 7;
+        break;
     } // end of switch
 }
 
-draw::Drawable *import_drawable(std::string file_name, uint *handle) {
+draw::Drawable *import_drawable(std::string file_name, uint *handle) 
+{
     uint orange_handle = resource::import_object(file_name);
     if (orange_handle) {
         std::cout << "successful import" << std::endl;
@@ -276,12 +304,14 @@ draw::Drawable *import_drawable(std::string file_name, uint *handle) {
     return drawable_map[orange_handle];
 }
 
-draw::Drawable *import_drawable(std::string file_name) {
+draw::Drawable *import_drawable(std::string file_name) 
+{
     uint useless;
     return import_drawable(file_name, &useless);
 }
 
-static void init_gl() {
+static void init_gl() 
+{
     LOG(glGetString(GL_VERSION));
     
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -292,32 +322,6 @@ static void init_gl() {
 
     /* Sample Creating a Program */
     std::string header = "resources/shaders/";
-#if !USE_DEFERRED
-    prog.setShaderNames(header + "text_vert.glsl", header + "text_frag.glsl");
-    prog.init();
-    prog.addAttribute("vertPos");
-    prog.addAttribute("vertNor");
-    prog.addAttribute("vertTex");
-    prog.addAttribute("wordCoords");
-    prog.addUniform("P");
-    prog.addUniform("MV");
-    prog.addUniform("mode");
-    prog.addUniform("color");
-    prog.addUniform("texture0");
-    prog.addUniform("textureNorm");
-    prog.addUniform("uLightPos");
-    prog.addUniform("uTextToggle");
-    prog.addUniform("uNormFlag");
-    prog.addUniform("uRedder");
-
-    color_prog.setShaderNames(header + "color_vert.glsl", header + "color_frag.glsl");
-    color_prog.init();
-    color_prog.addAttribute("vertPos");
-    color_prog.addUniform("P");
-    color_prog.addUniform("MV");
-    color_prog.addUniform("uColor");
-#endif
-#if USE_DEFERRED
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
     deferred_geom_prog.init();
@@ -326,6 +330,7 @@ static void init_gl() {
     deferred_geom_prog.addAttribute("vertTex");
     deferred_geom_prog.addAttribute("tangent");
     deferred_geom_prog.addAttribute("bitangent");
+    deferred_geom_prog.addAttribute("iM");
     deferred_geom_prog.addUniform("M");
     deferred_geom_prog.addUniform("V");
     deferred_geom_prog.addUniform("P");
@@ -335,6 +340,7 @@ static void init_gl() {
     deferred_geom_prog.addUniform("texture_norm");
     deferred_geom_prog.addUniform("texture_spec");
     deferred_geom_prog.addUniform("uCalcTBN");
+    deferred_geom_prog.addUniform("uInstanced");
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
@@ -355,16 +361,58 @@ static void init_gl() {
     deferred_lighting_prog.addUniform("light.color");
     deferred_lighting_prog.addUniform("light.quadratic");
     deferred_lighting_prog.addUniform("light.linear");
+    deferred_lighting_prog.addUniform("light.specular");
+    deferred_lighting_prog.addUniform("light.ambient");
+    deferred_lighting_prog.addUniform("light.intensity");    
+    deferred_lighting_prog.addUniform("uScreenSize");
     deferred_lighting_prog.addUniform("gPosition");
     deferred_lighting_prog.addUniform("gNormal");
     deferred_lighting_prog.addUniform("gDiffuse");
     deferred_lighting_prog.addUniform("gSpecular");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
+    deferred_lighting_prog.addUniform("M");
+    deferred_lighting_prog.addUniform("V");
+    deferred_lighting_prog.addUniform("P");
+    deferred_lighting_prog.addUniform("depthMap");
+    deferred_lighting_prog.addUniform("far_plane");
 
     deferred_lighting_prog.addAttribute("wordCoords");
     deferred_lighting_prog.addUniform("uTextToggle");
-#endif
+
+    null_prog.setShaderNames(header + "null_vert.glsl",
+                             header + "null_frag.glsl");
+    null_prog.init();
+    null_prog.addAttribute("vertPos");
+    null_prog.addUniform("M");
+    null_prog.addUniform("V");
+    null_prog.addUniform("P");
+
+    depth_prog.setShaderNames(header + "cube_depth.vs.glsl",
+                              header + "cube_depth.fs.glsl",
+                              header + "cube_depth.gs.glsl");
+    depth_prog.init();
+    depth_prog.addAttribute("vertPos");
+    depth_prog.addAttribute("iM");
+    depth_prog.addUniform("M");
+    depth_prog.addUniform("shadowMatrices[0]");
+    depth_prog.addUniform("shadowMatrices[1]");
+    depth_prog.addUniform("shadowMatrices[2]");
+    depth_prog.addUniform("shadowMatrices[3]");
+    depth_prog.addUniform("shadowMatrices[4]");
+    depth_prog.addUniform("shadowMatrices[5]");
+    depth_prog.addUniform("lightPos");
+    depth_prog.addUniform("far_plane");
+    depth_prog.addUniform("uInstanced");
+
+    debug_depth_prog.setShaderNames(header + "debug_depth.vs.glsl",
+                                    header + "debug_depth.fs.glsl");
+    debug_depth_prog.init();
+    debug_depth_prog.addAttribute("vertPos");
+    debug_depth_prog.addAttribute("vertTex");
+    debug_depth_prog.addUniform("depthTexture");
+ 
+
     GLSL::checkVersion();
 }
 
@@ -372,7 +420,8 @@ static const std::string model_config_file = "resources/tree.yaml";
 
 static int unique_color_index = 0;
 
-static uint getUniqueColor(int index) {
+static uint getUniqueColor(int index) 
+{
     const int num_channels = 3;
     char r,g,b;
     r = g = b = 20;
@@ -389,7 +438,7 @@ static uint getUniqueColor(int index) {
     int color = 0;
     color = (r << 16) | (g << 8) | b;
     return color;
- }
+}
 
 static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, 
                       Map &map, CellType type) 
@@ -432,14 +481,14 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
     }
 }
 
-static void init_floors(std::vector<Entity*> *floors, Map &map) {
+static void init_floors(std::vector<Entity*> *floors, Map &map) 
+{
     ModelConfig config;
     resource::load_config(&config, "resources/floor.yaml");
     gen_cubes(floors, config, map, HALLWAY);
 
     ModelConfig config_f;
     resource::load_config(&config_f, "resources/skull.yaml");
-
     gen_cubes(floors, config_f, map, PUZZLE_FLOOR);
     gen_cubes(floors, config_f, map, START);
 
@@ -454,7 +503,8 @@ static void init_floors(std::vector<Entity*> *floors, Map &map) {
 
 }
 
-static void init_walls(std::vector<Entity*> *walls, Map &map) {
+static void init_walls(std::vector<Entity*> *walls, Map &map) 
+{
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
@@ -462,7 +512,8 @@ static void init_walls(std::vector<Entity*> *walls, Map &map) {
 
 
 
-static void init_entities(std::vector<Entity> *entities) {
+static void init_entities(std::vector<Entity> *entities) 
+{
     std::vector<ModelConfig> configs;
     resource::load_model_configs(&configs, model_config_file);
     
@@ -487,14 +538,14 @@ static void init_entities(std::vector<Entity> *entities) {
         
         if (it->transforms.xrot != 0.0f) {
             Eigen::Quaternionf q;
-            float angle = deg_to_rad(it->transforms.xrot);
+            float angle = math::deg_to_rad(it->transforms.xrot);
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitX());
             qrot = q * qrot;
         }
 
         if (it->transforms.yrot != 0.0f) {
             Eigen::Quaternionf q;
-            float angle = deg_to_rad(it->transforms.yrot);
+            float angle = math::deg_to_rad(it->transforms.yrot);
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitY());
             qrot = q * qrot;
         }
@@ -502,7 +553,7 @@ static void init_entities(std::vector<Entity> *entities) {
         if (it->transforms.zrot != 0.0f) {
             std::cout << "multiplied by z rotation" << std::endl;
             Eigen::Quaternionf q;
-            float angle = deg_to_rad(it->transforms.zrot);
+            float angle = math::deg_to_rad(it->transforms.zrot);
             q = Eigen::AngleAxisf(angle, Eigen::Vector3f::UnitZ());
             qrot = q * qrot;
         }
@@ -535,10 +586,162 @@ static void init_entities(std::vector<Entity> *entities) {
     }
 }
 
+static void setup_batch(draw::ShapeBatch *batch, const std::vector<Entity*> &entities)
+{
+    MatrixStack M;
+    for (auto it = entities.begin(); it != entities.end(); it++) {
+        Entity *e = *it;
+        M.pushMatrix();
+        M.worldTranslate(e->getPosition(), e->getRotation());
+        batch->addTransform(M.topMatrix());
+        M.popMatrix();
+    }
+    batch->init(deferred_geom_prog.getAttribute("iM"));
+    if (entities.size() > 0 ) {
+        Entity *e = entities[0];
+        draw::Drawable &drawable = e->getDrawable();
+        const draw::Shape *mesh = drawable.find_first_shape();
+        batch->target_shape = mesh;
+    }
+
+}
+
+static void init_lights(std::vector<PointLight> *point_lights, 
+                        std::vector<draw::ShadowMap> *shadow_maps, const Map &map)
+{
+    PointLight pl;
+    
+    pl.ambient = vec3(0.05, 0.05, 0.05);
+    pl.diffuse = vec3(1.0, 1.0, 1.0);
+    pl.specular = vec3(1.0, 1.0, 1.0);
+    pl.intensity = pl.constant = 1.0;
+    pl.linear = 0.35;
+    pl.quadratic = 0.9;
+    pl.shadow = true;
+
+    draw::ShadowMap sm;
+    sm.cubemap = 0;
+    sm.fbo = 0;
+    
+    for (auto it = map.getMajorLightPositions().cbegin(); 
+         it != map.getMajorLightPositions().cend();
+         it++) {
+        if (pl.shadow) {
+            shadow_maps->push_back(sm);
+            pl.shadowMap = shadow_maps->size() - 1;
+        }
+        pl.position = *it;
+        point_lights->push_back(pl);
+
+    }
+
+
+    PointLight smallpl;
+    smallpl.ambient = pl.ambient;
+    smallpl.shadow = true;
+    smallpl.diffuse = make_color(0, 216, 230);
+    smallpl.specular = smallpl.diffuse;
+    smallpl.intensity = smallpl.constant = 1.0;
+    smallpl.linear = 0.7;
+    smallpl.quadratic = 1.8;
+
+    for (auto it = map.getMinorLightPositions().cbegin(); 
+         it != map.getMinorLightPositions().cend();
+         it++) {
+        if (smallpl.shadow) {
+            shadow_maps->push_back(sm);
+            smallpl.shadowMap = shadow_maps->size() - 1;
+        }
+        smallpl.position = *it;
+        point_lights->push_back(smallpl);
+    }
+
+    PointLight tinypl = smallpl;
+    tinypl.shadow = true;
+    tinypl.diffuse = make_color(230, 30, 30);
+    tinypl.specular = tinypl.diffuse;
+    tinypl.linear = 4.5;
+    tinypl.quadratic = 6.7;
+#if 0
+    for (auto it = map.getTinyLightPositions().cbegin(); 
+         it != map.getTinyLightPositions().cend();
+         it++) {
+        if (tinypl.shadow) {
+            shadow_maps->push_back(sm);
+            tinypl.shadowMap = shadow_maps->size() - 1;
+        }
+        tinypl.position = *it;
+        point_lights->push_back(tinypl);
+    }
+#endif
+    
+    LOG("Initialized " << point_lights->size() << " point lights");
+}
+
+std::unique_ptr<Entity> init_sphere_light_volume()
+{
+    ModelConfig sphere_config;
+    resource::load_config(&sphere_config, "resources/sphere.yaml");
+    draw::Drawable *sphere_drawable = new draw::Drawable(sphere_config);
+    std::unique_ptr<Entity> sphere(new Entity(sphere_drawable));
+
+    TransformConfig &transforms = sphere_config.transforms;
+    vec3 pos(transforms.xpos, transforms.ypos, transforms.zpos);
+    sphere->setPosition(pos);
+
+    sphere->setSimpleDraw(true);
+    
+    return sphere;
+}
+
+void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, const MatrixStack &V,
+                                 uint width, uint height, float light_far_plane)
+{
+    glUniformMatrix4fv(deferred_lighting_prog.getUniform("P"), 
+                       1, GL_FALSE, P.topMatrix().data());
+    glUniformMatrix4fv(deferred_lighting_prog.getUniform("V"), 
+                       1, GL_FALSE, V.topMatrix().data());
+    glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
+    glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
+    glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
+    glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
+    glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
+ 
+    glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
+                 pl.position.data());
+    glUniform3fv(deferred_lighting_prog.getUniform("light.ambient"), 1, 
+                 pl.ambient.data());
+    glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1, 
+                 pl.diffuse.data());
+    glUniform3fv(deferred_lighting_prog.getUniform("light.specular"), 1, 
+                 pl.specular.data());
+    glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"),
+                pl.quadratic);
+    glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
+                pl.linear);
+    glUniform1f(deferred_lighting_prog.getUniform("light.intensity"), 
+                pl.intensity);
+    vec3 viewPos = -(camera->translations);
+    glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
+                 viewPos.data());
+    glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+    glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
+                static_cast<float>(width), static_cast<float>(height));
+    glUniform1f(deferred_lighting_prog.getUniform("far_plane"), light_far_plane);
+    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 4);
+}
+
+static void init_camera(const Map& map)
+{
+    fp_camera->translations = -(map.getPlayerStart());
+    fp_camera->translations += (vec3(0, -0.7f, 0));
+    ov_camera->translations = -(map.getPlayerStart());
+    ov_camera->translations += (vec3(0, -30.0f, 0));
+}
+
 int main(void)
 {
     GLFWwindow* window;
-
     camera = fp_camera;
 
     glfwSetErrorCallback(error_callback);
@@ -546,6 +749,12 @@ int main(void)
     if (!glfwInit()) {
         exit(EXIT_FAILURE);
     }
+
+    // Window hints
+//    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+//    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     window = glfwCreateWindow(init_w, init_h, "Simple example", NULL, NULL);
     if (!window) {
@@ -566,16 +775,23 @@ int main(void)
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-    
 
     Map map(map_cols, map_rows);
-    map.loadMapFromFile("resources/maps/our_map.txt");
+    //map.loadMapFromFile("resources/maps/our_map.txt");
+    //map.loadMapFromImage("resources/maps/map_level_0_L_onelight.tga");
+    map.loadMapFromImage("resources/maps/map_level_0_L.tga");
     std::vector<Entity*> floors;
     std::vector<Entity*> walls;
     init_walls(&walls, map);
     init_floors(&floors, map);
     std::vector<Entity> entities;
     init_entities(&entities);
+    std::unique_ptr<Entity> sphere = init_sphere_light_volume();
+    std::vector<PointLight> point_lights;
+    std::vector<draw::ShadowMap> shadow_maps;
+    init_lights(&point_lights, &shadow_maps, map);
+    init_camera(map);
+    LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
     ColRow logic_tl = col_row(31, 18);
     ColRow logic_br = col_row(41, 26);
@@ -603,153 +819,171 @@ int main(void)
     // test sound 
     // sound_driver.testSound();
 
-#if USE_DEFERRED
     LOG("gbuffer stuff");
     Gbuffer gbuffer;
     gbuffer.init(width, height);
     draw::Quad quad;
     quad.GenerateData(gbuffer_debug_prog.getAttribute("vertPos"),
                       gbuffer_debug_prog.getAttribute("vertTex"));
-#endif
+    draw::Quad depth_quad;
+    depth_quad.GenerateData(debug_depth_prog.getAttribute("vertPos"),
+                            debug_depth_prog.getAttribute("vertTex"));
 
+    MatrixStack P, M, V;
+
+    // Prepare for instancing
+    draw::ShapeBatch wall_batch;
+    setup_batch(&wall_batch, walls);
+    draw::ShapeBatch floor_batch;
+    setup_batch(&floor_batch, floors);
+
+    GLuint universal_vao;
+    glGenVertexArrays(1, &universal_vao);
+    glBindVertexArray(universal_vao);
+
+
+    // Allocate buffers for depth maps
+    const GLuint shadow_width = 1024, shadow_height = 1024;
+    for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+        if (it->shadow) {
+            draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+            sm.allocateBuffers(shadow_width, shadow_height);
+        }
+    }
+
+    // Set up shadow projection matrix
+    float shadow_aspect = static_cast<float>(shadow_width) / static_cast<float>(shadow_height);
+    float shadow_near = 1.0f;
+    float shadow_far = 25.0f;
+    Eigen::Matrix4f shadowP = math::perspective(90.0f, shadow_aspect, shadow_near, shadow_far);
+
+    // Set the flag so that the first iteration of the game loop will
+    // generate the depth cube map data
+    bool generate_shadowmaps = true;
+        
     while (!glfwWindowShouldClose(window)) {
         float ratio;
-        
-
         glfwGetFramebufferSize(window, &width, &height);
-    
+        glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#if !USE_DEFERRED
-        // P is the projection matrix
-        // MV is the model-view matrix
-        MatrixStack P, MV;
-
-
-        // Apply camera transforms
-        P.pushMatrix();
-        camera->applyProjectionMatrix(&P);
-        MV.pushMatrix();
-        camera->applyViewMatrix(&MV);
-
-        /* Beginning main render path */
-        prog.bind();
-
-        /* Send projection matrix */
-        glUniformMatrix4fv(prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-        glUniform3fv(prog.getUniform("uLightPos"), 1, light_pos.data());
-        glUniform1i(prog.getUniform("uTextToggle"), 0);
-        glUniform1i(prog.getUniform("uNormFlag"), 0);
-
-        for (auto it = entities.begin(); it != entities.end(); it++) {
-            if (it->selected == true) {
-                glUniform1i(prog.getUniform("uRedder"), 1);
-            }
-            else {
-                glUniform1i(prog.getUniform("uRedder"), 0);
-            }
-
-            if (it->getName() == "player" && camera == fp_camera) {
-                Eigen::Vector3f change = -camera->translations;
-                
-                change(0) = std::round(change(0)) - 0.5f;
-                change(1) -= 1.0f;
-                change(2) = std::round(change(2) - 1) + 0.5f;
-
-                it->setPosition(change);
-            }
-            else {
-                if (it->getName() == "player") {
-
-                }
-                MV.pushMatrix();
-                MV.multMatrix(it->getRotation());
-                MV.worldTranslate(it->getPosition(), it->getRotation());
-                MV.scale(0.5f);
-                glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                                   MV.topMatrix().data());
-                it->getDrawable().draw(&prog, &P, &MV, camera);
-                MV.popMatrix();
-            }
-        }
-        glUniform1i(prog.getUniform("uRedder"), 0);
-
-
-        for (auto it = floors.begin(); it != floors.end(); it++) {
-            if ((*it)->selected == true) {
-                glUniform1i(prog.getUniform("uRedder"), 1);
-            }
-            else {
-                glUniform1i(prog.getUniform("uRedder"), 0);
-            }
-            Entity *fl = *it;
-            MV.pushMatrix();
-            MV.worldTranslate(fl->getPosition(), fl->getRotation());
-
-            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                               MV.topMatrix().data());
-            fl->getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-        }
-        glUniform1i(prog.getUniform("uRedder"), 0);
-
-
-        for (auto it = walls.begin(); it != walls.end(); it++) {
-            if ((*it)->selected == true) {
-                glUniform1i(prog.getUniform("uRedder"), 1);
-            }
-            else {
-                glUniform1i(prog.getUniform("uRedder"), 0);
-            }
-            Entity *wall = *it;
-            MV.pushMatrix();
-            MV.worldTranslate(wall->getPosition(), wall->getRotation());
-
-            glUniformMatrix4fv(prog.getUniform("MV"), 1, GL_FALSE,
-                               MV.topMatrix().data());
-            wall->getDrawable().draw(&prog, &P, &MV, camera);
-            MV.popMatrix();
-        }
-        glUniform1i(prog.getUniform("uRedder"), 0);
-
-        draw_text(*window);
-
-        logic->draw(&prog, &P, &MV, camera, &text, window);
-
-        if (camera == fp_camera) {
-            Eigen::Vector3f campos = -camera->translations;
-            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-            pattern->notifyPosition(col_row(col, row));
-        }
-        
-        //LOG("pattern->draw()");
-        pattern->draw(&prog, &P, &MV, camera, &text, window);
-        //LOG("after pattern->draw()");
-        
-        // Unbind the program
-        prog.unbind();
-
-#else
-        // Deferred shading code
-        MatrixStack P, M, V;
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
         camera->applyViewMatrix(&V);
+
+        gbuffer.startFrame();
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // If the depth cube maps do not exist or have been invalidated, regenerate them
+        if (generate_shadowmaps) {
+            generate_shadowmaps = false;
+            // Make the shadow maps for the relevant lights
+            depth_prog.bind();
+            for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+                if (it->shadow) {
+                    draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+                    mat4 trans;
+                    vec3 lpos = it->position;
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 1, 0, 0), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3(-1, 0, 0), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0, 1, 0), vec3(0, 0, 1));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0,-1, 0), vec3(0, 0,-1));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0, 0, 1), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+                    trans = shadowP * math::lookAt(lpos, lpos + vec3( 0, 0,-1), vec3(0,-1, 0));
+                    sm.transforms.push_back(trans);
+
+                    glViewport(0, 0, shadow_width, shadow_height);
+                    glBindFramebuffer(GL_FRAMEBUFFER, sm.fbo);
+                    glClear(GL_DEPTH_BUFFER_BIT);
+//                    glCullFace(GL_FRONT);
+                    
+                    // Set up the matrices for every face of the cube map
+                    char matstr[] = "shadowMatrices[x]";
+                    char *cidx = &matstr[15];
+                    for (int i = 0; i < 6; ++i) {
+                        *cidx = '0' + i; // Create the correct string
+
+                        glUniformMatrix4fv(depth_prog.getUniform(matstr), 1, GL_FALSE, 
+                                           sm.transforms[i].data());
+                    }
+                    glUniform1f(depth_prog.getUniform("far_plane"), shadow_far);
+                    glUniform3fv(depth_prog.getUniform("lightPos"), 1, lpos.data());
+
+                    glUniform1i(depth_prog.getUniform("uInstanced"), 1);
+                    if (walls.size() > 0) {
+//                        glCullFace(GL_FRONT);
+                        wall_batch.drawAllDepth(&depth_prog);
+//                        glCullFace(GL_BACK);
+                    }                                  
+                    if (floors.size() > 0) {
+                        floor_batch.drawAllDepth(&depth_prog);
+                    }
+                    glUniform1i(depth_prog.getUniform("uInstanced"), 0);
+
+                    for (auto it = entities.begin(); it != entities.end(); it++) {
+                        M.pushMatrix();
+                        M.multMatrix(it->getRotation());
+                        M.worldTranslate(it->getPosition(), it->getRotation());
+                        M.scale(0.5f);
+                        glUniformMatrix4fv(depth_prog.getUniform("M"), 1, GL_FALSE, 
+                                           M.topMatrix().data());
+                        it->getDrawable().drawDepth(&depth_prog, &M);
+                        M.popMatrix();
+                    }
+                    
+//                    glCullFace(GL_BACK);
+                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                    glViewport(0, 0, width, height); 
+                }
+            }
+            depth_prog.unbind();
+        } // END OF DEPTH MAP GENERATION
         
         // Geometry pass
         deferred_geom_prog.bind();
         gbuffer.bind();
        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
         glUniformMatrix4fv(deferred_geom_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(deferred_geom_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
         glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
+        glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
 
-#if 1
+
+        // Draw walls with instancing
+        if (walls.size() > 0) {
+            glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
+            glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 1);
+            glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 1);
+            wall_batch.drawAll(&deferred_geom_prog);
+            glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 0);
+            glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
+            glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+        }
+
+        if (floors.size() > 0) {
+            glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
+            glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 1);
+            glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 1);
+            floor_batch.drawAll(&deferred_geom_prog);
+            glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 0);
+            glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
+            glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+        }
+
+
+        glBindVertexArray(universal_vao);
+
+
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
@@ -761,91 +995,147 @@ int main(void)
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
-#endif
 
-        for (auto it = walls.begin(); it != walls.end(); it++) {
-            Entity *wall = *it;
-            M.pushMatrix();
-            M.worldTranslate(wall->getPosition(), wall->getRotation());
-            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
-                               M.topMatrix().data());
-            wall->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
-            M.popMatrix();
-        }
-        
-        for (auto it = floors.begin(); it != floors.end(); it++) {
-            Entity *floor = *it;
-            M.pushMatrix();
-            M.worldTranslate(floor->getPosition(), floor->getRotation());
-            glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE,
-                               M.topMatrix().data());
-            floor->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
-            M.popMatrix();
-        }
-        
-        
-        // REWRITE ALL THE DRAW CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                
-        gbuffer.unbind();
+        // Second step: per-light calculations
+        glDepthMask(GL_FALSE);
         deferred_geom_prog.unbind();
 
+        Eigen::Matrix4f matV = V.topMatrix();
+        Eigen::Matrix4f matP = P.topMatrix();
+        Eigen::Matrix4f matVP = matV * matP;
+        Eigen::Matrix4f matPV = matP * matV;
+
+        Eigen::Vector3f current_position = -camera->translations;
+        
+
+        int light_draw_count = 0;
+        glEnable(GL_STENCIL_TEST);
         deferred_lighting_prog.bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        gbuffer.bindTextures();
+        for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
+            float light_radius = calculate_point_light_radius(*it);
+            M.pushMatrix();
+            M.translate(it->position); // set the sphere's position to the light's pos
+            Eigen::Vector3f light_vector = current_position - it->position;
+            float dist = abs(light_vector.norm());
+            if (dist > 15 && camera == fp_camera) {
+                M.popMatrix();
+                continue;
+            }
 
-        glUniform1i(deferred_lighting_prog.getUniform("uDrawMode"), debug_gbuffer_mode);
-        glUniform1i(deferred_lighting_prog.getUniform("gPosition"), 0); // TEXTURE0
-        glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
-        glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
-        glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
-        
-        glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1,
-                     vec3(6.0f, 1.0f, 28.0f).data());
-        glUniform3fv(deferred_lighting_prog.getUniform("light.color"), 1,
-                     vec3(0.3, 0.5, 0.7).data());
-        glUniform1f(deferred_lighting_prog.getUniform("light.linear"), 0.14f);
-        glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"), 0.07f);
+#if FRUSTUM_CULLING
+            Eigen::Matrix4f matM = M.topMatrix();
+            Eigen::Matrix4f matVM = matV * matM;
+            Eigen::Matrix4f matPVM = matP * matVM;
+            Eigen::Matrix4f matMV = matM * matV;
+            Eigen::Matrix4f matMVP = matMV * matP;
 
-        vec3 viewPos = -(camera->translations);
-        glUniform3fv(deferred_lighting_prog.getUniform("viewPos"), 1,
-                     viewPos.data());
-        
-        quad.Render();
-        gbuffer.copyDepthBuffer(width, height);       
-        
-        draw_text(*window);
-        deferred_lighting_prog.unbind();
+            Frustum frustum;
+            extract_planes(&frustum, matPV);
+            normalize(&frustum);
+           
+            //if (check_frustum_sphere(frustum, it->position, light_radius) == OUTSIDE) {
+            if (check_frustum_point(frustum, it->position) == OUTSIDE) {
+                M.popMatrix();
+                continue;
+            }
 #endif
+
+            light_draw_count++;
+
+            // set up and render sphere
+            M.scale(light_radius);
+#if 1
+            // Stencil pass
+            null_prog.bind();
+            glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+            glUniformMatrix4fv(null_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+
+            glDrawBuffer(GL_NONE);
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+
+            glClear(GL_STENCIL_BUFFER_BIT);
+            glStencilFunc(GL_ALWAYS, 0, 0);
+            glStencilMask(0xff);
+
+            glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+            glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+            
+
+
+            sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
+            
+            null_prog.unbind();
+#endif
+
+            // Point light pass
+            deferred_lighting_prog.bind();
+
+            gbuffer.bindTextures();
+            gbuffer.bindFinalBuffer();
+
+            // Prepare to use shadows
+            draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
+
+            glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+//            glDisable(GL_STENCIL_TEST);
+
+            glDisable(GL_DEPTH_TEST);
+
+            glEnable(GL_BLEND);
+            glBlendEquation(GL_FUNC_ADD);
+            glBlendFunc(GL_ONE, GL_ONE);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+
+            set_light_volume_parameters(*it, P, V, width, height, shadow_far);
+
+            sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
+
+            glDepthFunc(GL_LESS);
+            glCullFace(GL_BACK);
+            glDisable(GL_BLEND);
+
+            M.popMatrix();
+            deferred_lighting_prog.unbind();
+
+            gbuffer.unbindFinalBuffer();
+        }
+//        LOG("Drew: " << light_draw_count << " lights this frame");
+        glDisable(GL_STENCIL_TEST);
+
+        gbuffer.copyFinalBuffer(width, height);
+        gbuffer.copyDepthBuffer(width, height);       
+
+        deferred_lighting_prog.bind();
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
+        draw_text(*window);
+        glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+        deferred_lighting_prog.unbind();
+
+        // Final pass
 
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-
-//            light_pos(0) = campos(0);
-//            light_pos(2) = campos(2);
-
-//            std::cout << col << " " << row << std::endl;
-//            std::cout << campos(0) << " " << campos(2) << std::endl;
-
             bufferMovement(window, entities, map, col, row);
         }
         else {
             bufferMovement(window, entities, map, -1, -1);
         }
 
-
-#if USE_DEFERRED
         V.popMatrix();
-#else
-        MV.popMatrix();
-#endif        
         P.popMatrix();
-
 
         findFPS();        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+//        break;
     }
 
     glfwDestroyWindow(window);

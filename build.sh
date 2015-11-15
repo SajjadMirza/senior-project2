@@ -5,6 +5,6 @@ BUILD_DIR=clibuild
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 
-cmake .. 
+cmake ..
 #make
 make install

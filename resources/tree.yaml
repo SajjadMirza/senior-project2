@@ -15,7 +15,7 @@ transforms:
   translations:
     xaxis: 4.0
     yaxis: -1.0
-    zaxis: 25.0
+    zaxis: 22.0
 ---
 model: player
 file: cube.obj

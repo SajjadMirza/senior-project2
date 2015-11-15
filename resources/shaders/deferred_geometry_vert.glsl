@@ -5,6 +5,7 @@ in vec3 vertNor;
 in vec2 vertTex;
 in vec3 tangent;
 in vec3 bitangent;
+in mat4 iM;
 
 out vec3 fragPos;
 out vec3 fragNor;
@@ -17,11 +18,13 @@ uniform mat4 V;
 uniform mat4 P;
 uniform vec3 uLightPos;
 uniform int uCalcTBN;
-
+uniform int uInstanced;
 
 void main()
 {
-    vec4 worldPos = M * vec4(vertPos, 1.0f);
+    mat4 modelMatrix = uInstanced != 0 ? iM : M;
+    vec4 worldPos = modelMatrix * vec4(vertPos, 1.0f);
+    
 //2    worldPos = worldPos - vec4(0, 0, 0, 0);
     fragPos = (worldPos).xyz;
     //fragPos = vec3((V * worldPos).xy, worldPos.z);
@@ -29,7 +32,7 @@ void main()
     gl_Position = P * V * worldPos;
     fragTex = vertTex;
 
-    mat3 normalMatrix = transpose(inverse(mat3(M)));
+    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
     //mat3 normalMatrix = mat3(M);
 
 

@@ -13,6 +13,8 @@ GLfloat quadVertices[] = {
 
 namespace draw {
 
+  
+
     void Quad::GenerateData(int h_vert, int h_uv)
     {
         LOG("h_vert " << h_vert << " h_uv " << h_uv);
@@ -35,6 +37,10 @@ namespace draw {
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
+    }
+
+    void Sphere::Render()
+    {
     }
 
 };

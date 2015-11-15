@@ -135,10 +135,19 @@ namespace draw {
 	            {x2,     -y2 - h, 0, 1},
 	            {x2 + w, -y2 - h, 1, 1},
 	        };
-	     
+#if 1	
 	        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
+#endif
+#if 0
+                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(box), box);
+#endif
+#if 1
 	        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
+#endif
+#if 0
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+#endif
 	        x += (g->advance.x >> 6) * sx;
 	        y += (g->advance.y >> 6) * sy;
 	    }

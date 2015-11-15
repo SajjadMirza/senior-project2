@@ -9,6 +9,7 @@ bool Gbuffer::init(uint width, uint height)
     attachments[1] = GL_COLOR_ATTACHMENT1;
     attachments[2] = GL_COLOR_ATTACHMENT2;
     attachments[3] = GL_COLOR_ATTACHMENT3;
+    attachments[4] = GL_COLOR_ATTACHMENT4;
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -29,7 +30,7 @@ bool Gbuffer::init(uint width, uint height)
     glGenTextures(1, &gnor);
     glBindTexture(GL_TEXTURE_2D, gnor);
     LOG("GBUFFER POSITION TEXTURE: " << gnor);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 //    gluBuild2DMipmaps(GL_TEXTURE_2D, GLU_RGB, width, height, GLU_RGB, GLU_FLOAT, NULL);
@@ -48,7 +49,7 @@ bool Gbuffer::init(uint width, uint height)
     // Specular buffer
     glGenTextures(1, &gspc);
     glBindTexture(GL_TEXTURE_2D, gspc);
-    LOG("GBUFFER SPECULAR TEXTURE " << gspc);
+    LOG("GBUFFER SPECULAR TEXTURE: " << gspc);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -61,8 +62,17 @@ bool Gbuffer::init(uint width, uint height)
     // - Create and attach depth buffer (renderbuffer)
     glGenRenderbuffers(1, &zbuf);
     glBindRenderbuffer(GL_RENDERBUFFER, zbuf);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, zbuf);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, zbuf);
+
+    // Final buffer
+    glGenTextures(1, &gfinal);
+    glBindTexture(GL_TEXTURE_2D, gfinal);
+    LOG("GBUFFER FINAL TEXTURE: " << gfinal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gfinal, 0);
 
     // - Finally check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -78,12 +88,9 @@ bool Gbuffer::init(uint width, uint height)
 void Gbuffer::bind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glDrawBuffers(4, attachments);
 }
 
-void Gbuffer::unbind()
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
 
 extern int special_texture_handle;
 
@@ -121,4 +128,45 @@ void Gbuffer::copyDepthBuffer(uint width, uint height)
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
                       GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Gbuffer::startFrame()
+{
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    glDrawBuffer(GL_COLOR_ATTACHMENT4);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Gbuffer::bindFinalBuffer()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glDrawBuffer(GL_COLOR_ATTACHMENT4);
+    int x;
+    glGetIntegerv(GL_DRAW_BUFFER, &x);
+    if (x != GL_COLOR_ATTACHMENT4) {
+        LOG("GL_DRAW_BUFFER not correctly set! " << x);
+    }
+}
+
+void Gbuffer::unbindFinalBuffer()
+{
+    glDrawBuffer(GL_NONE);
+}
+
+void Gbuffer::copyFinalBuffer(uint width, uint height)
+{
+/*
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    glDrawBuffer(GL_COLOR_ATTACHMENT4);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+*/
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glReadBuffer(GL_COLOR_ATTACHMENT4);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
