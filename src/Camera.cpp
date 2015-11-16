@@ -149,6 +149,88 @@ void Camera::move(char c, const std::vector<Entity> &entities,
 
 }
 
+void Camera::move(char c, const Level &level_one,
+                  const Map &map, int col, int row) {
+    Eigen::Quaternionf q1;
+    Eigen::Vector3f axis1(0.0f, 1.0f, 0.0f);
+    q1 = Eigen::AngleAxisf(rotations(0), axis1); 
+    Eigen::Matrix4f R1 = Eigen::Matrix4f::Identity();
+    R1.block<3,3>(0,0) = q1.toRotationMatrix();
+    Eigen::Vector3f last_valid_location = translations;
+
+    Eigen::Vector3f point;
+    switch (c) {
+    case 's':
+        point = Eigen::Vector3f(0.0f, 0.0f, 1.0f);
+        break;
+    case 'd':
+        point = Eigen::Vector3f(-1.0f, 0.0f, 0.0f);
+        break;
+    case 'w':
+        point = Eigen::Vector3f(0.0f, 0.0f, -1.0f);
+        break;
+    case 'a':
+        point = Eigen::Vector3f(1.0f, 0.0f, 0.0f);
+        break;
+    default:
+        assert(0);
+    }
+
+
+    point = R1.block<3,3>(0,0) * point;      
+        
+    translations(0) += (point(0) * tfactor);     
+    translations(2) -= (point(2) * tfactor);
+
+    if (col >= 0 && row >= 0) {
+        Neighbors neighbors = map.getNearbyWalls(col, row);
+
+        bool reset_x = false, reset_z = false;
+        
+        if ((neighbors.up && this->collides(*neighbors.up)) ||
+            (neighbors.down && this->collides(*neighbors.down))) {
+//            std::cout << "COLLIDES Z" << std::endl;
+            reset_z = true;
+        }
+        
+        if ((neighbors.left && this->collides(*neighbors.left)) ||
+            (neighbors.right && this->collides(*neighbors.right))) {
+//            std::cout << "COLLIDES X" << std::endl;
+            reset_x = true;
+        }
+
+        for (int i = 0; i < level_one.getNumRooms(); ++i) {
+            std::vector<Entity> t_entities;
+            t_entities = (level_one.getRooms())[i]->boundaries;
+
+            for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
+                if (this->collides(*it)) {
+                    reset_x = reset_z = true;
+                    i = level_one.getNumRooms();
+                    break;
+                }
+            }
+        }
+        
+
+        if (reset_x || reset_z) {
+            translations = last_valid_location;
+
+            if (reset_x) {
+                point(0) = 0;
+            }
+
+            if (reset_z) {
+                point(2) = 0;
+            }
+
+            translations(0) += (point(0) * tfactor);     
+            translations(2) -= (point(2) * tfactor);
+        }
+    }
+
+}
+
 static float sq(float x) {
     return x*x;
 }

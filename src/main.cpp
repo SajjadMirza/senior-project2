@@ -18,6 +18,7 @@
 #include <MatrixStack.hpp>
 #include <ModelConfig.hpp>
 #include <Puzzle.hpp>
+#include <Rooms.hpp>
 #include <Map.hpp>
 #include <memory>
 #include <utility>
@@ -74,6 +75,10 @@ const uint map_rows = 50;
 int special_texture_handle = 0;
 
 sound::FMODDriver sound_driver;
+
+/* Level One */
+Level level_one;
+
 /*
   inline static std::string foo(std::string name, int index)
   {
@@ -121,6 +126,39 @@ static void bufferMovement(GLFWwindow *window,
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         c = 'd';
         camera->move(c, entities, map, col, row);
+        step = true;
+    }
+
+    sound_driver.footStep(step);
+}
+
+static void bufferMov_rooms(GLFWwindow *window,
+                           const Level &level_one,
+                           const Map &map, int col, int row) 
+{
+    char c = 0;
+    bool step = false;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        c = 'w';
+        camera->move(c, level_one, map, col, row);
+        step = true;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        c = 'a';
+        camera->move(c, level_one, map, col, row);
+        step = true;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        c = 's';
+        camera->move(c, level_one, map, col, row);
+        step = true;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        c = 'd';
+        camera->move(c, level_one, map, col, row);
         step = true;
     }
 
@@ -775,6 +813,9 @@ int main(void)
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
     
+    // init level_one
+    level_one.initLevelOne();
+
     // init drawables
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
@@ -790,7 +831,6 @@ int main(void)
     init_floors(&floors, map);
     std::vector<Entity> entities;
     init_entities(&entities, "resources/tree.yaml");
-    init_entities(&entities, "resources/computer_archive.yaml");
 
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     std::vector<PointLight> point_lights;
@@ -943,6 +983,23 @@ int main(void)
                         it->getDrawable().drawDepth(&depth_prog, &M);
                         M.popMatrix();
                     }
+
+                    /* attempt for level shadow generation */
+                    /*for (int i = 0; i < level_one.getNumRooms(); ++i) {
+                        std::vector<Entity> t_entities;
+                        t_entities = (level_one.getRooms())[i]->boundaries;
+
+                        for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
+                            M.pushMatrix();
+                            M.multMatrix(it->getRotation());
+                            M.worldTranslate(it->getPosition(), it->getRotation());
+                            M.scale(it->getScale());
+                            glUniformMatrix4fv(depth_prog.getUniform("M"), 1, GL_FALSE, 
+                                               M.topMatrix().data());
+                            it->getDrawable().drawDepth(&depth_prog, &M);
+                            M.popMatrix();
+                        }
+                    }*/
                     
 //                    glCullFace(GL_BACK);
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1000,6 +1057,23 @@ int main(void)
                                M.topMatrix().data());
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
+        }
+
+        /* attempt for g_buffer */
+        for (int i = 0; i < level_one.getNumRooms(); ++i) {
+            std::vector<Entity> t_entities;
+            t_entities = (level_one.getRooms())[i]->boundaries;
+
+            for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
+                M.pushMatrix();
+                M.multMatrix(it->getRotation());
+                M.worldTranslate(it->getPosition(), it->getRotation());
+                M.scale(it->getScale());
+                glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
+                                   M.topMatrix().data());
+                it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+                M.popMatrix();
+            }
         }
 
         // Second step: per-light calculations
@@ -1128,7 +1202,11 @@ int main(void)
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-            bufferMovement(window, entities, map, col, row);
+            // bufferMovement(window, entities, map, col, row);
+            for (int i = 0; i < level_one.getNumRooms(); ++i) {
+                bufferMov_rooms(window, level_one, map, col, row);
+            }
+
         }
         else {
             bufferMovement(window, entities, map, -1, -1);

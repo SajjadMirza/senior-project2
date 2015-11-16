@@ -1,7 +1,7 @@
 model: archive_1
-file: cube.obj
-directory: resources/models/cube
-format: obj
+file: torus.dae
+directory: resources/models/torus
+format: dae
 textures:
   diffuse:
     character.jpg
@@ -12,7 +12,7 @@ transforms:
     xaxis: 10.5
     zaxis: 20.5
     yaxis: -0.1
-  scale: 1.0  
+  scale: 0.5  
 #transforms:
 #  translations:
 #    xaxis: 10.75
