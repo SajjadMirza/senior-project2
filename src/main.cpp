@@ -1253,9 +1253,7 @@ int main(void)
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
             // bufferMovement(window, entities, map, col, row);
-            for (int i = 0; i < level_one.getNumRooms(); ++i) {
-                bufferMov_rooms(window, level_one, map, col, row);
-            }
+            bufferMov_rooms(window, level_one, map, col, row);
 
         }
         else {

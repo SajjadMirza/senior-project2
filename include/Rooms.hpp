@@ -11,12 +11,13 @@
 class Level;
 class Room;
 class Hanoi;
+class Comp;
 
 class Level
 {
 public:
     Level();
-    virtual ~Level();
+    ~Level();
 
     void initLevelOne();
     int getNumRooms() const { return num_rooms; }
@@ -40,6 +41,7 @@ public:
     enum RoomType
     {
         HANOI,
+        COMP,
         NONE
     };
 
@@ -85,6 +87,14 @@ private:
     std::string yaml_hanoi;
     std::vector<float> pos_z; 
     std::vector<float> pos_y; 
+};
+
+class Comp : public Room
+{
+public:
+    Comp();
+    ~Comp();
+private:
 };
 
 static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }

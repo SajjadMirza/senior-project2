@@ -20,17 +20,15 @@ Level::~Level()
 void Level::initLevelOne()
 {
     rooms.push_back(new Hanoi());
+    rooms.push_back(new Comp());
 
-    num_rooms = 1;
+    num_rooms = 2;
 }
 
 Room::Room()
 {
     room_t = NONE;
     state_t = INACTIVE;
-    yaml_bounds = "resources/hanoi_bounds.yaml";
-
-    init_entities_R(&boundaries, yaml_bounds);
 }
 
 Room::~Room()
@@ -42,17 +40,29 @@ void Room::triggerRoom(vec2 comp)
 {
     if (comp == triggerPos && state_t == INACTIVE) {
         state_t = ACTIVE;
-        LOG("ROOM HANOI NOW ACTIVE!!!");
+        switch(room_t) {
+            case HANOI:
+            LOG("ROOM HANOI NOW ACTIVE!!!");
+            break;    
+            case COMP:
+            LOG("ROOM COMP NOW ACTIVE!!!");
+            break;    
+            default:
+            LOG("ROOM UNKNOWN NOW ACTIVE!!!");
+            break;
+        }
     }
 }
 
 Hanoi::Hanoi() : Room()
 {
     room_t = HANOI;
+    yaml_bounds = "resources/hanoi_bounds.yaml";
     yaml_hanoi = "resources/hanoi.yaml";
 
     triggerPos = vec2(9, 26);
 
+    init_entities_R(&boundaries, yaml_bounds);
     init_entities_R(&entities, yaml_hanoi);
 
     std::sort(entities.begin(), entities.end(), sortHanoi);
@@ -184,6 +194,19 @@ void Hanoi::done()
         state_t = SUCCESS;
         boundaries.clear();
     }
+}
+
+Comp::Comp() : Room()
+{
+    yaml_bounds = "resources/comp_bounds.yaml";
+    init_entities_R(&boundaries, yaml_bounds);
+
+    triggerPos = vec2(20, 6);
+}
+
+Comp::~Comp()
+{
+
 }
 
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file) 

@@ -1,0 +1,19 @@
+---
+model: cube
+file: cube.obj
+directory: resources/models/cube/
+format: obj
+textures:
+  diffuse:
+    Door/door.png
+  normal:
+    Door/door_normal.jpg
+  specular:
+    Door/door_specular.jpg
+transforms:
+  translations:
+    xaxis: 37.5
+    zaxis: 10.5
+    yaxis: -0.1
+  scale: 1.0  
+...

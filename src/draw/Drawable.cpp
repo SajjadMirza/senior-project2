@@ -36,7 +36,6 @@ void assimp_to_eigen_matrix(Eigen::Matrix4f *dst, const aiMatrix4x4 &src) {
 
 Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *node, const aiScene *scene) {
     Node *n = new Node();
-
     LOG("copy 1");
     // copy transformation matrix
     assimp_to_eigen_matrix(&(n->transform), node->mTransformation);
