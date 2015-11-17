@@ -1102,9 +1102,9 @@ int main(void)
             t_entities = (level_one.getRooms())[i]->entities;
 
             for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
-                //if (it->selected) {
+                if (it->selected) {
                     glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 1);
-                //}
+                }
                 M.pushMatrix();
                 M.multMatrix(it->getRotation());
                 M.worldTranslate(it->getPosition(), it->getRotation());

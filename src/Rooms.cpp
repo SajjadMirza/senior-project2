@@ -66,7 +66,7 @@ Hanoi::Hanoi() : Room()
         temp.selected = 0;
 
         pos_z.push_back(temp.pos(2) - inc++);
-        pos_y.push_back(temp.pos(0));
+        pos_y.push_back(temp.pos(1));
 
         tube_loc.push_back(std::stack<tube>());
 
@@ -87,54 +87,68 @@ Hanoi::~Hanoi()
 
 }
 
+void Hanoi::selection_helper() {
+    if (select_idx != -1) {
+        LOG("UNSELECT TOP");
+        tube_loc[select_idx].top().selected = 0;
+        entities[tube_loc[select_idx].top().index].selected = false;
+        if (tube_loc[selected].size() < SIZE) {
+            LOG("AND MOVED");
+            tube_loc[selected].push(tube_loc[select_idx].top());
+            tube_loc[select_idx].pop();
+            newPos(selected);
+        }
+        select_idx = -1;                    
+    }
+    else {
+        select_idx = selected;
+
+        if (!tube_loc[select_idx].empty()) {
+            LOG("SELECTED TOP");
+            tube_loc[select_idx].top().selected = 1;
+            entities[tube_loc[select_idx].top().index].selected = true;
+        }
+        else {
+            LOG("NO TOP");
+            select_idx = -1;
+        }
+    }
+}
+
+void Hanoi::newPos(int idx_z)
+{
+    int idx_y = tube_loc[idx_z].size() - 1;
+    vec3 old_pos = tube_loc[idx_z].top().pos;
+
+    tube_loc[idx_z].top().pos = vec3(old_pos(0), pos_y[idx_y], pos_z[idx_z]);
+    entities[tube_loc[idx_z].top().index].setPosition(tube_loc[idx_z].top().pos);
+}
+
 void Hanoi::select(GLFWwindow *window)
 {
     if (state_t == ACTIVE) {
         if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
             if (selected == -1) {
                 LOG("PRESSED [");
-                select_idx = selected = 0;
-
-                if (!tube_loc[select_idx].empty()) {
-                    LOG("SELECTED TOP");
-                    tube_loc[select_idx].top().selected = 1;
-                }
-                else {
-                    LOG("NO TOP");
-                    select_idx = -2;
-                }
+                selected = 0;
+                selection_helper();
             }
         }
         else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
             if (selected == -1) {
-                LOG("PRESSED ]");                
-                select_idx = selected = 1;
-
-                if (!tube_loc[select_idx].empty()) {
-                    LOG("SELECTED TOP");
-                    tube_loc[select_idx].top().selected = 1;
-                }
-                else {
-                    LOG("NO TOP");
-                    select_idx = -2;
-                }
+                LOG("PRESSED ]");
+                selected = 1;
+                selection_helper();
             }
         }
         else if (glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_PRESS) {
             if (selected == -1) {
                 LOG("PRESSED \\");                
-                select_idx = selected = 2;
-
-                if (!tube_loc[select_idx].empty()) {
-                    LOG("SELECTED TOP");
-                    tube_loc[select_idx].top().selected = 1;
-                }
-                else {
-                    LOG("NO TOP");
-                    select_idx = -2;
-                }
+                selected = 2;
+                selection_helper();
             }
         }
+        selected = -2;
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE &&
             glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE &&
