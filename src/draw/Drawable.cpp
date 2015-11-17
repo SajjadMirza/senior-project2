@@ -48,7 +48,7 @@ Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *
     for (int i = 0; i < node->mNumMeshes; i++) {
         draw::Shape s;
         LOG("copy 2.2");
-        aiMesh *mesh = scene->mMeshes[i];
+        aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         LOG("copy 2.3");
         s.init(parent_drawable->texs, *mesh);
         LOG("Copy 2.4");
