@@ -240,6 +240,11 @@ void Camera::move(char c, const Level &level_one,
             translations(0) += (point(0) * tfactor);     
             translations(2) -= (point(2) * tfactor);
         }
+        else {
+            for (int i = 0; i < level_one.getNumRooms(); ++i) {
+                (level_one.getRooms())[i]->triggerRoom(vec2(col, row));
+            }
+        }
     }
 
 }

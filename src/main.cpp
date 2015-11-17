@@ -86,6 +86,24 @@ Level level_one;
   }
 */
 
+static void applyRoomLogic(GLFWwindow *window)
+{
+    for (int i = 0; i < level_one.getNumRooms(); ++i) {
+        Room* temp = (level_one.getRooms())[i];
+
+        switch(temp->room_t) 
+        {
+            case Room::RoomType::HANOI:
+            Hanoi* temp_h;
+            temp_h = dynamic_cast<Hanoi*>(temp);
+            temp_h->select(window);
+            break;
+            default:
+            break;
+        }
+    }
+}
+
 inline vec3 make_color(int red, int green, int blue)
 {
     return vec3(red/255.0, green/255.0, blue/255.0);
@@ -379,6 +397,7 @@ static void init_gl()
     deferred_geom_prog.addUniform("texture_spec");
     deferred_geom_prog.addUniform("uCalcTBN");
     deferred_geom_prog.addUniform("uInstanced");
+    deferred_geom_prog.addUniform("uHighlight");
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
@@ -913,6 +932,9 @@ int main(void)
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Room Logic
+        applyRoomLogic(window);
+
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
@@ -1020,6 +1042,7 @@ int main(void)
         glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
         glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+        glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
 
 
         // Draw walls with instancing
@@ -1079,6 +1102,9 @@ int main(void)
             t_entities = (level_one.getRooms())[i]->entities;
 
             for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
+                //if (it->selected) {
+                    glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 1);
+                //}
                 M.pushMatrix();
                 M.multMatrix(it->getRotation());
                 M.worldTranslate(it->getPosition(), it->getRotation());
@@ -1087,6 +1113,7 @@ int main(void)
                                    M.topMatrix().data());
                 it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
                 M.popMatrix();
+                glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
             }
         }
 

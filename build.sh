@@ -7,4 +7,4 @@ cd $BUILD_DIR
 
 cmake ..
 #make
-make install
+make -j4 install

@@ -4,6 +4,9 @@
 #include <common.hpp>
 #include <draw/Text.hpp>
 #include <Entity.hpp>
+#include <stack>
+
+#define SIZE 3
 
 class Level;
 class Room;
@@ -43,11 +46,14 @@ public:
     Room();
     virtual ~Room();
 
-    State curr;
+    State state_t;
     RoomType room_t;
     std::vector<Entity> boundaries; 
     std::vector<Entity> entities;
     std::string yaml_bounds;
+
+    vec2 triggerPos;
+    void triggerRoom(vec2 comp);
 private:
 
 };
@@ -55,14 +61,30 @@ private:
 class Hanoi : public Room
 {
 public:
+    typedef struct 
+    {
+        int index;
+        vec3 pos;
+        float size;
+        int selected;
+    }tube;
+
     Hanoi();
     ~Hanoi();
 
-private:
-    std::string yaml_hanoi;
+    std::vector< std::stack<tube> > tube_loc;
 
+    void select(GLFWwindow *window);
+private:
+    int selected;
+    int select_idx;
+    int size;
+    std::string yaml_hanoi;
+    std::vector<float> pos_z; 
+    std::vector<float> pos_y; 
 };
 
+static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file);
 
 #endif

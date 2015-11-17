@@ -27,7 +27,7 @@ void Level::initLevelOne()
 Room::Room()
 {
     room_t = NONE;
-    curr = INACTIVE;
+    state_t = INACTIVE;
     yaml_bounds = "resources/hanoi_bounds.yaml";
 
     init_entities_R(&boundaries, yaml_bounds);
@@ -38,17 +38,110 @@ Room::~Room()
 
 }
 
+void Room::triggerRoom(vec2 comp) 
+{
+    if (comp == triggerPos && state_t == INACTIVE) {
+        state_t = ACTIVE;
+        LOG("ROOM HANOI NOW ACTIVE!!!");
+    }
+}
+
 Hanoi::Hanoi() : Room()
 {
     room_t = HANOI;
     yaml_hanoi = "resources/hanoi.yaml";
 
+    triggerPos = vec2(9, 26);
+
     init_entities_R(&entities, yaml_hanoi);
+
+    std::sort(entities.begin(), entities.end(), sortHanoi);
+
+    int i = 0, inc = 0;
+    for (auto it = entities.begin(); it != entities.end(); it++) {
+        tube temp;
+        temp.index = i++;
+        temp.pos = it->getPosition();
+        temp.size = it->getScale();
+        temp.selected = 0;
+
+        pos_z.push_back(temp.pos(2) - inc++);
+        pos_y.push_back(temp.pos(0));
+
+        tube_loc.push_back(std::stack<tube>());
+
+        tube_loc[0].push(temp);
+    }
+    selected = -1;
+    select_idx = -1;
+    size = i;
+
+    if (size != 3) {
+        LOG("ERROR, SIZE FOR HANOI PUZZLE MUST BE 3");
+        exit(-1);
+    }
 }
 
 Hanoi::~Hanoi()
 {
 
+}
+
+void Hanoi::select(GLFWwindow *window)
+{
+    if (state_t == ACTIVE) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
+            if (selected == -1) {
+                LOG("PRESSED [");
+                select_idx = selected = 0;
+
+                if (!tube_loc[select_idx].empty()) {
+                    LOG("SELECTED TOP");
+                    tube_loc[select_idx].top().selected = 1;
+                }
+                else {
+                    LOG("NO TOP");
+                    select_idx = -2;
+                }
+            }
+        }
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
+            if (selected == -1) {
+                LOG("PRESSED ]");                
+                select_idx = selected = 1;
+
+                if (!tube_loc[select_idx].empty()) {
+                    LOG("SELECTED TOP");
+                    tube_loc[select_idx].top().selected = 1;
+                }
+                else {
+                    LOG("NO TOP");
+                    select_idx = -2;
+                }
+            }
+        }
+        else if (glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_PRESS) {
+            if (selected == -1) {
+                LOG("PRESSED \\");                
+                select_idx = selected = 2;
+
+                if (!tube_loc[select_idx].empty()) {
+                    LOG("SELECTED TOP");
+                    tube_loc[select_idx].top().selected = 1;
+                }
+                else {
+                    LOG("NO TOP");
+                    select_idx = -2;
+                }
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE &&
+            glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE &&
+            glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_RELEASE) {
+            selected = -1;
+        } 
+    }
 }
 
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file) 

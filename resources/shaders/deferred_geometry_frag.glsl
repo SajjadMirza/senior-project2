@@ -19,6 +19,8 @@ uniform mat4 M;
 uniform int uNormFlag;
 uniform int uCalcTBN;
 
+uniform int uHighlight;
+
 void main()
 {    
     gPosition = fragPos;
@@ -46,7 +48,9 @@ void main()
 
 //    gDiffuse.rgb = vec3(0.0f, 1.0f, 0.0f);
     gDiffuse.rgb = texture2D(texture0, fragTex).rgb;
-
+    if (uHighlight == 1) {
+        gDiffuse.rgb = vec3(1.0, -1.0, 1.0);
+    }
     gSpecular = texture2D(texture_spec, fragTex).r;
     // gSpecular = 0.0;
 
