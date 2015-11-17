@@ -1061,8 +1061,22 @@ int main(void)
 
         /* attempt for g_buffer */
         for (int i = 0; i < level_one.getNumRooms(); ++i) {
+            std::vector<Entity> b_entities;
+            b_entities = (level_one.getRooms())[i]->boundaries;
+
+            for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
+                M.pushMatrix();
+                M.multMatrix(it->getRotation());
+                M.worldTranslate(it->getPosition(), it->getRotation());
+                M.scale(it->getScale());
+                glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
+                                   M.topMatrix().data());
+                it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+                M.popMatrix();
+            }
+
             std::vector<Entity> t_entities;
-            t_entities = (level_one.getRooms())[i]->boundaries;
+            t_entities = (level_one.getRooms())[i]->entities;
 
             for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
                 M.pushMatrix();

@@ -1,64 +1,19 @@
 ---
-model: hanoi_1
-file: torus.dae
-directory: resources/models/torus
-format: dae
+model: cube
+file: cube.obj
+directory: resources/models/cube/
+format: obj
 textures:
   diffuse:
-    neon_red.jpg
+    Door/door.png
   normal:
-    normal.jpg
-  specular: 
-    specuar.jpg
-overrides:
-  radius: 0.5
-  center: position
+    Door/door_normal.jpg
+  specular:
+    Door/door_specular.jpg
 transforms:
   translations:
-    xaxis: 1.5
-    zaxis: 24.5
-    yaxis: 0.3
-  scale: 0.25  
----
-model: hanoi_2
-file: torus.dae
-directory: resources/models/torus
-format: dae
-textures:
-  diffuse:
-    neon_green.jpg
-  normal:
-    normal.jpg
-  specular: 
-    specuar.jpg
-overrides:
-  radius: 0.5
-  center: position
-transforms:
-  translations:
-    xaxis: 1.5
-    zaxis: 24.5
-    yaxis: 0.4
-  scale: 0.175  
----
-model: hanoi_3
-file: torus.dae
-directory: resources/models/torus
-format: dae
-textures:
-  diffuse:
-    neon_blue.jpg
-  normal:
-    normal.jpg
-  specular: 
-    specuar.jpg
-overrides:
-  radius: 0.5
-  center: position
-transforms:
-  translations:
-    xaxis: 1.5
-    zaxis: 24.5
-    yaxis: 0.475
-  scale: 0.125  
+    xaxis: 10.5
+    zaxis: 7.5
+    yaxis: -0.1
+  scale: 1.0  
 ...

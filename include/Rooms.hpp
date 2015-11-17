@@ -34,11 +34,20 @@ public:
         FAILURE
     };
 
+    enum RoomType
+    {
+        HANOI,
+        NONE
+    };
+
     Room();
     virtual ~Room();
 
     State curr;
+    RoomType room_t;
     std::vector<Entity> boundaries; 
+    std::vector<Entity> entities;
+    std::string yaml_bounds;
 private:
 
 };
@@ -48,10 +57,10 @@ class Hanoi : public Room
 public:
     Hanoi();
     ~Hanoi();
-    
-private:
 
-    std::string yaml_bounds;
+private:
+    std::string yaml_hanoi;
+
 };
 
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file);

@@ -200,14 +200,27 @@ void Camera::move(char c, const Level &level_one,
         }
 
         for (int i = 0; i < level_one.getNumRooms(); ++i) {
-            std::vector<Entity> t_entities;
-            t_entities = (level_one.getRooms())[i]->boundaries;
+            std::vector<Entity> b_entities;
+            b_entities = (level_one.getRooms())[i]->boundaries;
 
-            for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
+            for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
                 if (this->collides(*it)) {
                     reset_x = reset_z = true;
                     i = level_one.getNumRooms();
                     break;
+                }
+            }
+
+            if (i != level_one.getNumRooms()) {
+                std::vector<Entity> t_entities;
+                t_entities = (level_one.getRooms())[i]->entities;
+
+                for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
+                    if (this->collides(*it)) {
+                        reset_x = reset_z = true;
+                        i = level_one.getNumRooms();
+                        break;
+                    }
                 }
             }
         }

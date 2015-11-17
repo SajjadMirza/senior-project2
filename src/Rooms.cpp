@@ -26,7 +26,11 @@ void Level::initLevelOne()
 
 Room::Room()
 {
+    room_t = NONE;
     curr = INACTIVE;
+    yaml_bounds = "resources/hanoi_bounds.yaml";
+
+    init_entities_R(&boundaries, yaml_bounds);
 }
 
 Room::~Room()
@@ -36,9 +40,10 @@ Room::~Room()
 
 Hanoi::Hanoi() : Room()
 {
-    yaml_bounds = "resources/hanoi_bounds.yaml";
+    room_t = HANOI;
+    yaml_hanoi = "resources/hanoi.yaml";
 
-    init_entities_R(&boundaries, yaml_bounds);
+    init_entities_R(&entities, yaml_hanoi);
 }
 
 Hanoi::~Hanoi()
