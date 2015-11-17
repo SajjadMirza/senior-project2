@@ -77,6 +77,7 @@ public:
     void select(GLFWwindow *window);
     void selection_helper();
     void newPos(int idx_z);
+    void done();
 private:
     int selected;
     int select_idx;

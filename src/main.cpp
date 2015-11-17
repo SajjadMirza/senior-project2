@@ -96,7 +96,10 @@ static void applyRoomLogic(GLFWwindow *window)
             case Room::RoomType::HANOI:
             Hanoi* temp_h;
             temp_h = dynamic_cast<Hanoi*>(temp);
-            temp_h->select(window);
+            if (temp_h->state_t == Room::State::ACTIVE) {
+                temp_h->select(window);
+                temp_h->done();
+            }
             break;
             default:
             break;

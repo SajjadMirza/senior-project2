@@ -87,16 +87,50 @@ Hanoi::~Hanoi()
 
 }
 
+void Hanoi::select(GLFWwindow *window)
+{
+    if (state_t == ACTIVE) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
+            if (selected == -1) {
+                selected = 0;
+                selection_helper();
+            }
+        }
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
+            if (selected == -1) {
+                selected = 1;
+                selection_helper();
+            }
+        }
+        else if (glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_PRESS) {
+            if (selected == -1) {
+                selected = 2;
+                selection_helper();
+            }
+        }
+        selected = -2;
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE &&
+            glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE &&
+            glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_RELEASE) {
+            selected = -1;
+        } 
+    }
+}
+
 void Hanoi::selection_helper() {
     if (select_idx != -1) {
-        LOG("UNSELECT TOP");
         tube_loc[select_idx].top().selected = 0;
         entities[tube_loc[select_idx].top().index].selected = false;
         if (tube_loc[selected].size() < SIZE) {
-            LOG("AND MOVED");
-            tube_loc[selected].push(tube_loc[select_idx].top());
-            tube_loc[select_idx].pop();
-            newPos(selected);
+            if (tube_loc[selected].empty() || 
+                 tube_loc[selected].top().size > 
+                 tube_loc[select_idx].top().size) {
+
+                tube_loc[selected].push(tube_loc[select_idx].top());
+                tube_loc[select_idx].pop();
+                newPos(selected);
+            }
         }
         select_idx = -1;                    
     }
@@ -104,12 +138,10 @@ void Hanoi::selection_helper() {
         select_idx = selected;
 
         if (!tube_loc[select_idx].empty()) {
-            LOG("SELECTED TOP");
             tube_loc[select_idx].top().selected = 1;
             entities[tube_loc[select_idx].top().index].selected = true;
         }
         else {
-            LOG("NO TOP");
             select_idx = -1;
         }
     }
@@ -124,37 +156,33 @@ void Hanoi::newPos(int idx_z)
     entities[tube_loc[idx_z].top().index].setPosition(tube_loc[idx_z].top().pos);
 }
 
-void Hanoi::select(GLFWwindow *window)
+void Hanoi::done()
 {
-    if (state_t == ACTIVE) {
-        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
-            if (selected == -1) {
-                LOG("PRESSED [");
-                selected = 0;
-                selection_helper();
-            }
-        }
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
-            if (selected == -1) {
-                LOG("PRESSED ]");
-                selected = 1;
-                selection_helper();
-            }
-        }
-        else if (glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_PRESS) {
-            if (selected == -1) {
-                LOG("PRESSED \\");                
-                selected = 2;
-                selection_helper();
-            }
-        }
-        selected = -2;
+    int i = size - 1;
+    bool esc = false, success = false;
+    std::stack<tube> temp;
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE &&
-            glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE &&
-            glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_RELEASE) {
-            selected = -1;
-        } 
+    while (tube_loc[size-1].size() > 0 && !esc) {
+        if (tube_loc[size-1].top().index == i--) {
+            temp.push(tube_loc[size-1].top());
+            tube_loc[size-1].pop();
+            if (tube_loc[size-1].empty() && i == -1) {
+                success = true;
+            }
+        }
+        else {
+            esc = true;
+        }
+    }
+
+    while (temp.size() > 0) {
+        tube_loc[size-1].push(temp.top());
+        temp.pop();
+    }
+
+    if (!esc && success) {
+        state_t = SUCCESS;
+        boundaries.clear();
     }
 }
 
