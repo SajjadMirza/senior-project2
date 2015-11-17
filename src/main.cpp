@@ -91,18 +91,24 @@ static void applyRoomLogic(GLFWwindow *window)
     for (int i = 0; i < level_one.getNumRooms(); ++i) {
         Room* temp = (level_one.getRooms())[i];
 
-        switch(temp->room_t) 
-        {
-            case Room::RoomType::HANOI:
-            Hanoi* temp_h;
-            temp_h = dynamic_cast<Hanoi*>(temp);
-            if (temp_h->state_t == Room::State::ACTIVE) {
+        if (glfwGetKey(window, GLFW_KEY_SLASH) == GLFW_PRESS) {
+            (level_one.getRooms())[i]->state_t = Room::State::SUCCESS;
+            LOG("SKIPPING ROOMS");
+            (level_one.getRooms())[i]->boundaries.clear();
+        }
+
+        if (temp->state_t == Room::State::ACTIVE) {
+            switch(temp->room_t) 
+            {
+                case Room::RoomType::HANOI:
+                Hanoi* temp_h;
+                temp_h = dynamic_cast<Hanoi*>(temp);
                 temp_h->select(window);
                 temp_h->done();
+                break;
+                default:
+                break;
             }
-            break;
-            default:
-            break;
         }
     }
 }
