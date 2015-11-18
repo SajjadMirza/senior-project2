@@ -1,0 +1,119 @@
+---
+model: computer_server_1
+file: ServerV2+console.obj
+directory: resources/models/comp_room/computer_server/
+format: obj
+textures:
+  diffuse:
+    bark_loo.jpg
+  specular:
+    specular.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 20.75
+    zaxis: 6.0
+    yaxis: -0.1
+  scale: 0.2 
+---
+model: computer_server_2
+file: ServerV2+console.obj
+directory: resources/models/comp_room/computer_server/
+format: obj
+textures:
+  diffuse:
+    bark_loo.jpg
+  specular:
+    specular.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 20.75
+    zaxis: 5.0
+    yaxis: -0.1
+  scale: 0.2 
+---
+model: computer_server_3
+file: ServerV2+console.obj
+directory: resources/models/comp_room/computer_server/
+format: obj
+textures:
+  diffuse:
+    bark_loo.jpg
+  specular:
+    specular.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 20.75
+    zaxis: 4.0
+    yaxis: -0.1
+  scale: 0.2 
+---
+model: computer_server_4
+file: ServerV2+console.obj
+directory: resources/models/comp_room/computer_server/
+format: obj
+textures:
+  diffuse:
+    bark_loo.jpg
+  specular:
+    specular.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 20.75
+    zaxis: 3.0
+    yaxis: -0.1
+  scale: 0.2 
+---
+model: computer_server_5
+file: ServerV2+console.obj
+directory: resources/models/comp_room/computer_server/
+format: obj
+textures:
+  diffuse:
+    bark_loo.jpg
+  specular:
+    specular.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 20.75
+    zaxis: 2.0
+    yaxis: -0.1
+  scale: 0.2 
+---
+model: Table
+file: table.obj
+directory: resources/models/comp_room/Table_Wood/
+format: obj
+textures:
+  diffuse:
+    Dark-Wood-Texture-520x339.jpg
+  normal:
+    table_normal.jpg
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.6
+  center: position
+transforms:
+  rotations:
+    yaxis: 45.0
+  translations:
+    xaxis: 24.75
+    zaxis: 5.0
+    yaxis: 0.5
+  scale: 0.004 
+...

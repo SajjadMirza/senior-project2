@@ -41,7 +41,7 @@ public:
     void move(char c, const std::vector<Entity> &entities,
               const Map &map, int col, int row);
     void move(char c, const Level &level_one,
-              const Map &map, int col, int row);
+              const Map &map, int col, int row, float mov);
 
     float collisionRadius() const { return camera_default_collision_radius; }
 

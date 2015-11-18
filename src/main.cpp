@@ -161,31 +161,31 @@ static void bufferMovement(GLFWwindow *window,
 
 static void bufferMov_rooms(GLFWwindow *window,
                            const Level &level_one,
-                           const Map &map, int col, int row) 
+                           const Map &map, int col, int row, float mov) 
 {
     char c = 0;
     bool step = false;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         c = 'w';
-        camera->move(c, level_one, map, col, row);
+        camera->move(c, level_one, map, col, row, mov);
         step = true;
     }
     
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         c = 'a';
-        camera->move(c, level_one, map, col, row);
+        camera->move(c, level_one, map, col, row, mov);
         step = true;
     }
     
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         c = 's';
-        camera->move(c, level_one, map, col, row);
+        camera->move(c, level_one, map, col, row, mov);
         step = true;
     }
     
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         c = 'd';
-        camera->move(c, level_one, map, col, row);
+        camera->move(c, level_one, map, col, row, mov);
         step = true;
     }
 
@@ -934,8 +934,14 @@ int main(void)
     // Set the flag so that the first iteration of the game loop will
     // generate the depth cube map data
     bool generate_shadowmaps = true;
-        
+    
+    // Time
+    double currTime = glfwGetTime();
+    double prevTime_mov = glfwGetTime();
+
     while (!glfwWindowShouldClose(window)) {
+        currTime = glfwGetTime();
+
         float ratio;
         glfwGetFramebufferSize(window, &width, &height);
         glDepthMask(GL_TRUE);
@@ -1006,8 +1012,8 @@ int main(void)
 
                     for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
-                        M.multMatrix(it->getRotation());
                         M.worldTranslate(it->getPosition(), it->getRotation());
+                        M.multMatrix(it->getRotation());
                         M.scale(it->getScale());
                         glUniformMatrix4fv(depth_prog.getUniform("M"), 1, GL_FALSE, 
                                            M.topMatrix().data());
@@ -1082,8 +1088,9 @@ int main(void)
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
-            M.multMatrix(it->getRotation());
+            // M.multMatrix(it->getRotation());
             M.worldTranslate(it->getPosition(), it->getRotation());
+            M.multMatrix(it->getRotation());
             M.scale(it->getScale());
             glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                M.topMatrix().data());
@@ -1098,8 +1105,8 @@ int main(void)
 
             for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
                 M.pushMatrix();
-                M.multMatrix(it->getRotation());
                 M.worldTranslate(it->getPosition(), it->getRotation());
+                M.multMatrix(it->getRotation());
                 M.scale(it->getScale());
                 glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                    M.topMatrix().data());
@@ -1115,8 +1122,8 @@ int main(void)
                     glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 1);
                 }
                 M.pushMatrix();
-                M.multMatrix(it->getRotation());
                 M.worldTranslate(it->getPosition(), it->getRotation());
+                M.multMatrix(it->getRotation());
                 M.scale(it->getScale());
                 glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                    M.topMatrix().data());
@@ -1249,21 +1256,29 @@ int main(void)
 
         // Final pass
 
-        if (camera == fp_camera) {
-            Eigen::Vector3f campos = -camera->translations;
-            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-            // bufferMovement(window, entities, map, col, row);
-            bufferMov_rooms(window, level_one, map, col, row);
+        // if (currTime > prevTime_mov + .01) {
+            if (camera == fp_camera ) {
+                Eigen::Vector3f campos = -camera->translations;
+                uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
+                // bufferMovement(window, entities, map, col, row);
+                float factor = lastFPS;
+                if (factor <= 0) {
+                    factor = 1;
+                }
+                // float mov = 1/(currTime - prevTime_mov + .01) * 1/factor;
+                bufferMov_rooms(window, level_one, map, col, row, 1.0f);
 
-        }
-        else {
-            bufferMovement(window, entities, map, -1, -1);
-        }
+            }
+            else {
+                bufferMovement(window, entities, map, -1, -1);
+            }
+            prevTime_mov = currTime;       
+        // }
 
         V.popMatrix();
         P.popMatrix();
 
-        findFPS();        
+        findFPS(); 
 
         glfwSwapBuffers(window);
         glfwPollEvents();

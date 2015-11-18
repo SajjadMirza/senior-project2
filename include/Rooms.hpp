@@ -95,6 +95,7 @@ public:
     Comp();
     ~Comp();
 private:
+    std::string yaml_comp;
 };
 
 static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }

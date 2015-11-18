@@ -17,6 +17,7 @@ namespace resource {
     uint import_object(const std::string& file) {
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(file,
+                                                 aiProcess_GenNormals             | 
                                                  aiProcess_CalcTangentSpace       | 
                                                  aiProcess_Triangulate            |
                                                  aiProcess_JoinIdenticalVertices  |

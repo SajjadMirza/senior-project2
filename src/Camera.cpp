@@ -150,7 +150,7 @@ void Camera::move(char c, const std::vector<Entity> &entities,
 }
 
 void Camera::move(char c, const Level &level_one,
-                  const Map &map, int col, int row) {
+                  const Map &map, int col, int row, float mov) {
     Eigen::Quaternionf q1;
     Eigen::Vector3f axis1(0.0f, 1.0f, 0.0f);
     q1 = Eigen::AngleAxisf(rotations(0), axis1); 
@@ -161,16 +161,16 @@ void Camera::move(char c, const Level &level_one,
     Eigen::Vector3f point;
     switch (c) {
     case 's':
-        point = Eigen::Vector3f(0.0f, 0.0f, 1.0f);
+        point = Eigen::Vector3f(0.0f, 0.0f, mov);
         break;
     case 'd':
-        point = Eigen::Vector3f(-1.0f, 0.0f, 0.0f);
+        point = Eigen::Vector3f(-mov, 0.0f, 0.0f);
         break;
     case 'w':
-        point = Eigen::Vector3f(0.0f, 0.0f, -1.0f);
+        point = Eigen::Vector3f(0.0f, 0.0f, -mov);
         break;
     case 'a':
-        point = Eigen::Vector3f(1.0f, 0.0f, 0.0f);
+        point = Eigen::Vector3f(mov, 0.0f, 0.0f);
         break;
     default:
         assert(0);

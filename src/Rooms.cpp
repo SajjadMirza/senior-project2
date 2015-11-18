@@ -198,8 +198,12 @@ void Hanoi::done()
 
 Comp::Comp() : Room()
 {
+    room_t = COMP;
     yaml_bounds = "resources/comp_bounds.yaml";
+    yaml_comp = "resources/comp.yaml";
+
     init_entities_R(&boundaries, yaml_bounds);
+    init_entities_R(&entities, yaml_comp);
 
     triggerPos = vec2(20, 6);
 }
