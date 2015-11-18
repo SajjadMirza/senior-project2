@@ -40,15 +40,37 @@ uniform int uTextToggle;
 
 float debug_color_depth;
 
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);   
+
 float calc_shadow(vec3 fragPos)
 {
     vec3 directionVector = fragPos - light.position;
-    float nearDepth = texture(depthMap, directionVector).r;
-    debug_color_depth = nearDepth;
-    nearDepth *= far_plane;
     float currentDepth = length(directionVector);
+    int samples = 20;
     float bias = 0.05;
-    float shadow = currentDepth - bias > nearDepth ? 1.0 : 0.0;
+    float shadow = 0.0;
+    float viewDistance = length(viewPos - fragPos);
+    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    debug_color_depth = texture(depthMap, directionVector).r;
+    for (int i = 0; i < samples; ++i) {
+        float nearDepth = texture(depthMap, directionVector + sampleOffsetDirections[i] * diskRadius).r;
+        nearDepth *= far_plane;
+        if (currentDepth - bias > nearDepth) {
+            shadow += 1.0;
+        }
+    }
+    
+    shadow /= float(samples);
+
+
+//    float shadow = currentDepth - bias > nearDepth ? 1.0 : 0.0;
     
     return shadow;
 }
@@ -85,6 +107,7 @@ void main()
         specular *= attenuation;
 //        vec3 light = diffuse + specular + ambient;
         vec3 light = (diffuse + specular * 0.5) * (1.0 - shadow);
+//        light *= 1.5;
 //        vec3 light = (diffuse * 2.0) * (1.0 - shadow);        
 
         vec3 data = vec3(1.0, 0.0, 1.0);
