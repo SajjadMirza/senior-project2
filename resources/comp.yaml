@@ -268,4 +268,27 @@ transforms:
     zaxis: 2.0
     yaxis: 0.0
   scale: 0.04
+---
+model: vending_machine
+file: Vending_Machine_1.obj
+directory: resources/models/comp_room/Vending_Machine_1/
+format: obj
+textures:
+  diffuse:
+    Vending_Machine_D.tga
+  normal:
+    Vending_Machine_N.tga
+  specular:
+    Vending_Machine_S.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 26.18
+    zaxis: 4.5
+    yaxis: 0.0
+  scale: 0.4
 ...

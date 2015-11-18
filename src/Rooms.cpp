@@ -21,8 +21,9 @@ void Level::initLevelOne()
 {
     rooms.push_back(new Hanoi());
     rooms.push_back(new Comp());
+    rooms.push_back(new Lounge());
 
-    num_rooms = 2;
+    num_rooms = 3;
 }
 
 Room::Room()
@@ -209,6 +210,23 @@ Comp::Comp() : Room()
 }
 
 Comp::~Comp()
+{
+
+}
+
+Lounge::Lounge() : Room()
+{
+    room_t = LOUNGE;
+    yaml_bounds = "resources/lounge_bounds.yaml";
+    // yaml_lounge = "resources/lounge.yaml";
+
+    init_entities_R(&boundaries, yaml_bounds);
+    // init_entities_R(&entities, yaml_lounge);
+
+    triggerPos = vec2(38, 12);
+}
+
+Lounge::~Lounge()
 {
 
 }

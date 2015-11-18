@@ -42,6 +42,7 @@ public:
     {
         HANOI,
         COMP,
+        LOUNGE,
         NONE
     };
 
@@ -96,6 +97,15 @@ public:
     ~Comp();
 private:
     std::string yaml_comp;
+};
+
+class Lounge : public Room
+{
+public:
+    Lounge();
+    ~Lounge();
+private:
+    std::string yaml_lounge;
 };
 
 static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }

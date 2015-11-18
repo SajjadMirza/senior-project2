@@ -1021,7 +1021,7 @@ int main(void)
                         M.popMatrix();
                     }
 
-                    for (int i = 0; i < level_one.getNumRooms(); ++i) {
+                    /*for (int i = 0; i < level_one.getNumRooms(); ++i) {
                         std::vector<Entity> b_entities;
                         b_entities = (level_one.getRooms())[i]->boundaries;
 
@@ -1049,7 +1049,7 @@ int main(void)
                             it->getDrawable().drawDepth(&depth_prog, &M);
                             M.popMatrix();
                         }
-                    }
+                    }*/
                     
 //                    glCullFace(GL_BACK);
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
