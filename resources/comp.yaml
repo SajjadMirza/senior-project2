@@ -114,7 +114,7 @@ transforms:
   translations:
     xaxis: 24.75
     zaxis: 9.0
-    yaxis: 0.5
+    yaxis: 0.38
   scale: 0.003 
 ---
 model: Computer
@@ -137,7 +137,7 @@ transforms:
   translations:
     xaxis: 24.75
     zaxis: 8.8
-    yaxis: 0.55
+    yaxis: 0.43
   scale: 0.25 
 ---
 model: Camera
@@ -146,11 +146,11 @@ directory: resources/models/comp_room/Camera/
 format: obj
 textures:
   diffuse:
-    camera_d.dds
+    camera_diffuse.jpeg
   normal:
-    table_normal.jpg
+    camera_normal.jpg
   specular:
-    table_specular.jpg
+    camera_specular.jpg
 overrides:
   radius: 0.0
   center: position
@@ -158,6 +158,114 @@ transforms:
   translations:
     xaxis: 25.2
     zaxis: 8.8
-    yaxis: 0.55
+    yaxis: 0.43
   scale: 0.4
+---
+model: gramophone
+file: Gramophone.dae
+directory: resources/models/comp_room/Gramophone/
+format: dae
+textures:
+  diffuse:
+    Gramophone_D.tga
+  normal:
+    Gramophone_N.tga
+  specular:
+    Gramophone_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 180.0
+    yaxis: -134.0
+  translations:
+    xaxis: 24.6
+    zaxis: 9.4
+    yaxis: 0.43
+  scale: 0.2
+---
+model: Trash
+file: "trash.obj"
+directory: resources/models/comp_room/Trash/
+format: obj
+textures:
+  diffuse:
+    OBJ_bin_D.tga
+  normal:
+    trash_normal.jpg
+  specular:
+    trash_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  translations:
+    xaxis: 24.6
+    zaxis: 9.4
+    yaxis: 0.0
+  scale: 0.002
+---
+model: Supplies_1
+file: Supplies.obj
+directory: resources/models/comp_room/Supplies/
+format: obj
+textures:
+  diffuse:
+    Texture/Crate01.jpg
+  normal:
+    Texture/Crate01_normal.jpg
+  specular:
+    Texture/Crate01_specular.jpg
+overrides:
+  radius: 0.6
+  center: position
+transforms:
+  translations:
+    xaxis: 23.0
+    zaxis: 2.0
+    yaxis: 0.0
+  scale: 0.04
+---
+model: Supplies_2
+file: Supplies.obj
+directory: resources/models/comp_room/Supplies/
+format: obj
+textures:
+  diffuse:
+    Texture/Crate02.jpg
+  normal:
+    Texture/Crate02_normal.jpg
+  specular:
+    Texture/Crate02_specular.jpg
+overrides:
+  radius: 0.6
+  center: position
+transforms:
+  translations:
+    xaxis: 24.2
+    zaxis: 2.0
+    yaxis: 0.0
+  scale: 0.04
+---
+model: Supplies_3
+file: Supplies.obj
+directory: resources/models/comp_room/Supplies/
+format: obj
+textures:
+  diffuse:
+    Texture/Crate03.jpg
+  normal:
+    Texture/Crate03_normal.jpg
+  specular:
+    Texture/Crate03_specular.jpg
+overrides:
+  radius: 0.6
+  center: position
+transforms:
+  translations:
+    xaxis: 25.4
+    zaxis: 2.0
+    yaxis: 0.0
+  scale: 0.04
 ...

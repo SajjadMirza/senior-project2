@@ -129,6 +129,7 @@ namespace draw {
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(config.directory+"/"+config.file,
                                                  aiProcess_GenNormals             |
+                                                 aiProcess_GenUVCoords     |
                                                  aiProcess_CalcTangentSpace | 
                                                  aiProcess_Triangulate |
                                                  aiProcess_JoinIdenticalVertices |
