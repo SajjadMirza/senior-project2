@@ -416,7 +416,7 @@ static void init_gl()
     GLSL::checkVersion();
 }
 
-static const std::string model_config_file = "resources/tree.yaml";
+// static const std::string model_config_file = "resources/tree.yaml";
 
 static int unique_color_index = 0;
 
@@ -512,7 +512,7 @@ static void init_walls(std::vector<Entity*> *walls, Map &map)
 
 
 
-static void init_entities(std::vector<Entity> *entities) 
+static void init_entities(std::vector<Entity> *entities, std::string model_config_file) 
 {
     std::vector<ModelConfig> configs;
     resource::load_model_configs(&configs, model_config_file);
@@ -559,6 +559,10 @@ static void init_entities(std::vector<Entity> *entities)
         }
         rot.topLeftCorner<3,3>() = qrot.toRotationMatrix();
         e.setRotationMatrix(rot);
+
+        if (it->transforms.scale != 0.0f) {
+            e.setScale(it->transforms.scale);
+        }
 
         Eigen::Vector3f pos(0,0,0);
 
@@ -785,7 +789,9 @@ int main(void)
     init_walls(&walls, map);
     init_floors(&floors, map);
     std::vector<Entity> entities;
-    init_entities(&entities);
+    init_entities(&entities, "resources/tree.yaml");
+    init_entities(&entities, "resources/computer_archive.yaml");
+
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     std::vector<PointLight> point_lights;
     std::vector<draw::ShadowMap> shadow_maps;
@@ -931,7 +937,7 @@ int main(void)
                         M.pushMatrix();
                         M.multMatrix(it->getRotation());
                         M.worldTranslate(it->getPosition(), it->getRotation());
-                        M.scale(0.5f);
+                        M.scale(it->getScale());
                         glUniformMatrix4fv(depth_prog.getUniform("M"), 1, GL_FALSE, 
                                            M.topMatrix().data());
                         it->getDrawable().drawDepth(&depth_prog, &M);
@@ -989,7 +995,7 @@ int main(void)
             M.pushMatrix();
             M.multMatrix(it->getRotation());
             M.worldTranslate(it->getPosition(), it->getRotation());
-            M.scale(0.5f);
+            M.scale(it->getScale());
             glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                M.topMatrix().data());
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);

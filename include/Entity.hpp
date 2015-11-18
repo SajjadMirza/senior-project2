@@ -11,6 +11,7 @@ private:
     std::string name;
     Eigen::Vector3f pos;
     Eigen::Matrix4f rot;
+    float scale;
     float radius;
     Eigen::Vector3f center;
     draw::Drawable *drawable;
@@ -54,6 +55,9 @@ public:
     bool useBoundingBox() const;
     void setUseBoundingBox(bool use);
     void setSimpleDraw(bool simple);
+
+    inline float getScale() const { return scale; }
+    inline void setScale(float s) { scale = s; }
 };
 
 #endif
