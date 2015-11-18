@@ -33,5 +33,7 @@ bool BoundingBox::contains(Eigen::Vector3f point) const {
     bool containsy = box.min(1) <= point(1) && point(1) <= box.max(1);
     bool containsz = box.min(2) <= point(2) && point(2) <= box.max(2);
 
+    containsy = true;
+
     return containsx && containsy && containsz;
 }

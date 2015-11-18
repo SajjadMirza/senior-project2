@@ -804,7 +804,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
 static void init_camera(const Map& map)
 {
     fp_camera->translations = -(map.getPlayerStart());
-    fp_camera->translations += (vec3(0, -0.7f, 0));
+    fp_camera->translations += (vec3(0, -1.1f, 0));
     ov_camera->translations = -(map.getPlayerStart());
     ov_camera->translations += (vec3(0, -30.0f, 0));
 }

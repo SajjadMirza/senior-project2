@@ -16,7 +16,7 @@ transforms:
     xaxis: 20.75
     zaxis: 6.0
     yaxis: -0.1
-  scale: 0.2 
+  scale: 0.3 
 ---
 model: computer_server_2
 file: ServerV2+console.obj
@@ -35,7 +35,7 @@ transforms:
     xaxis: 20.75
     zaxis: 5.0
     yaxis: -0.1
-  scale: 0.2 
+  scale: 0.3 
 ---
 model: computer_server_3
 file: ServerV2+console.obj
@@ -54,7 +54,7 @@ transforms:
     xaxis: 20.75
     zaxis: 4.0
     yaxis: -0.1
-  scale: 0.2 
+  scale: 0.3 
 ---
 model: computer_server_4
 file: ServerV2+console.obj
@@ -73,7 +73,7 @@ transforms:
     xaxis: 20.75
     zaxis: 3.0
     yaxis: -0.1
-  scale: 0.2 
+  scale: 0.3 
 ---
 model: computer_server_5
 file: ServerV2+console.obj
@@ -92,7 +92,7 @@ transforms:
     xaxis: 20.75
     zaxis: 2.0
     yaxis: -0.1
-  scale: 0.2 
+  scale: 0.3 
 ---
 model: Table
 file: table.obj
@@ -113,7 +113,51 @@ transforms:
     yaxis: 45.0
   translations:
     xaxis: 24.75
-    zaxis: 5.0
+    zaxis: 9.0
     yaxis: 0.5
-  scale: 0.004 
+  scale: 0.003 
+---
+model: Computer
+file: Computer_Laptop.obj
+directory: resources/models/comp_room/computer/
+format: obj
+textures:
+  diffuse:
+    Computer_Laptop_D.tga
+  normal:
+    Computer_Laptop_N.tga
+  specular:
+    Computer_Laptop_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 225.0
+  translations:
+    xaxis: 24.75
+    zaxis: 8.8
+    yaxis: 0.55
+  scale: 0.25 
+---
+model: Camera
+file: camera.obj
+directory: resources/models/comp_room/Camera/
+format: obj
+textures:
+  diffuse:
+    camera_d.dds
+  normal:
+    table_normal.jpg
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  translations:
+    xaxis: 25.2
+    zaxis: 8.8
+    yaxis: 0.55
+  scale: 0.4
 ...
