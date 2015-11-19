@@ -48,6 +48,9 @@ void Room::triggerRoom(vec2 comp)
             case COMP:
             LOG("ROOM COMP NOW ACTIVE!!!");
             break;    
+            case LOUNGE:
+            LOG("ROOM LOUNGE NOW ACTIVE!!!");
+            break; 
             default:
             LOG("ROOM UNKNOWN NOW ACTIVE!!!");
             break;
@@ -218,10 +221,10 @@ Lounge::Lounge() : Room()
 {
     room_t = LOUNGE;
     yaml_bounds = "resources/lounge_bounds.yaml";
-    // yaml_lounge = "resources/lounge.yaml";
+    yaml_lounge = "resources/lounge.yaml";
 
     init_entities_R(&boundaries, yaml_bounds);
-    // init_entities_R(&entities, yaml_lounge);
+    init_entities_R(&entities, yaml_lounge);
 
     triggerPos = vec2(38, 12);
 }

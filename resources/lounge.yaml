@@ -1,0 +1,158 @@
+---
+model: carpet
+file: PersianCarpet.obj
+directory: resources/models/lounge_room/Carpet/
+format: obj
+textures:
+  diffuse:
+    PersianCarpet_Diffuce_R.jpg
+  normal:
+    PersianCarpet_NRM.jpg
+  specular:
+    PersianCarpet_SPEC_R.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  translations:
+    xaxis: 42.5
+    zaxis: 23.0
+    yaxis: 0.0
+  scale: 0.03 
+---
+model: pool_table
+file: Objects/TournamentTable.lwo
+directory: resources/models/lounge_room/Pool_Table/
+format: lwo
+textures:
+  diffuse:
+    Images/Wood.bmp
+  normal:
+    Images/table_normal.jpg
+  specular:
+    Images/table_specular.jpg
+overrides:
+  radius: 0.65
+  center: position
+transforms:
+  translations:
+    xaxis: 42.5
+    zaxis: 23.0
+    yaxis: 0.55
+  scale: 0.5 
+---
+model: coke
+file: Nuka_Cola_Fridge.obj
+directory: resources/models/lounge_room/Nuka_Cola_Fridge/
+format: obj
+textures:
+  diffuse:
+    nukafridge_d.jpg
+  normal:
+    nukafridge01clean_n.dds
+  specular:
+    nukafridge_s.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: 270.0
+  translations:
+    xaxis: 48.2
+    zaxis: 25.8
+    yaxis: 0.0
+  scale: 0.35 
+---
+model: chair_1
+file: Leather_Chair.obj
+directory: resources/models/lounge_room/Chair_1/
+format: obj
+textures:
+  diffuse:
+    Leather_Chair_D.tga
+  normal:
+    Leather_Chair_N.tga
+  specular:
+    Leather_Chair_S.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: 225.0
+  translations:
+    xaxis: 47.2
+    zaxis: 22.8
+    yaxis: 0.0
+  scale: 0.5 
+---
+model: chair_2
+file: Leather_Arm_Chair.obj
+directory: resources/models/lounge_room/Chair_2/
+format: obj
+textures:
+  diffuse:
+    LeatherArmChair_D.tga
+  normal:
+    LeatherArmChair_N.tga
+  specular:
+    LeatherArmChair_S.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: -45.0
+  translations:
+    xaxis: 47.2
+    zaxis: 21.4
+    yaxis: 0.0
+  scale: 0.3 
+---
+model: coffee_table
+file: CoffeeTable.obj
+directory: resources/models/lounge_room/Coffee_Table/
+format: obj
+textures:
+  diffuse:
+    Wood_Texture.jpg
+  normal:
+    Wood_Texture_N.jpg
+  specular:
+    Wood_Texture_S.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: 0.0
+  translations:
+    xaxis: 46.0
+    zaxis: 22.0
+    yaxis: 0.25
+  scale: 0.5 
+---
+model: tv_table
+file: Modern_Table_obj.obj
+directory: resources/models/lounge_room/tv_table/
+format: obj
+textures:
+  diffuse:
+    outUV_defuse.png
+  normal:
+    outUV_Normal.png
+  specular:
+    outUV_Specular.png
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: 0.0
+  translations:
+    xaxis: 37.0
+    zaxis: 25.0
+    yaxis: 0.0
+  scale: 0.2 
+...
