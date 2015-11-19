@@ -285,6 +285,9 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_8:
         debug_gbuffer_mode = 7;
         break;
+    case GLFW_KEY_9:
+        debug_gbuffer_mode = 8;
+        break;
     } // end of switch
 }
 
@@ -626,7 +629,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
     draw::ShadowMap sm;
     sm.cubemap = 0;
     sm.fbo = 0;
-    
+#if 1    
     for (auto it = map.getMajorLightPositions().cbegin(); 
          it != map.getMajorLightPositions().cend();
          it++) {
@@ -635,10 +638,11 @@ static void init_lights(std::vector<PointLight> *point_lights,
             pl.shadowMap = shadow_maps->size() - 1;
         }
         pl.position = *it;
+        pl.position.y() += 0.5;
         point_lights->push_back(pl);
 
     }
-
+#endif
 
     PointLight smallpl;
     smallpl.ambient = pl.ambient;
@@ -648,7 +652,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
     smallpl.intensity = smallpl.constant = 1.0;
     smallpl.linear = 0.7;
     smallpl.quadratic = 1.8;
-
+#if 1
     for (auto it = map.getMinorLightPositions().cbegin(); 
          it != map.getMinorLightPositions().cend();
          it++) {
@@ -659,6 +663,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
         smallpl.position = *it;
         point_lights->push_back(smallpl);
     }
+#endif
 
     PointLight tinypl = smallpl;
     tinypl.shadow = true;
@@ -932,7 +937,7 @@ int main(void)
                         floor_batch.drawAllDepth(&depth_prog);
                     }
                     glUniform1i(depth_prog.getUniform("uInstanced"), 0);
-
+                    glCullFace(GL_FRONT);
                     for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
                         M.multMatrix(it->getRotation());
@@ -943,8 +948,8 @@ int main(void)
                         it->getDrawable().drawDepth(&depth_prog, &M);
                         M.popMatrix();
                     }
-                    
-//                    glCullFace(GL_BACK);
+                    glCullFace(GL_BACK);
+
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glViewport(0, 0, width, height); 
                 }

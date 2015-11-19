@@ -29,6 +29,7 @@ const int DISPLAY_SPECULAR = 4;
 const int DISPLAY_SHADING = 5;
 const int DISPLAY_SPECULAR_BUFFER = 6;
 const int DISPLAY_SHADOW_DEPTH = 7;
+const int DISPLAY_SHADOW_BIAS = 8;
 
 uniform vec3 viewPos;
 uniform vec2 uScreenSize;
@@ -49,16 +50,17 @@ vec3 sampleOffsetDirections[20] = vec3[]
    vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 );   
 
-float calc_shadow(vec3 fragPos)
+float calc_shadow(vec3 fragPos, float bias)
 {
     vec3 directionVector = fragPos - light.position;
     float currentDepth = length(directionVector);
     int samples = 20;
-    float bias = 0.05;
+
     float shadow = 0.0;
     float viewDistance = length(viewPos - fragPos);
     float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
     debug_color_depth = texture(depthMap, directionVector).r;
+
     for (int i = 0; i < samples; ++i) {
         float nearDepth = texture(depthMap, directionVector + sampleOffsetDirections[i] * diskRadius).r;
         nearDepth *= far_plane;
@@ -70,8 +72,10 @@ float calc_shadow(vec3 fragPos)
     shadow /= float(samples);
 
 
-//    float shadow = currentDepth - bias > nearDepth ? 1.0 : 0.0;
-    
+/*
+    float nearDepth = texture(depthMap, directionVector).r;
+    shadow = currentDepth - bias > nearDepth ? 1.0 : 0.0;
+*/    
     return shadow;
 }
 
@@ -101,12 +105,16 @@ void main()
         float spec = pow(max(dot(fragNor, halfDir), 0.0), 16.0);
         vec3 specular = light.specular * spec * fragSpc * light.intensity;
 
-        float shadow = calc_shadow(fragPos);
+        float bias;
+//        bias = max(0.1 * (1.0 - dot(fragNor, lightDir)), 0.005);  
+        bias = 0.15;
+//        bias = 0.0;
+        float shadow = calc_shadow(fragPos, bias);
         
         diffuse *= attenuation;
         specular *= attenuation;
 //        vec3 light = diffuse + specular + ambient;
-        vec3 light = (diffuse + specular * 0.5) * (1.0 - shadow);
+        vec3 light = (diffuse * 1.0 + specular * 1.0) * (1.0 - shadow);
 //        light *= 1.5;
 //        vec3 light = (diffuse * 2.0) * (1.0 - shadow);        
 
@@ -135,6 +143,9 @@ void main()
             break;
         case DISPLAY_SHADOW_DEPTH:
             data = vec3(debug_color_depth);
+            break;
+        case DISPLAY_SHADOW_BIAS:
+            data = vec3(bias);
             break;
         }
 
