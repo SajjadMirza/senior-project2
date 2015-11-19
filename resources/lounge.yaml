@@ -125,15 +125,13 @@ overrides:
   radius: 0.5
   center: position
 transforms:
-  rotations:
-    yaxis: 0.0
   translations:
     xaxis: 46.0
     zaxis: 22.0
     yaxis: 0.25
   scale: 0.5 
 ---
-model: tv_table
+model: dining_table
 file: Modern_Table_obj.obj
 directory: resources/models/lounge_room/tv_table/
 format: obj
@@ -148,11 +146,241 @@ overrides:
   radius: 0.5
   center: position
 transforms:
-  rotations:
-    yaxis: 0.0
   translations:
     xaxis: 37.0
     zaxis: 25.0
     yaxis: 0.0
   scale: 0.2 
+---
+model: tv
+file: PortableTV_2.obj
+directory: resources/models/lounge_room/tv/
+format: obj
+textures:
+  diffuse:
+    tv_D.jpeg
+  normal:
+    tv_N.jpg
+  specular:
+    tv_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 25.0
+  translations:
+    xaxis: 46.0
+    zaxis: 21.5
+    yaxis: 0.45
+  scale: 0.25 
+---
+model: tv_screen
+file: PortableTV_3.obj
+directory: resources/models/lounge_room/tv/
+format: obj
+textures:
+  diffuse:
+    Blink_Mask_D.jpg
+  normal:
+    Blink_Mask_N.jpg
+  specular:
+    Blink_Mask_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 25.0
+  translations:
+    xaxis: 46.0
+    zaxis: 21.5
+    yaxis: 0.45
+  scale: 0.25 
+---
+model: coke_1
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: -90.0
+    yaxis: 32.0
+  translations:
+    xaxis: 46.0
+    zaxis: 22.5
+    yaxis: 0.55
+  scale: 0.01 
+---
+model: coke_2
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 246.0
+  translations:
+    xaxis: 46.0
+    zaxis: 22.3
+    yaxis: 0.5
+  scale: 0.01 
+---
+model: coke_3
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: -90.0
+    yaxis: 39.0
+  translations:
+    xaxis: 47.6
+    zaxis: 26.0
+    yaxis: 0.1
+  scale: 0.01 
+---
+model: coke_4
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 26.0
+  translations:
+    xaxis: 47.6
+    zaxis: 25.0
+    yaxis: 0.05
+  scale: 0.01 
+---
+model: coke_5
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 126.0
+    zaxis: 180.0
+  translations:
+    xaxis: 47.2
+    zaxis: 25.0
+    yaxis: 0.05
+  scale: 0.01 
+---
+model: coke_6
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    zaxis: 90.0
+  translations:
+    xaxis: 47.0
+    zaxis: 24.6
+    yaxis: 0.05
+  scale: 0.01 
+---
+model: coke_7
+file: nuke_cola.obj
+directory: resources/models/lounge_room/coke/
+format: obj
+textures:
+  diffuse:
+    sodabottleclosed01large.dds
+  normal:
+    sodabottleclosed01large_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: -90.0
+    yaxis: 32.0
+  translations:
+    xaxis: 42.5
+    zaxis: 23.4
+    yaxis: 0.675
+  scale: 0.01 
+---
+model: jukebox
+file: Jukebox.obj
+directory: resources/models/lounge_room/Jukebox/
+format: obj
+textures:
+  diffuse:
+    Jukebox_D.tga
+  normal:
+    Jukebox_N.tga
+  specular:
+    Jukebox_S.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 37.5
+    zaxis: 20.75
+    yaxis: 0.0
+  scale: 0.35 
 ...
