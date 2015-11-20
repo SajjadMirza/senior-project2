@@ -1242,7 +1242,10 @@ int main(void)
 
             set_light_volume_parameters(*it, P, V, width, height, shadow_far);
 
+
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
+
+
 
             glDepthFunc(GL_LESS);
             glCullFace(GL_BACK);
@@ -1256,8 +1259,10 @@ int main(void)
 //        LOG("Drew: " << light_draw_count << " lights this frame");
         glDisable(GL_STENCIL_TEST);
 
+        // glEnable(GL_FRAMEBUFFER_SRGB);
         gbuffer.copyFinalBuffer(width, height);
-        gbuffer.copyDepthBuffer(width, height);       
+        // glDisable(GL_FRAMEBUFFER_SRGB);
+        gbuffer.copyDepthBuffer(width, height);               
 
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);

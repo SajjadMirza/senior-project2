@@ -382,5 +382,279 @@ transforms:
     xaxis: 37.5
     zaxis: 20.75
     yaxis: 0.0
+  scale: 0.3 
+---
+model: dining_chair_1
+file: chair.obj
+directory: resources/models/lounge_room/Dining_Chair/
+format: obj
+textures:
+  diffuse:
+    chair_d.dds
+  normal:
+    chair_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.25
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 37.8
+    zaxis: 24.5
+    yaxis: 0.0
+  scale: 0.6 
+---
+model: dining_chair_2
+file: chair.obj
+directory: resources/models/lounge_room/Dining_Chair/
+format: obj
+textures:
+  diffuse:
+    chair_d.dds
+  normal:
+    chair_n.dds
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.25
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 37.8
+    zaxis: 25.5
+    yaxis: 0.0
+  scale: 0.6 
+---
+model: radio
+file: Radio.obj
+directory: resources/models/lounge_room/Radio/
+format: obj
+textures:
+  diffuse:
+    tex/RadioStereo_colo.tga
+  normal:
+    tex/RadioStereo_norm.tga
+  specular:
+    tex/RadioStereo_colo.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: 135.0
+  translations:
+    xaxis: 36.9
+    zaxis: 25.6
+    yaxis: 0.5
+  scale: 0.002 
+---
+model: trash
+file: Trash_Bin.obj
+directory: resources/models/lounge_room/Trash_Bin/
+format: obj
+textures:
+  diffuse:
+    Trash_Bin_D.tga
+  normal:
+    Trash_Bin_N.tga
+  specular:
+    Trash_Bin_S.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    yaxis: 135.0
+  translations:
+    xaxis: 36.9
+    zaxis: 23.8
+    yaxis: 0.0
   scale: 0.35 
+---
+model: switch
+file: portalbutton.obj
+directory: resources/models/lounge_room/Switch/
+format: obj
+textures:
+  diffuse:
+    Button_D.jpg
+  normal:
+    Button_N.jpg
+  specular:
+    Button_S.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 37.25
+    zaxis: 24.4
+    yaxis: 0.5
+  scale: 0.001 
+---
+model: book
+file: Book.obj
+directory: resources/models/lounge_room/Book/
+format: obj
+textures:
+  diffuse:
+    Book_D.png
+  normal:
+    Book_N.png
+  specular:
+    Book_S.png
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 135.0
+  translations:
+    xaxis: 37.25
+    zaxis: 24.4
+    yaxis: 0.5
+  scale: 0.1 
+---
+model: Flag
+file: USA_Flag.obj
+directory: resources/models/lounge_room/USA_Flag/
+format: obj
+textures:
+  diffuse:
+    USA_Flag_D.tga
+  normal:
+    USA_Flag_N.tga
+  specular:
+    USA_Flag_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 180.0
+  translations:
+    xaxis: 40.0
+    zaxis: 26.45
+    yaxis: 0.55
+  scale: 0.25 
+---
+model: Picture_1
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_1.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 180.0
+  translations:
+    xaxis: 46.0
+    zaxis: 26.5
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_5
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_5.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 180.0
+  translations:
+    xaxis: 45.0
+    zaxis: 26.5
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_3
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_3.jpeg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 48.5
+    zaxis: 21.0
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_2
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_2.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 48.5
+    zaxis: 22.0
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_4
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_4.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 48.5
+    zaxis: 23.0
+    yaxis: 1.1
+  scale: 0.625 
 ...
