@@ -86,6 +86,7 @@ private:
     int selected;
     int select_idx;
     int size;
+    std::string yaml_hanoi_room;
     std::string yaml_hanoi;
     std::vector<float> pos_z; 
     std::vector<float> pos_y; 

@@ -63,10 +63,12 @@ Hanoi::Hanoi() : Room()
     room_t = HANOI;
     yaml_bounds = "resources/hanoi_bounds.yaml";
     yaml_hanoi = "resources/hanoi.yaml";
-
+    yaml_hanoi_room = "resources/hanoi_room.yaml";
+    
     triggerPos = vec2(9, 26);
 
     init_entities_R(&boundaries, yaml_bounds);
+    init_entities_R(&entities, yaml_hanoi_room);
     init_entities_R(&entities_mov, yaml_hanoi);
 
     std::sort(entities_mov.begin(), entities_mov.end(), sortHanoi);
