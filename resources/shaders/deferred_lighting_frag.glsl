@@ -102,7 +102,7 @@ void main()
         vec3 diffuse = max(dot(fragNor, lightDir), 0.0) * fragCol * light.color * light.intensity;
         vec3 halfDir = normalize(lightDir + viewDir);
         vec3 reflectDir = reflect(-lightDir, fragNor);
-        float spec = pow(max(dot(fragNor, halfDir), 0.0), 16.0);
+        float spec = pow(max(dot(fragNor, halfDir), 0.0), 64.0);
         vec3 specular = light.specular * spec * fragSpc * light.intensity;
 
         float bias;
@@ -154,7 +154,7 @@ void main()
 //        out_color = vec4(vec3(debug_color), 1.0);
     }
     else {
-        out_color = vec4(1.0, 0.0, 0.0, texture2D(gPosition, fragTex.st).a);
+        out_color = vec4(0.0, 1.0, 1.0, texture2D(gPosition, fragTex.st).a);
     }
 
 }

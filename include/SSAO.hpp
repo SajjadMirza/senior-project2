@@ -7,15 +7,22 @@
 #include <types.h>
 #include <vector>
 
+#include <Gbuffer.hpp>
+
 class SSAO {
-    GLuint colorFBO;
+    Gbuffer *gbuffer;
+public:
+    GLuint ssaoFBO;
     GLuint blurFBO;
-    GLuint colorBuffer;
+    GLuint ssaoBuffer;
     GLuint blurBuffer;
     GLuint noiseTexture;
-public:
+    SSAO(Gbuffer *gbuffer);
     void init(uint width, uint height);
     void generateNoiseTexture(const std::vector<Eigen::Vector3f> &noise);
+    void bindOcclusionStage();
+
+    void debugCopySSAO(uint width, uint height);
 };
 
 #endif

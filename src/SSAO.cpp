@@ -2,22 +2,26 @@
 #include <types.h>
 #include <log.hpp>
 
+SSAO::SSAO(Gbuffer *gbuf) : gbuffer(gbuf)
+{
+}
+
 void SSAO::init(uint width, uint height)
 {
     // Generate framebuffers
-    glGenFramebuffers(1, &colorFBO);
+    glGenFramebuffers(1, &ssaoFBO);
     glGenFramebuffers(1, &blurFBO);
 
     // Set up the SSAO color buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, colorFBO);
-    glGenTextures(1, &colorBuffer);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+    glGenTextures(1, &ssaoBuffer);
+    glBindTexture(GL_TEXTURE_2D, ssaoBuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RGB, GL_FLOAT,
                  NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
-                           GL_TEXTURE_2D, colorBuffer, 0);
+                           GL_TEXTURE_2D, ssaoBuffer, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         ERROR("SSAO color framebuffer incomplete!");
         exit(-1);
@@ -51,4 +55,26 @@ void SSAO::generateNoiseTexture(const std::vector<Eigen::Vector3f> &noise)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+}
+
+void SSAO::bindOcclusionStage()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gbuffer->gvposd);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gbuffer->gvnor);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+    
+}
+
+void SSAO::debugCopySSAO(uint width, uint height)
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, ssaoFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

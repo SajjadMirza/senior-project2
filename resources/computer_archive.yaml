@@ -9,10 +9,10 @@ textures:
     cavewall01_n.dds
 transforms:
   translations:
-    xaxis: 10.5
-    zaxis: 20.5
-    yaxis: -0.1
-  scale: 1.0  
+    xaxis: 7.5
+    zaxis: 23.5
+    yaxis: 0.1
+  scale: 0.4
 #transforms:
 #  translations:
 #    xaxis: 10.75

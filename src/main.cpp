@@ -4,6 +4,7 @@
 #include <common.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cmath>
 
@@ -65,6 +66,8 @@ Program null_prog;
 Program depth_prog;
 Program debug_depth_prog;
 Program ambient_prog;
+Program ssao_prog;
+Program blur_prog;
 int debug_gbuffer_mode = 0;
 
 
@@ -89,6 +92,11 @@ boost::random::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
   return name + "[" + std::to_string(static_cast<int>(index)) + "]";
   }
 */
+
+inline std::string str_array(const std::string &array_name, int index)
+{
+    return array_name + "[" + boost::lexical_cast<std::string>(index) + "]";
+}
 
 inline vec3 make_color(int red, int green, int blue)
 {
@@ -322,6 +330,12 @@ draw::Drawable *import_drawable(std::string file_name)
     return import_drawable(file_name, &useless);
 }
 
+static void shader_init_error(int code)
+{
+    std::cerr << "SHADER INITIALIZATION ERROR" << std::endl;
+    exit(code);
+}
+
 static void init_gl() 
 {
     LOG(glGetString(GL_VERSION));
@@ -336,7 +350,9 @@ static void init_gl()
     std::string header = "resources/shaders/";
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
-    deferred_geom_prog.init();
+    if (!deferred_geom_prog.init()) {
+        shader_init_error(-1);
+    }
     deferred_geom_prog.addAttribute("vertPos");
     deferred_geom_prog.addAttribute("vertNor");
     deferred_geom_prog.addAttribute("vertTex");
@@ -353,10 +369,15 @@ static void init_gl()
     deferred_geom_prog.addUniform("texture_spec");
     deferred_geom_prog.addUniform("uCalcTBN");
     deferred_geom_prog.addUniform("uInstanced");
+    deferred_geom_prog.addUniform("NEAR");
+    deferred_geom_prog.addUniform("FAR");
+    
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
-    gbuffer_debug_prog.init();
+    if (!gbuffer_debug_prog.init()) {
+        shader_init_error(-1);
+    }
     gbuffer_debug_prog.addAttribute("vertPos");
     gbuffer_debug_prog.addAttribute("vertTex");
     gbuffer_debug_prog.addUniform("gPosition");
@@ -366,7 +387,9 @@ static void init_gl()
     
     deferred_lighting_prog.setShaderNames(header + "deferred_lighting_vert.glsl",
                                           header + "deferred_lighting_frag.glsl");
-    deferred_lighting_prog.init();
+    if (!deferred_lighting_prog.init()) {
+        shader_init_error(-1);
+    }
     deferred_lighting_prog.addAttribute("vertPos");
     deferred_lighting_prog.addAttribute("vertTex");
     deferred_lighting_prog.addUniform("light.position");
@@ -394,7 +417,9 @@ static void init_gl()
 
     null_prog.setShaderNames(header + "null_vert.glsl",
                              header + "null_frag.glsl");
-    null_prog.init();
+    if (!null_prog.init()) {
+        shader_init_error(-1);
+    }
     null_prog.addAttribute("vertPos");
     null_prog.addUniform("M");
     null_prog.addUniform("V");
@@ -403,7 +428,9 @@ static void init_gl()
     depth_prog.setShaderNames(header + "cube_depth.vs.glsl",
                               header + "cube_depth.fs.glsl",
                               header + "cube_depth.gs.glsl");
-    depth_prog.init();
+    if (!depth_prog.init()) {
+        shader_init_error(-1);
+    }
     depth_prog.addAttribute("vertPos");
     depth_prog.addAttribute("iM");
     depth_prog.addUniform("M");
@@ -419,19 +446,42 @@ static void init_gl()
 
     debug_depth_prog.setShaderNames(header + "debug_depth.vs.glsl",
                                     header + "debug_depth.fs.glsl");
-    debug_depth_prog.init();
+    if (!debug_depth_prog.init()) {
+        shader_init_error(-1);
+    }
     debug_depth_prog.addAttribute("vertPos");
     debug_depth_prog.addAttribute("vertTex");
     debug_depth_prog.addUniform("depthTexture");
  
     ambient_prog.setShaderNames(header + "ambient_lighting.vs.glsl",
                                 header + "ambient_lighting.fs.glsl");
-    ambient_prog.init();
+    if (!ambient_prog.init()) {
+        shader_init_error(-1);
+    }
     ambient_prog.addAttribute("vertPos");
     ambient_prog.addAttribute("vertTex");
     ambient_prog.addUniform("gDiffuse");
     ambient_prog.addUniform("intensity");
 
+    ssao_prog.setShaderNames(header + "ssao.vs.glsl",
+                             header + "ssao.fs.glsl");
+    if (!ssao_prog.init()) {
+        shader_init_error(-1);
+    }
+    ssao_prog.addAttribute("vertPos");
+    ssao_prog.addAttribute("vertTex");
+    ssao_prog.addUniform("gViewSpacePositionDepth");
+    ssao_prog.addUniform("ssaoNoise");
+    ssao_prog.addUniform("gNormal");
+    ssao_prog.addUniform("screen_width");
+    ssao_prog.addUniform("screen_height");
+    ssao_prog.addUniform("P");
+    ssao_prog.addUniform("V");
+    
+
+    for (int i = 0; i < 64; i++) {
+        ssao_prog.addUniform(str_array("samples", i).c_str());
+    }
 
     GLSL::checkVersion();
 }
@@ -924,9 +974,13 @@ int main(void)
     std::vector<vec3> ssaoNoise;
     init_ssao_noise(&ssaoNoise);
 
-    SSAO ssao;
+    SSAO ssao(&gbuffer);
     ssao.init(width, height);
     ssao.generateNoiseTexture(ssaoNoise);
+
+    draw::Quad ssao_quad;
+    ssao_quad.GenerateData(ssao_prog.getAttribute("vertPos"), 
+                           ssao_prog.getAttribute("vertTex"));
         
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -993,7 +1047,7 @@ int main(void)
                         floor_batch.drawAllDepth(&depth_prog);
                     }
                     glUniform1i(depth_prog.getUniform("uInstanced"), 0);
-                    glCullFace(GL_FRONT);
+//                    glCullFace(GL_FRONT);
                     for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
                         M.multMatrix(it->getRotation());
@@ -1024,6 +1078,8 @@ int main(void)
         glUniform3fv(deferred_geom_prog.getUniform("uLightPos"), 1, light_pos.data());
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
         glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
+        glUniform1f(deferred_geom_prog.getUniform("NEAR"), camera->getNearPlane());
+        glUniform1f(deferred_geom_prog.getUniform("FAR"), camera->getFarPlane());
 
 
         // Draw walls with instancing
@@ -1173,19 +1229,47 @@ int main(void)
 //        LOG("Drew: " << light_draw_count << " lights this frame");
         glDisable(GL_STENCIL_TEST);
 
+
+        // Compute SSAO texture
+        ssao.bindOcclusionStage();
+        ssao_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUniform1i(ssao_prog.getUniform("gViewSpacePositionDepth"), 0);
+        glUniform1i(ssao_prog.getUniform("gNormal"), 1);
+        glUniform1i(ssao_prog.getUniform("ssaoNoise"), 2);
+        glUniform1i(ssao_prog.getUniform("screen_width"), width);
+        glUniform1i(ssao_prog.getUniform("screen_height"), height);
+        for (int i = 0; i < 64; i++) {
+            glUniform3fv(ssao_prog.getUniform(str_array("samples", i).c_str()), 1, 
+                         ssaoKernel[i].data());
+        }
+        glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+        glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+
+        ssao_quad.Render();
+        
+        ssao_prog.unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        ssao.debugCopySSAO(width, height);
+
         ambient_prog.bind();
+        gbuffer.bindTextures();
+        gbuffer.bindFinalBuffer();
+
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_ONE, GL_ONE);
-        gbuffer.bindTextures();
-        gbuffer.bindFinalBuffer();
         glUniform1i(ambient_prog.getUniform("gDiffuse"), 2); // TEXTURE2D
         glUniform1f(ambient_prog.getUniform("intensity"), 0.1);
         ambient_quad.Render();
+        glDisable(GL_BLEND);
+
         gbuffer.unbindFinalBuffer();
         ambient_prog.unbind();
 
-        gbuffer.copyFinalBuffer(width, height);
+
+//        gbuffer.copyFinalBuffer(width, height);
         gbuffer.copyDepthBuffer(width, height);       
 
         deferred_lighting_prog.bind();
@@ -1196,7 +1280,6 @@ int main(void)
         glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
         deferred_lighting_prog.unbind();
 
-        // Final pass
 
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;

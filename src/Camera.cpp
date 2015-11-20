@@ -198,3 +198,13 @@ bool Camera::collides(const Entity &e) {
 
     
 }
+
+float Camera::getFarPlane()
+{
+    return zfar;
+}
+
+float Camera::getNearPlane()
+{
+    return znear;
+}

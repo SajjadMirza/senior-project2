@@ -82,7 +82,7 @@ bool Program::init()
             glGetShaderiv(GS, GL_COMPILE_STATUS, &rc);
             GLSL::printShaderInfoLog(GS);
             if(!rc) {
-		printf("Error compiling fragment shader %s\n", gShaderName.c_str());
+		printf("Error compiling geometry shader %s\n", gShaderName.c_str());
 		return false;
             }
         }
