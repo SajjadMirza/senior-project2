@@ -10,6 +10,7 @@ bool Gbuffer::init(uint width, uint height)
     attachments[2] = GL_COLOR_ATTACHMENT2;
     attachments[3] = GL_COLOR_ATTACHMENT3;
     attachments[4] = GL_COLOR_ATTACHMENT4;
+    attachments[5] = GL_COLOR_ATTACHMENT5;
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -73,6 +74,17 @@ bool Gbuffer::init(uint width, uint height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gfinal, 0);
+
+    // View space position and depth
+    glGenTextures(1, &gvposd);
+    glBindTexture(GL_TEXTURE_2D, gvposd);
+    LOG("GBUFFER VIEW SPACE POSITION AND DEPTH TEXTURE: " << gvposd);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);  
+    
 
     // - Finally check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

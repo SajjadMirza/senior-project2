@@ -2,6 +2,8 @@
 #define USE_DEFERRED 1
 
 #include <common.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 #include <cmath>
 
@@ -28,6 +30,8 @@
 #include <draw/ShadowMap.hpp>
 #include <Geometry.hpp>
 #include <GameMath.hpp>
+#include <SSAO.hpp>
+
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -60,6 +64,7 @@ Program deferred_lighting_prog;
 Program null_prog;
 Program depth_prog;
 Program debug_depth_prog;
+Program ambient_prog;
 int debug_gbuffer_mode = 0;
 
 
@@ -74,6 +79,10 @@ const uint map_rows = 50;
 int special_texture_handle = 0;
 
 sound::FMODDriver sound_driver;
+
+boost::random::mt19937 generator;
+boost::random::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
+
 /*
   inline static std::string foo(std::string name, int index)
   {
@@ -415,6 +424,14 @@ static void init_gl()
     debug_depth_prog.addAttribute("vertTex");
     debug_depth_prog.addUniform("depthTexture");
  
+    ambient_prog.setShaderNames(header + "ambient_lighting.vs.glsl",
+                                header + "ambient_lighting.fs.glsl");
+    ambient_prog.init();
+    ambient_prog.addAttribute("vertPos");
+    ambient_prog.addAttribute("vertTex");
+    ambient_prog.addUniform("gDiffuse");
+    ambient_prog.addUniform("intensity");
+
 
     GLSL::checkVersion();
 }
@@ -748,6 +765,31 @@ static void init_camera(const Map& map)
     ov_camera->translations += (vec3(0, -30.0f, 0));
 }
 
+static void init_ssao_kernel(std::vector<vec3> *kernel)
+{
+    for (int i = 0; i < 64; i++) {
+        vec3 sample(randomFloats(generator) * 2.0f - 1.0f, 
+                    randomFloats(generator) * 2.0f - 1.0f,
+                    randomFloats(generator));
+        sample.normalize();
+        sample *= randomFloats(generator);
+        float scale = float(i) / 64.0f;
+        scale = math::lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        kernel->push_back(sample);
+    }
+}
+
+static void init_ssao_noise(std::vector<vec3> *noise)
+{
+    for (int i = 0; i < 16; i++) {
+        vec3 noise_vec(randomFloats(generator) * 2.0f - 1.0f,
+                   randomFloats(generator) * 2.0f - 1.0f,
+                   0.0f);
+        noise->push_back(noise_vec);
+    }
+}
+
 int main(void)
 {
     GLFWwindow* window;
@@ -839,6 +881,10 @@ int main(void)
     draw::Quad depth_quad;
     depth_quad.GenerateData(debug_depth_prog.getAttribute("vertPos"),
                             debug_depth_prog.getAttribute("vertTex"));
+    
+    draw::Quad ambient_quad;
+    ambient_quad.GenerateData(ambient_prog.getAttribute("vertPos"),
+                              ambient_prog.getAttribute("vertTex"));
 
     MatrixStack P, M, V;
 
@@ -871,6 +917,16 @@ int main(void)
     // Set the flag so that the first iteration of the game loop will
     // generate the depth cube map data
     bool generate_shadowmaps = true;
+
+    // Set up SSAO stuff
+    std::vector<vec3> ssaoKernel;
+    init_ssao_kernel(&ssaoKernel);
+    std::vector<vec3> ssaoNoise;
+    init_ssao_noise(&ssaoNoise);
+
+    SSAO ssao;
+    ssao.init(width, height);
+    ssao.generateNoiseTexture(ssaoNoise);
         
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -1116,6 +1172,18 @@ int main(void)
         }
 //        LOG("Drew: " << light_draw_count << " lights this frame");
         glDisable(GL_STENCIL_TEST);
+
+        ambient_prog.bind();
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_ONE, GL_ONE);
+        gbuffer.bindTextures();
+        gbuffer.bindFinalBuffer();
+        glUniform1i(ambient_prog.getUniform("gDiffuse"), 2); // TEXTURE2D
+        glUniform1f(ambient_prog.getUniform("intensity"), 0.1);
+        ambient_quad.Render();
+        gbuffer.unbindFinalBuffer();
+        ambient_prog.unbind();
 
         gbuffer.copyFinalBuffer(width, height);
         gbuffer.copyDepthBuffer(width, height);       

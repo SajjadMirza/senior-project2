@@ -5,6 +5,7 @@ layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gDiffuse;
 layout (location = 3) out float gSpecular;
+layout (location = 4) out vec4 gViewSpacePositionDepth;
 
 in vec3 fragPos;
 in vec3 fragNor;
@@ -15,12 +16,21 @@ uniform sampler2D texture0;
 uniform sampler2D texture_norm;
 uniform sampler2D texture_spec;
 uniform mat4 M;
+uniform mat4 V;
 
 uniform int uNormFlag;
 uniform int uCalcTBN;
 
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // Back to NDC 
+    return (2.0 * NEAR * FAR) / (FAR + NEAR - z * (FAR - NEAR));	
+}
+
 void main()
-{    
+{  
+    gViewSpacePositionDepth.xyz = V * fragPos;
+    gViewSpacePositionDepth.a = LinearizeDepth(gl_FragCoord.z);
     gPosition = fragPos;
     mat4 normalMatrix = transpose(inverse((M)));
 
