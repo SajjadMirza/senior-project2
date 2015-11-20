@@ -53,6 +53,7 @@ public:
     RoomType room_t;
     std::vector<Entity> boundaries; 
     std::vector<Entity> entities;
+    std::vector<Entity> entities_mov;
     std::string yaml_bounds;
 
     vec2 triggerPos;

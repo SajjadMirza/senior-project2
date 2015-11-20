@@ -1144,6 +1144,24 @@ int main(void)
                 M.popMatrix();
                 glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
             }
+
+            std::vector<Entity> t_entities_m;
+            t_entities_m = (level_one.getRooms())[i]->entities_mov;
+
+            for (auto it = t_entities_m.begin(); it != t_entities_m.end(); it++) {
+                if (it->selected) {
+                    glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 1);
+                }
+                M.pushMatrix();
+                M.worldTranslate(it->getPosition(), it->getRotation());
+                M.multMatrix(it->getRotation());
+                M.scale(it->getScale());
+                glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
+                                   M.topMatrix().data());
+                it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
+                M.popMatrix();
+                glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
+            }
         }
 
         // Second step: per-light calculations

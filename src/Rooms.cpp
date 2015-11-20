@@ -67,12 +67,12 @@ Hanoi::Hanoi() : Room()
     triggerPos = vec2(9, 26);
 
     init_entities_R(&boundaries, yaml_bounds);
-    init_entities_R(&entities, yaml_hanoi);
+    init_entities_R(&entities_mov, yaml_hanoi);
 
-    std::sort(entities.begin(), entities.end(), sortHanoi);
+    std::sort(entities_mov.begin(), entities_mov.end(), sortHanoi);
 
     int i = 0, inc = 0;
-    for (auto it = entities.begin(); it != entities.end(); it++) {
+    for (auto it = entities_mov.begin(); it != entities_mov.end(); it++) {
         tube temp;
         temp.index = i++;
         temp.pos = it->getPosition();
@@ -135,7 +135,7 @@ void Hanoi::select(GLFWwindow *window)
 void Hanoi::selection_helper() {
     if (select_idx != -1) {
         tube_loc[select_idx].top().selected = 0;
-        entities[tube_loc[select_idx].top().index].selected = false;
+        entities_mov[tube_loc[select_idx].top().index].selected = false;
         if (tube_loc[selected].size() < SIZE) {
             if (tube_loc[selected].empty() || 
                  tube_loc[selected].top().size > 
@@ -153,7 +153,7 @@ void Hanoi::selection_helper() {
 
         if (!tube_loc[select_idx].empty()) {
             tube_loc[select_idx].top().selected = 1;
-            entities[tube_loc[select_idx].top().index].selected = true;
+            entities_mov[tube_loc[select_idx].top().index].selected = true;
         }
         else {
             select_idx = -1;
@@ -167,7 +167,7 @@ void Hanoi::newPos(int idx_z)
     vec3 old_pos = tube_loc[idx_z].top().pos;
 
     tube_loc[idx_z].top().pos = vec3(old_pos(0), pos_y[idx_y], pos_z[idx_z]);
-    entities[tube_loc[idx_z].top().index].setPosition(tube_loc[idx_z].top().pos);
+    entities_mov[tube_loc[idx_z].top().index].setPosition(tube_loc[idx_z].top().pos);
 }
 
 void Hanoi::done()

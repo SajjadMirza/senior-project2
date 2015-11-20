@@ -657,4 +657,27 @@ transforms:
     zaxis: 23.0
     yaxis: 1.1
   scale: 0.625 
+---
+model: Device
+file: RE1_Jill_radio.obj
+directory: resources/models/lounge_room/Device/
+format: obj
+textures:
+  diffuse:
+    p_RE1_radio.dds
+  normal:
+    table_normal.jpg
+  specular:
+    table_specular.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 90.0
+  translations:
+    xaxis: 47.0
+    zaxis: 21.4
+    yaxis: 0.355
+  scale: 0.625 
 ...
