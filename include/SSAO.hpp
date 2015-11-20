@@ -21,8 +21,10 @@ public:
     void init(uint width, uint height);
     void generateNoiseTexture(const std::vector<Eigen::Vector3f> &noise);
     void bindOcclusionStage();
+    void bindBlurStage();
 
     void debugCopySSAO(uint width, uint height);
+    void debugCopyBlur(uint width, uint height);
 };
 
 #endif

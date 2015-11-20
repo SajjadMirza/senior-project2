@@ -32,6 +32,7 @@
 #include <Geometry.hpp>
 #include <GameMath.hpp>
 #include <SSAO.hpp>
+#include <errors.hpp>
 
 
 draw::Text text("testfont.ttf", 24);
@@ -92,6 +93,10 @@ boost::random::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
   return name + "[" + std::to_string(static_cast<int>(index)) + "]";
   }
 */
+
+
+
+
 
 inline std::string str_array(const std::string &array_name, int index)
 {
@@ -477,11 +482,20 @@ static void init_gl()
     ssao_prog.addUniform("screen_height");
     ssao_prog.addUniform("P");
     ssao_prog.addUniform("V");
-    
-
     for (int i = 0; i < 64; i++) {
         ssao_prog.addUniform(str_array("samples", i).c_str());
     }
+
+    blur_prog.setShaderNames(header + "blur.vs.glsl",
+                             header + "blur.fs.glsl");
+    if (!blur_prog.init()) {
+        shader_init_error(-1);
+    }
+    blur_prog.addAttribute("vertPos");
+    blur_prog.addAttribute("vertTex");
+    blur_prog.addUniform("ssaoInput");
+
+    CHECK_GL_ERRORS();
 
     GLSL::checkVersion();
 }
@@ -513,6 +527,7 @@ static uint getUniqueColor(int index)
 static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, 
                       Map &map, CellType type) 
 {
+    CHECK_GL_ERRORS();
     draw::Drawable *drawable = new draw::Drawable(config);
     uint cols = map.getColumns();
     uint rows = map.getRows();
@@ -549,6 +564,7 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
             }
         }
     }
+    CHECK_GL_ERRORS();
 }
 
 static void init_floors(std::vector<Entity*> *floors, Map &map) 
@@ -575,6 +591,7 @@ static void init_floors(std::vector<Entity*> *floors, Map &map)
 
 static void init_walls(std::vector<Entity*> *walls, Map &map) 
 {
+    CHECK_GL_ERRORS();
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
@@ -805,6 +822,8 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
                 static_cast<float>(width), static_cast<float>(height));
     glUniform1f(deferred_lighting_prog.getUniform("far_plane"), light_far_plane);
     glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 4);
+
+    CHECK_GL_ERRORS();
 }
 
 static void init_camera(const Map& map)
@@ -850,44 +869,54 @@ int main(void)
     if (!glfwInit()) {
         exit(EXIT_FAILURE);
     }
-
+    CHECK_GL_ERRORS();
     // Window hints
 //    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 //    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
+    CHECK_GL_ERRORS();
+
     window = glfwCreateWindow(init_w, init_h, "Simple example", NULL, NULL);
     if (!window) {
+        CHECK_GL_ERRORS();
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-
+    CHECK_GL_ERRORS();
     glfwMakeContextCurrent(window);
+    CHECK_GL_ERRORS();
     glfwSwapInterval(1);
-
+    CHECK_GL_ERRORS();
     // set callbacks
     glfwSetWindowSizeCallback(window, resize_window);
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_pos_callback);
-    
+    CHECK_GL_ERRORS();
     // init drawables
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-
+    CHECK_GL_ERRORS();
     Map map(map_cols, map_rows);
     //map.loadMapFromFile("resources/maps/our_map.txt");
     //map.loadMapFromImage("resources/maps/map_level_0_L_onelight.tga");
     map.loadMapFromImage("resources/maps/map_level_0_L.tga");
     std::vector<Entity*> floors;
     std::vector<Entity*> walls;
+    CHECK_GL_ERRORS();
     init_walls(&walls, map);
+    CHECK_GL_ERRORS();
     init_floors(&floors, map);
+    CHECK_GL_ERRORS();
     std::vector<Entity> entities;
     init_entities(&entities, "resources/tree.yaml");
+    CHECK_GL_ERRORS();
     init_entities(&entities, "resources/computer_archive.yaml");
+
+    CHECK_GL_ERRORS();
 
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     std::vector<PointLight> point_lights;
@@ -981,6 +1010,10 @@ int main(void)
     draw::Quad ssao_quad;
     ssao_quad.GenerateData(ssao_prog.getAttribute("vertPos"), 
                            ssao_prog.getAttribute("vertTex"));
+    draw::Quad blur_quad;
+    blur_quad.GenerateData(blur_prog.getAttribute("vertPos"), 
+                           blur_prog.getAttribute("vertTex"));
+    
         
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -1251,7 +1284,16 @@ int main(void)
         
         ssao_prog.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        ssao.debugCopySSAO(width, height);
+//        ssao.debugCopySSAO(width, height);
+
+        ssao.bindBlurStage();
+        blur_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
+        blur_quad.Render();
+        blur_prog.unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        ssao.debugCopyBlur(width, height);
 
         ambient_prog.bind();
         gbuffer.bindTextures();

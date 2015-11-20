@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <log.hpp>
+#include <errors.hpp>
 
 #define LOG_DRAW_CALLS 0
 
@@ -25,7 +26,7 @@ namespace draw {
         glBindVertexArray(vao);
         
 #if 1
-         // Enable and bind verticies array for drawing
+        // Enable and bind verticies array for drawing
         GLSL::enableVertexAttribArray(h_vert);
         glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
         glVertexAttribPointer(h_vert, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -229,6 +230,7 @@ namespace draw {
     Shape::~Shape() {}
 
     void Shape::init(const TextureBundle &textures, const aiMesh &mesh) {
+        CHECK_GL_ERRORS();
         LOG("shape 1");
         // copy vertex coordinates
         flatten_array(&vertices, mesh.mVertices, mesh.mNumVertices);
@@ -236,6 +238,7 @@ namespace draw {
         glBindBuffer(GL_ARRAY_BUFFER, ver_buf);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), 
                      &vertices[0], GL_STATIC_DRAW);
+        CHECK_GL_ERRORS();
         LOG("shape 2");
         // copy vertex normal vectors
         flatten_array(&normals, mesh.mNormals, mesh.mNumVertices);
@@ -243,7 +246,7 @@ namespace draw {
         glBindBuffer(GL_ARRAY_BUFFER, nor_buf);
         glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float),
                      &normals[0], GL_STATIC_DRAW);
-
+        CHECK_GL_ERRORS();
         // copy textures
         if (textures.diffuse) {
             tex_id_diffuse = textures.diffuse->tid;
@@ -259,7 +262,7 @@ namespace draw {
 
         LOG("shape 3");
         // copy uv coordinates
-        
+        CHECK_GL_ERRORS();
         flatten_array2D(&uvs, mesh.mTextureCoords[0], mesh.mNumVertices);
         LOG("shape 3.1");
         glGenBuffers(1, &uv_buf);
@@ -277,7 +280,7 @@ namespace draw {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint),
                      &indices[0], GL_STATIC_DRAW);
-
+        CHECK_GL_ERRORS();
         LOG("shape 5");
         if (mesh.HasTangentsAndBitangents()) {
             LOG("shape 5.1");
@@ -296,14 +299,15 @@ namespace draw {
                          GL_STATIC_DRAW);
             LOG("shape 5.3");
         }
-
+        CHECK_GL_ERRORS();
         LOG("shape 6");
         // unbind buffers
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+        CHECK_GL_ERRORS();
         LOG("shape 7");
         // check for errors
+        CHECK_GL_ERRORS();
         assert(glGetError() == GL_NO_ERROR);
     }
 
@@ -317,7 +321,7 @@ namespace draw {
         int nIndices = indices.size();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
 
-         // Draw
+        // Draw
         glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
         // Disable and unbind
@@ -358,9 +362,9 @@ namespace draw {
         static int logged = 0;
         LOG("DRAW WITHOUT NORMAL MAP");
 //        if (!logged) {
-            LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << "u_diffuse "
-                << u_diffuse);
-            logged = 1;
+        LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << "u_diffuse "
+            << u_diffuse);
+        logged = 1;
 //        }
 #endif
         // Enable diffuse texture
@@ -388,7 +392,7 @@ namespace draw {
         int nIndices = indices.size();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buf);
     
-       // Draw
+        // Draw
         glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
     
         // Disable and unbind
@@ -406,9 +410,9 @@ namespace draw {
 #if LOG_DRAW_CALLS
         static int logged = 0;
 //        if (!logged) {
-            LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
-                << u_diffuse << " u_norm " << u_norm);
-            logged = 1;
+        LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
+            << u_diffuse << " u_norm " << u_norm);
+        logged = 1;
 //        }
 #endif
 
@@ -462,9 +466,9 @@ namespace draw {
 #if LOG_DRAW_CALLS
         static int logged = 0;
 //        if (!logged) {
-            LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
-                << u_diffuse << " u_norm " << u_norm << " u_specular " << u_specular);
-            logged = 1;
+        LOG("h_vert " << h_vert << " h_nor " << h_nor << " h_uv " << h_uv << " u_diffuse "
+            << u_diffuse << " u_norm " << u_norm << " u_specular " << u_specular);
+        logged = 1;
 //        }
 #endif
 

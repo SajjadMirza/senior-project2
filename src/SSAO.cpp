@@ -66,12 +66,28 @@ void SSAO::bindOcclusionStage()
     glBindTexture(GL_TEXTURE_2D, gbuffer->gvnor);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, noiseTexture);
-    
+}
+
+void SSAO::bindBlurStage()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, blurFBO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ssaoBuffer);
 }
 
 void SSAO::debugCopySSAO(uint width, uint height)
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, ssaoFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void SSAO::debugCopyBlur(uint width, uint height)
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, blurFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
