@@ -1180,19 +1180,19 @@ int main(void)
         glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
-//        ssao_quad.Render();
+        ssao_quad.Render();
         
         ssao_prog.unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//        ssao.debugCopySSAO(width, height);
+//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        ssao.debugCopySSAO(width, height);
         CHECK_GL_ERRORS();
         ssao.bindBlurStage();
         blur_prog.bind();
         glClear(GL_COLOR_BUFFER_BIT);
         glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
-//        blur_quad.Render();
+        blur_quad.Render();
         blur_prog.unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //        ssao.debugCopyBlur(width, height);
         CHECK_GL_ERRORS();
 
