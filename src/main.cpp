@@ -409,7 +409,7 @@ static void init_gl()
     deferred_lighting_prog.addUniform("gNormal");
     deferred_lighting_prog.addUniform("gDiffuse");
     deferred_lighting_prog.addUniform("gSpecular");
-    deferred_lighting_prog.addUniform("occlusion");
+//    deferred_lighting_prog.addUniform("occlusion");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
     deferred_lighting_prog.addUniform("M");
@@ -801,7 +801,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
     glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
     glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
     glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
-    glUniform1i(deferred_lighting_prog.getUniform("occlusion"),4); // TEXTURE5
+//    glUniform1i(deferred_lighting_prog.getUniform("occlusion"),4); // TEXTURE4
  
     glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
                  pl.position.data());
@@ -825,7 +825,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
     glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
                 static_cast<float>(width), static_cast<float>(height));
     glUniform1f(deferred_lighting_prog.getUniform("far_plane"), light_far_plane);
-    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 4);
+    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 5);
 
     CHECK_GL_ERRORS();
 }
@@ -1180,7 +1180,7 @@ int main(void)
         glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
-        ssao_quad.Render();
+//        ssao_quad.Render();
         
         ssao_prog.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1190,7 +1190,7 @@ int main(void)
         blur_prog.bind();
         glClear(GL_COLOR_BUFFER_BIT);
         glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
-        blur_quad.Render();
+//        blur_quad.Render();
         blur_prog.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //        ssao.debugCopyBlur(width, height);
@@ -1282,8 +1282,8 @@ int main(void)
 //            glDisable(GL_STENCIL_TEST);
 
             // Use blurred SSAO texture
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
+//            glActiveTexture(GL_TEXTURE4);
+//            glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
             
             CHECK_GL_ERRORS();
 

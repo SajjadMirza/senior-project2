@@ -206,7 +206,7 @@ void Gbuffer::copyFinalBuffer(uint width, uint height)
     CHECK_GL_ERRORS();
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glReadBuffer(GL_COLOR_ATTACHMENT2);
+    glReadBuffer(GL_COLOR_ATTACHMENT4);
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     CHECK_GL_ERRORS();
