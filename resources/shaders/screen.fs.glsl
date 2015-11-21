@@ -2,9 +2,11 @@
 
 in vec2 fragTex;
 
+uniform sampler2D texture0;
+
 out vec4 out_color;
 
 void main()
 {
-    out_color = vec4(0.0, 1.0, 0.0, 1.0);
+    out_color = vec4(texture2D(texture0, fragTex.st).rgb, 1.0);
 }

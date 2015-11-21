@@ -568,6 +568,7 @@ static void init_gl()
     }
     screen_prog.addAttribute("vertPos");
     screen_prog.addAttribute("vertTex");
+    screen_prog.addUniform("texture0");
 
     CHECK_GL_ERRORS();
 
@@ -1525,9 +1526,20 @@ int main(void)
         gbuffer.copyDepthBuffer(width, height);       
         CHECK_GL_ERRORS();
 
-        /*screen_prog.bind();
-        screen_quad.Render();
-        screen_prog.unbind();*/
+        /* Attempt to forward render a quad */
+        /*Comp* temp_h;
+        if (level_one.getRooms()[1]->room_t == Room::RoomType::COMP) {
+            Comp* temp_h;
+            screen_prog.bind();
+                temp_h = dynamic_cast<Comp*>(level_one.getRooms()[1]);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, temp_h->tex_c[0].tex.tid);
+                glUniform1i(screen_prog.getUniform("texture0"), 0);
+
+                screen_quad.Render();
+                glBindTexture(GL_TEXTURE_2D, 0);
+            screen_prog.unbind();
+        }*/
 
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);

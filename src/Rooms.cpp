@@ -212,6 +212,18 @@ Comp::Comp() : Room()
     init_entities_R(&entities, yaml_comp);
 
     triggerPos = vec2(20, 6);
+
+    /* Manually setup textures */
+    std::string header = "resources/textures/";
+
+    texture_comp temp;
+    temp.name = "Computer";
+    temp.tex = draw::Texture();
+    temp.tex.filename = header + temp.name + ".jpg";
+    temp.tex.type = draw::TexType::NONE;
+    resource::load_texture_from_file(temp.tex.filename, &temp.tex.tid);
+
+    tex_c.push_back(temp);
 }
 
 Comp::~Comp()

@@ -3,6 +3,7 @@
 
 #include <common.hpp>
 #include <draw/Text.hpp>
+#include <draw/Texture.hpp>
 #include <Entity.hpp>
 #include <stack>
 
@@ -95,8 +96,16 @@ private:
 class Comp : public Room
 {
 public:
+    typedef struct $
+    {
+        std::string name;
+        draw::Texture tex;
+    }texture_comp;
+
     Comp();
     ~Comp();
+    
+    std::vector<texture_comp> tex_c;
 private:
     std::string yaml_comp;
 };
