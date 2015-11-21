@@ -87,7 +87,7 @@ void main()
   
         
         vec2 texCoord = gl_FragCoord.xy / uScreenSize;
-//        float fragOcc = texture(occlusion, texCoord).r;
+        float fragOcc = texture(occlusion, texCoord).r;
         vec3 fragPos = texture(gPosition, texCoord).rgb;
         float dist = length(light.position - fragPos);
         float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);
@@ -117,7 +117,7 @@ void main()
         specular *= attenuation;
 //        vec3 light = diffuse + specular + ambient;
         vec3 light = (diffuse * 1.0 + specular * 1.0) * (1.0 - shadow);
-//        light *= fragOcc;
+        light *= fragOcc;
 //        light *= 1.5;
 //        vec3 light = (diffuse * 2.0) * (1.0 - shadow);        
 
@@ -148,7 +148,7 @@ void main()
             data = vec3(debug_color_depth);
             break;
         case DISPLAY_SHADOW_BIAS:
-            data = vec3(bias);
+            data = vec3(fragOcc);
             break;
         }
         

@@ -468,6 +468,7 @@ static void init_gl()
     ambient_prog.addAttribute("vertTex");
     ambient_prog.addUniform("gDiffuse");
     ambient_prog.addUniform("intensity");
+    ambient_prog.addUniform("occlusion");
 
     ssao_prog.setShaderNames(header + "ssao.vs.glsl",
                              header + "ssao.fs.glsl");
@@ -1184,7 +1185,7 @@ int main(void)
         
         ssao_prog.unbind();
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        ssao.debugCopySSAO(width, height);
+//        ssao.debugCopySSAO(width, height);
         CHECK_GL_ERRORS();
         ssao.bindBlurStage();
         blur_prog.bind();
@@ -1196,7 +1197,7 @@ int main(void)
 //        ssao.debugCopyBlur(width, height);
         CHECK_GL_ERRORS();
 
-
+        glBindFramebuffer(GL_FRAMEBUFFER, gbuffer.fbo);
 
         Eigen::Matrix4f matV = V.topMatrix();
         Eigen::Matrix4f matP = P.topMatrix();
@@ -1318,14 +1319,19 @@ int main(void)
 
 
         ambient_prog.bind();
-        gbuffer.bindTextures();
+//        gbuffer.bindTextures();
         gbuffer.bindFinalBuffer();
         CHECK_GL_ERRORS();
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_ONE, GL_ONE);
-        glUniform1i(ambient_prog.getUniform("gDiffuse"), 2); // TEXTURE2D
-        glUniform1f(ambient_prog.getUniform("intensity"), 0.1);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.gcol);
+        glUniform1i(ambient_prog.getUniform("gDiffuse"), 0); // TEXTURE0
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
+        glUniform1i(ambient_prog.getUniform("occlusion"), 1); // TEXTURE1
+        glUniform1f(ambient_prog.getUniform("intensity"), 0.3);
         ambient_quad.Render();
         glDisable(GL_BLEND);
 
