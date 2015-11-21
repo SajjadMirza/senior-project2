@@ -17,7 +17,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gDiffuse;
 uniform sampler2D gSpecular;
-//uniform sampler2D occlusion;
+uniform sampler2D occlusion;
 uniform samplerCube depthMap;
 
 
