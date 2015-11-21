@@ -154,6 +154,7 @@ void main()
         
 //        data = vec3(fragOcc, fragOcc, fragOcc);
 //        data = vec3(1.0) - data;
+//        data = vec3(1.0, 1.0, 1.0);
         out_color = vec4(data, 1.0);
 //        out_color = vec4(1.0, 0.0, 1.0, 1.0);
 //        out_color = vec4(vec3(debug_color), 1.0);

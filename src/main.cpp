@@ -825,7 +825,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
     glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
                 static_cast<float>(width), static_cast<float>(height));
     glUniform1f(deferred_lighting_prog.getUniform("far_plane"), light_far_plane);
-    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 5);
+    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 4);
 
     CHECK_GL_ERRORS();
 }
@@ -1275,7 +1275,7 @@ int main(void)
 
             // Prepare to use shadows
             draw::ShadowMap &sm = shadow_maps[it->shadowMap];
-            glActiveTexture(GL_TEXTURE5);
+            glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
             CHECK_GL_ERRORS();
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
