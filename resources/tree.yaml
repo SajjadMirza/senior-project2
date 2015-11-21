@@ -12,8 +12,6 @@ overrides:
 transforms:
   rotations:
     zaxis: 180.0
-    xaxis: 20.0
-    yaxis: -30.0
   translations:
     xaxis: 4.0
     yaxis: -1.0

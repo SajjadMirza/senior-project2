@@ -10,8 +10,8 @@ textures:
 transforms:
   translations:
     xaxis: 7.5
-    zaxis: 23.5
-    yaxis: 0.1
+    zaxis: 21.5
+    yaxis: -0.05
   scale: 0.4
 #transforms:
 #  translations:

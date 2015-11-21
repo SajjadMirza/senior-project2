@@ -1081,15 +1081,15 @@ int main(void)
 
                     glUniform1i(depth_prog.getUniform("uInstanced"), 1);
                     if (walls.size() > 0) {
-//                        glCullFace(GL_FRONT);
+                        glCullFace(GL_FRONT);
                         wall_batch.drawAllDepth(&depth_prog);
-//                        glCullFace(GL_BACK);
+                        glCullFace(GL_BACK);
                     }                                  
                     if (floors.size() > 0) {
                         floor_batch.drawAllDepth(&depth_prog);
                     }
                     glUniform1i(depth_prog.getUniform("uInstanced"), 0);
-//                    glCullFace(GL_FRONT);
+                    glCullFace(GL_FRONT);
                     for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
                         M.multMatrix(it->getRotation());
@@ -1331,7 +1331,7 @@ int main(void)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
         glUniform1i(ambient_prog.getUniform("occlusion"), 1); // TEXTURE1
-        glUniform1f(ambient_prog.getUniform("intensity"), 0.3);
+        glUniform1f(ambient_prog.getUniform("intensity"), 0.2);
         ambient_quad.Render();
         glDisable(GL_BLEND);
 
