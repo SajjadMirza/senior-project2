@@ -1,6 +1,7 @@
 #include <Gbuffer.hpp>
 #include <iostream>
 #include <log.hpp>
+#include <errors.hpp>
 
 
 bool Gbuffer::init(uint width, uint height)
@@ -130,8 +131,6 @@ void Gbuffer::bindTextures()
     glBindTexture(GL_TEXTURE_2D, gcol);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, gspc);
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, gvposd);
 /*
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, gvposd);
@@ -152,11 +151,23 @@ void Gbuffer::unbindTextures()
 
 void Gbuffer::copyDepthBuffer(uint width, uint height)
 {
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        ERROR("FRAMEBUFFER PROBLEM!!!");
+        exit(1);
+    }
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    CHECK_GL_ERRORS();
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        ERROR("FRAMEBUFFER PROBLEM!!!");
+        exit(1);
+    }
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    CHECK_GL_ERRORS();
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
                       GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    CHECK_GL_ERRORS();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    CHECK_GL_ERRORS();
 }
 
 void Gbuffer::startFrame()
@@ -192,10 +203,11 @@ void Gbuffer::copyFinalBuffer(uint width, uint height)
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
 */
-
+    CHECK_GL_ERRORS();
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glReadBuffer(GL_COLOR_ATTACHMENT4);
+    glReadBuffer(GL_COLOR_ATTACHMENT2);
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    CHECK_GL_ERRORS();
 }

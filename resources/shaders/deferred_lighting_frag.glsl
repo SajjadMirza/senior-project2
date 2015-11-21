@@ -17,8 +17,9 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gDiffuse;
 uniform sampler2D gSpecular;
-
+uniform sampler2D occlusion;
 uniform samplerCube depthMap;
+
 
 uniform int uDrawMode;
 const int DISPLAY_POSITION = 0;
@@ -86,10 +87,11 @@ void main()
   
         
         vec2 texCoord = gl_FragCoord.xy / uScreenSize;
+//        float fragOcc = texture(occlusion, texCoord).r;
         vec3 fragPos = texture(gPosition, texCoord).rgb;
         float dist = length(light.position - fragPos);
         float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);
-
+        
         vec3 fragNor = (texture(gNormal, texCoord).rgb);
         vec3 fragCol = texture(gDiffuse, texCoord).rgb;
         float spc = texture(gSpecular, texCoord).r;
@@ -115,6 +117,7 @@ void main()
         specular *= attenuation;
 //        vec3 light = diffuse + specular + ambient;
         vec3 light = (diffuse * 1.0 + specular * 1.0) * (1.0 - shadow);
+//        light *= fragOcc;
 //        light *= 1.5;
 //        vec3 light = (diffuse * 2.0) * (1.0 - shadow);        
 
@@ -148,7 +151,9 @@ void main()
             data = vec3(bias);
             break;
         }
-
+        
+//        data = vec3(fragOcc, fragOcc, fragOcc);
+//        data = vec3(1.0) - data;
         out_color = vec4(data, 1.0);
 //        out_color = vec4(1.0, 0.0, 1.0, 1.0);
 //        out_color = vec4(vec3(debug_color), 1.0);

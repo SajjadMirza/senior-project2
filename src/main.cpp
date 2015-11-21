@@ -409,6 +409,7 @@ static void init_gl()
     deferred_lighting_prog.addUniform("gNormal");
     deferred_lighting_prog.addUniform("gDiffuse");
     deferred_lighting_prog.addUniform("gSpecular");
+    deferred_lighting_prog.addUniform("occlusion");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
     deferred_lighting_prog.addUniform("M");
@@ -790,6 +791,7 @@ std::unique_ptr<Entity> init_sphere_light_volume()
 void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, const MatrixStack &V,
                                  uint width, uint height, float light_far_plane)
 {
+    CHECK_GL_ERRORS();
     glUniformMatrix4fv(deferred_lighting_prog.getUniform("P"), 
                        1, GL_FALSE, P.topMatrix().data());
     glUniformMatrix4fv(deferred_lighting_prog.getUniform("V"), 
@@ -799,6 +801,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
     glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
     glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
     glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
+    glUniform1i(deferred_lighting_prog.getUniform("occlusion"),4); // TEXTURE5
  
     glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
                  pl.position.data());
@@ -808,6 +811,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
                  pl.diffuse.data());
     glUniform3fv(deferred_lighting_prog.getUniform("light.specular"), 1, 
                  pl.specular.data());
+    CHECK_GL_ERRORS();
     glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"),
                 pl.quadratic);
     glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
@@ -950,7 +954,7 @@ int main(void)
 
     // test sound 
     // sound_driver.testSound();
-
+    CHECK_GL_ERRORS();
     LOG("gbuffer stuff");
     Gbuffer gbuffer;
     gbuffer.init(width, height);
@@ -960,11 +964,11 @@ int main(void)
     draw::Quad depth_quad;
     depth_quad.GenerateData(debug_depth_prog.getAttribute("vertPos"),
                             debug_depth_prog.getAttribute("vertTex"));
-    
+    CHECK_GL_ERRORS();
     draw::Quad ambient_quad;
     ambient_quad.GenerateData(ambient_prog.getAttribute("vertPos"),
                               ambient_prog.getAttribute("vertTex"));
-
+    CHECK_GL_ERRORS();
     MatrixStack P, M, V;
 
     // Prepare for instancing
@@ -977,7 +981,7 @@ int main(void)
     glGenVertexArrays(1, &universal_vao);
     glBindVertexArray(universal_vao);
 
-
+    CHECK_GL_ERRORS();
     // Allocate buffers for depth maps
     const GLuint shadow_width = 1024, shadow_height = 1024;
     for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
@@ -1002,34 +1006,38 @@ int main(void)
     init_ssao_kernel(&ssaoKernel);
     std::vector<vec3> ssaoNoise;
     init_ssao_noise(&ssaoNoise);
-
+    CHECK_GL_ERRORS();
     SSAO ssao(&gbuffer);
     ssao.init(width, height);
     ssao.generateNoiseTexture(ssaoNoise);
 
+    CHECK_GL_ERRORS();
     draw::Quad ssao_quad;
     ssao_quad.GenerateData(ssao_prog.getAttribute("vertPos"), 
                            ssao_prog.getAttribute("vertTex"));
+    CHECK_GL_ERRORS();
     draw::Quad blur_quad;
     blur_quad.GenerateData(blur_prog.getAttribute("vertPos"), 
                            blur_prog.getAttribute("vertTex"));
-    
-        
+    int frameCount = 0;
+    CHECK_GL_ERRORS();
     while (!glfwWindowShouldClose(window)) {
+//        std::cout << ++frameCount << std::endl;
+        CHECK_GL_ERRORS();
         float ratio;
         glfwGetFramebufferSize(window, &width, &height);
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        CHECK_GL_ERRORS();
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
         camera->applyViewMatrix(&V);
-
+        CHECK_GL_ERRORS();
         gbuffer.startFrame();
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+        CHECK_GL_ERRORS();
         // If the depth cube maps do not exist or have been invalidated, regenerate them
         if (generate_shadowmaps) {
             generate_shadowmaps = false;
@@ -1099,7 +1107,7 @@ int main(void)
             }
             depth_prog.unbind();
         } // END OF DEPTH MAP GENERATION
-        
+        CHECK_GL_ERRORS();
         // Geometry pass
         deferred_geom_prog.bind();
         gbuffer.bind();
@@ -1136,9 +1144,8 @@ int main(void)
             glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
         }
 
-
         glBindVertexArray(universal_vao);
-
+        CHECK_GL_ERRORS();
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
@@ -1152,9 +1159,44 @@ int main(void)
             M.popMatrix();
         }
 
-        // Second step: per-light calculations
-        glDepthMask(GL_FALSE);
+
         deferred_geom_prog.unbind();
+        glDepthMask(GL_FALSE);
+
+        // Compute SSAO texture
+        ssao.bindOcclusionStage();
+        ssao_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        CHECK_GL_ERRORS();
+        glUniform1i(ssao_prog.getUniform("gViewSpacePositionDepth"), 0);
+        glUniform1i(ssao_prog.getUniform("gNormal"), 1);
+        glUniform1i(ssao_prog.getUniform("ssaoNoise"), 2);
+        glUniform1i(ssao_prog.getUniform("screen_width"), width);
+        glUniform1i(ssao_prog.getUniform("screen_height"), height);
+        for (int i = 0; i < 64; i++) {
+            glUniform3fv(ssao_prog.getUniform(str_array("samples", i).c_str()), 1, 
+                         ssaoKernel[i].data());
+        }
+        glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+        glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+
+        ssao_quad.Render();
+        
+        ssao_prog.unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//        ssao.debugCopySSAO(width, height);
+        CHECK_GL_ERRORS();
+        ssao.bindBlurStage();
+        blur_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
+        blur_quad.Render();
+        blur_prog.unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//        ssao.debugCopyBlur(width, height);
+        CHECK_GL_ERRORS();
+
+
 
         Eigen::Matrix4f matV = V.topMatrix();
         Eigen::Matrix4f matP = P.topMatrix();
@@ -1209,7 +1251,7 @@ int main(void)
             glDrawBuffer(GL_NONE);
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
-
+            CHECK_GL_ERRORS();
             glClear(GL_STENCIL_BUFFER_BIT);
             glStencilFunc(GL_ALWAYS, 0, 0);
             glStencilMask(0xff);
@@ -1226,33 +1268,45 @@ int main(void)
 
             // Point light pass
             deferred_lighting_prog.bind();
-
+            CHECK_GL_ERRORS();
             gbuffer.bindTextures();
             gbuffer.bindFinalBuffer();
+            CHECK_GL_ERRORS();
 
             // Prepare to use shadows
             draw::ShadowMap &sm = shadow_maps[it->shadowMap];
-            glActiveTexture(GL_TEXTURE4);
+            glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
-
+            CHECK_GL_ERRORS();
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 //            glDisable(GL_STENCIL_TEST);
 
+            // Use blurred SSAO texture
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
+            
+            CHECK_GL_ERRORS();
+
             glDisable(GL_DEPTH_TEST);
+            CHECK_GL_ERRORS();
 
             glEnable(GL_BLEND);
             glBlendEquation(GL_FUNC_ADD);
             glBlendFunc(GL_ONE, GL_ONE);
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
+            CHECK_GL_ERRORS();
 
             set_light_volume_parameters(*it, P, V, width, height, shadow_far);
+            CHECK_GL_ERRORS();
 
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
+            CHECK_GL_ERRORS();
 
             glDepthFunc(GL_LESS);
             glCullFace(GL_BACK);
             glDisable(GL_BLEND);
+            CHECK_GL_ERRORS();
 
             M.popMatrix();
             deferred_lighting_prog.unbind();
@@ -1263,42 +1317,10 @@ int main(void)
         glDisable(GL_STENCIL_TEST);
 
 
-        // Compute SSAO texture
-        ssao.bindOcclusionStage();
-        ssao_prog.bind();
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glUniform1i(ssao_prog.getUniform("gViewSpacePositionDepth"), 0);
-        glUniform1i(ssao_prog.getUniform("gNormal"), 1);
-        glUniform1i(ssao_prog.getUniform("ssaoNoise"), 2);
-        glUniform1i(ssao_prog.getUniform("screen_width"), width);
-        glUniform1i(ssao_prog.getUniform("screen_height"), height);
-        for (int i = 0; i < 64; i++) {
-            glUniform3fv(ssao_prog.getUniform(str_array("samples", i).c_str()), 1, 
-                         ssaoKernel[i].data());
-        }
-        glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
-        glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
-
-        ssao_quad.Render();
-        
-        ssao_prog.unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//        ssao.debugCopySSAO(width, height);
-
-        ssao.bindBlurStage();
-        blur_prog.bind();
-        glClear(GL_COLOR_BUFFER_BIT);
-        glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
-        blur_quad.Render();
-        blur_prog.unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        ssao.debugCopyBlur(width, height);
-
         ambient_prog.bind();
         gbuffer.bindTextures();
         gbuffer.bindFinalBuffer();
-
+        CHECK_GL_ERRORS();
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_ONE, GL_ONE);
@@ -1310,10 +1332,10 @@ int main(void)
         gbuffer.unbindFinalBuffer();
         ambient_prog.unbind();
 
-
-//        gbuffer.copyFinalBuffer(width, height);
+        CHECK_GL_ERRORS();
+        gbuffer.copyFinalBuffer(width, height);
         gbuffer.copyDepthBuffer(width, height);       
-
+        CHECK_GL_ERRORS();
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -1322,7 +1344,7 @@ int main(void)
         glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
         deferred_lighting_prog.unbind();
 
-
+        CHECK_GL_ERRORS();
         if (camera == fp_camera) {
             Eigen::Vector3f campos = -camera->translations;
             uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
@@ -1336,9 +1358,10 @@ int main(void)
         P.popMatrix();
 
         findFPS();        
-
+        CHECK_GL_ERRORS();
         glfwSwapBuffers(window);
         glfwPollEvents();
+        CHECK_GL_ERRORS();
 //        break;
     }
 

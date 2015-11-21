@@ -42,6 +42,10 @@ inline bool check_gl_errors()
     return error_occured;
 }
 
+#if 0
 #define CHECK_GL_ERRORS() assert(!check_gl_errors())
+#else
+#define CHECK_GL_ERRORS()
+#endif
 
 #endif
