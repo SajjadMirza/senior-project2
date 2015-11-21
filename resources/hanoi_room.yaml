@@ -178,4 +178,48 @@ transforms:
     zaxis: 22.5
     yaxis: 0.5
   scale: 0.05  
+---
+model: T-34
+file: T-34.obj
+directory: resources/models/Hanoi/T-34
+format: obj
+textures:
+  diffuse:
+    neon_red.jpg
+  normal:
+    normal.jpg
+  specular: 
+    specuar.jpg
+overrides:
+  radius: 0.75
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 7.5
+    zaxis: 21.5
+    yaxis: 0.0
+  scale: 0.005  
+---
+model: Repair_kit_1
+file: Repair_Kit.obj
+directory: resources/models/Hanoi/Repair_Kit
+format: obj
+textures:
+  diffuse:
+    Repair_Kit_D.tga
+  normal:
+    Repair_Kit_N.tga
+  specular: 
+    Repair_Kit_S.tga
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 8.75
+    zaxis: 21.5
+    yaxis: 1.0
+  scale: 0.25  
 ...

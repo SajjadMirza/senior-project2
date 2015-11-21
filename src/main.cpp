@@ -1010,7 +1010,7 @@ int main(void)
                     }
                     glUniform1i(depth_prog.getUniform("uInstanced"), 0);
 
-                    for (auto it = entities.begin(); it != entities.end(); it++) {
+                    /*for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
                         M.worldTranslate(it->getPosition(), it->getRotation());
                         M.multMatrix(it->getRotation());
@@ -1019,7 +1019,7 @@ int main(void)
                                            M.topMatrix().data());
                         it->getDrawable().drawDepth(&depth_prog, &M);
                         M.popMatrix();
-                    }
+                    }*/
 
                     /*for (int i = 0; i < level_one.getNumRooms(); ++i) {
                         std::vector<Entity> b_entities;
@@ -1098,7 +1098,7 @@ int main(void)
         glBindVertexArray(universal_vao);
 
 
-        for (auto it = entities.begin(); it != entities.end(); it++) {
+        /*for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
             // M.multMatrix(it->getRotation());
@@ -1109,7 +1109,7 @@ int main(void)
                                M.topMatrix().data());
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
-        }
+        }*/
 
         /* attempt for g_buffer */
         for (int i = 0; i < level_one.getNumRooms(); ++i) {
