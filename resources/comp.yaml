@@ -291,4 +291,25 @@ transforms:
     zaxis: 4.5
     yaxis: 0.0
   scale: 0.4
+---
+model: office_chair
+file: office_chair.obj
+directory: resources/models/comp_room/office_chair/
+format: obj
+textures:
+  diffuse:
+    office_chair_d.tga
+  normal:
+    office_chair_n.tga
+  specular:
+    office_chair_s.jpg
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  translations:
+    xaxis: 24.35
+    zaxis: 8.35
+    yaxis: 0.0
+  scale: 0.3
 ...
