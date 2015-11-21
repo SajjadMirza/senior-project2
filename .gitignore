@@ -21,3 +21,4 @@ resources/models/*
 *.tar.gz
 *.zip
 *.7z
+*.log

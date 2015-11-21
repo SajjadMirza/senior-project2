@@ -45,29 +45,6 @@ transforms:
     yaxis: 0.0
   scale: 0.00150  
 ---
-model: rhino_3
-file: rhino.obj
-directory: resources/models/Hanoi/rhino/
-format: obj
-textures:
-  diffuse:
-    neon_red.jpg
-  normal:
-    normal.jpg
-  specular: 
-    specuar.jpg
-overrides:
-  radius: 0.6
-  center: position
-transforms:
-  rotations:
-    yaxis: 180.0
-  translations:
-    xaxis: 10.0
-    zaxis: 26.0
-    yaxis: 0.0
-  scale: 0.00150  
----
 model: Armor_1
 file: EM-208_heavy.obj
 directory: resources/models/Hanoi/EM-208_heavy/
@@ -133,6 +110,29 @@ transforms:
     yaxis: 0.5
   scale: 0.05  
 ---
+model: cylinder_1_2
+file: cylinder.obj
+directory: resources/models/cylinder
+format: obj
+textures:
+  diffuse:
+    10-28-13-Texture-59.jpg
+  normal:
+    normal.jpg
+  specular: 
+    specuar.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 24.5
+    yaxis: 1.5
+  scale: 0.05  
+---
 model: cylinder_2
 file: cylinder.obj
 directory: resources/models/cylinder
@@ -154,6 +154,29 @@ transforms:
     xaxis: 1.5
     zaxis: 23.5
     yaxis: 0.5
+  scale: 0.05  
+---
+model: cylinder_2_2
+file: cylinder.obj
+directory: resources/models/cylinder
+format: obj
+textures:
+  diffuse:
+    10-28-13-Texture-59.jpg
+  normal:
+    normal.jpg
+  specular: 
+    specuar.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 23.5
+    yaxis: 1.5
   scale: 0.05  
 ---
 model: cylinder_3
@@ -179,47 +202,227 @@ transforms:
     yaxis: 0.5
   scale: 0.05  
 ---
-model: T-34
-file: T-34.obj
-directory: resources/models/Hanoi/T-34
+model: cylinder_3
+file: cylinder.obj
+directory: resources/models/cylinder
 format: obj
 textures:
   diffuse:
-    neon_red.jpg
+    10-28-13-Texture-59.jpg
   normal:
     normal.jpg
   specular: 
     specuar.jpg
 overrides:
-  radius: 0.75
+  radius: 0.0
   center: position
 transforms:
   rotations:
-    yaxis: -90.0
+    xaxis: 90.0
   translations:
-    xaxis: 7.5
-    zaxis: 21.5
-    yaxis: 0.0
-  scale: 0.005  
+    xaxis: 1.5
+    zaxis: 22.5
+    yaxis: 1.5
+  scale: 0.05  
 ---
-model: Repair_kit_1
-file: Repair_Kit.obj
-directory: resources/models/Hanoi/Repair_Kit
+model: Engine_3
+file: Engine_Block.obj
+directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Repair_Kit_D.tga
+    Engine_Block_D.tga
   normal:
-    Repair_Kit_N.tga
+    Engine_Block_N.tga
   specular: 
-    Repair_Kit_S.tga
+    Engine_Block_S.tga
 overrides:
-  radius: 0.5
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: -90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 23.6
+    yaxis: 1.75
+  scale: 0.25  
+---
+model: Engine_4
+file: Engine_Block.obj
+directory: resources/models/Hanoi/Engine
+format: obj
+textures:
+  diffuse:
+    Engine_Block_D.tga
+  normal:
+    Engine_Block_N.tga
+  specular: 
+    Engine_Block_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 23.4
+    yaxis: 0.125
+  scale: 0.25  
+---
+model: Engine_1
+file: Engine_Block.obj
+directory: resources/models/Hanoi/Engine
+format: obj
+textures:
+  diffuse:
+    Engine_Block_D.tga
+  normal:
+    Engine_Block_N.tga
+  specular: 
+    Engine_Block_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: -90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 24.6
+    yaxis: 1.75
+  scale: 0.25  
+---
+model: Engine_2
+file: Engine_Block.obj
+directory: resources/models/Hanoi/Engine
+format: obj
+textures:
+  diffuse:
+    Engine_Block_D.tga
+  normal:
+    Engine_Block_N.tga
+  specular: 
+    Engine_Block_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 24.4
+    yaxis: 0.125
+  scale: 0.25  
+---
+model: Engine_5
+file: Engine_Block.obj
+directory: resources/models/Hanoi/Engine
+format: obj
+textures:
+  diffuse:
+    Engine_Block_D.tga
+  normal:
+    Engine_Block_N.tga
+  specular: 
+    Engine_Block_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: -90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 22.6
+    yaxis: 1.75
+  scale: 0.25  
+---
+model: Engine_6
+file: Engine_Block.obj
+directory: resources/models/Hanoi/Engine
+format: obj
+textures:
+  diffuse:
+    Engine_Block_D.tga
+  normal:
+    Engine_Block_N.tga
+  specular: 
+    Engine_Block_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    xaxis: 90.0
+  translations:
+    xaxis: 1.5
+    zaxis: 22.4
+    yaxis: 0.125
+  scale: 0.25  
+---
+model: Switch_1
+file: portalbutton.obj
+directory: resources/models/lounge_room/Switch
+format: obj
+textures:
+  diffuse:
+    Button_D.jpg
+  normal:
+    Button_N.jpg
+  specular: 
+    Button_S.jpg
+overrides:
+  radius: -1.0
   center: position
 transforms:
   translations:
-    xaxis: 8.75
-    zaxis: 21.5
-    yaxis: 1.0
-  scale: 0.25  
+    xaxis: 2.5
+    zaxis: 24.5
+    yaxis: 0.0
+  scale: 0.005  
+---
+model: Switch_2
+file: portalbutton.obj
+directory: resources/models/lounge_room/Switch
+format: obj
+textures:
+  diffuse:
+    Button_D.jpg
+  normal:
+    Button_N.jpg
+  specular: 
+    Button_S.jpg
+overrides:
+  radius: -1.0
+  center: position
+transforms:
+  translations:
+    xaxis: 2.5
+    zaxis: 23.5
+    yaxis: 0.0
+  scale: 0.005  
+---
+model: Switch_3
+file: portalbutton.obj
+directory: resources/models/lounge_room/Switch
+format: obj
+textures:
+  diffuse:
+    Button_D.jpg
+  normal:
+    Button_N.jpg
+  specular: 
+    Button_S.jpg
+overrides:
+  radius: -1.0
+  center: position
+transforms:
+  translations:
+    xaxis: 2.5
+    zaxis: 22.5
+    yaxis: 0.0
+  scale: 0.005  
 ...

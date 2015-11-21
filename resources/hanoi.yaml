@@ -16,7 +16,7 @@ transforms:
   translations:
     xaxis: 1.5
     zaxis: 24.5
-    yaxis: 0.3
+    yaxis: 1.0
   scale: 0.25  
 ---
 model: hanoi_2
@@ -37,7 +37,7 @@ transforms:
   translations:
     xaxis: 1.5
     zaxis: 24.5
-    yaxis: 0.4
+    yaxis: 1.1
   scale: 0.175  
 ---
 model: hanoi_3
@@ -58,6 +58,6 @@ transforms:
   translations:
     xaxis: 1.5
     zaxis: 24.5
-    yaxis: 0.475
+    yaxis: 1.175
   scale: 0.125  
 ...
