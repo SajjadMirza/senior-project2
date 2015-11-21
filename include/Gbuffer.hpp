@@ -6,6 +6,10 @@
 #include <types.h>
 
 class Gbuffer {
+    // attachment points
+    static const int num_attachments = 6;
+    GLuint attachments[6]; // initialized in init
+public:
     // handle to Frame Buffer Object
     GLuint fbo; 
     // handle to individual buffers
@@ -15,10 +19,8 @@ class Gbuffer {
     GLuint gspc;
     GLuint zbuf;
     GLuint gfinal;
-    // attachment points
-    static const int num_attachments = 5;
-    GLuint attachments[5]; // initialized in init
-public:
+    GLuint gvposd; // view space position and depth
+    GLuint gvnor;
 
     bool init(uint width, uint height);
     void bind();

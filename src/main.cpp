@@ -2,6 +2,9 @@
 #define USE_DEFERRED 1
 
 #include <common.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cmath>
 
@@ -29,6 +32,9 @@
 #include <draw/ShadowMap.hpp>
 #include <Geometry.hpp>
 #include <GameMath.hpp>
+#include <SSAO.hpp>
+#include <errors.hpp>
+
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -61,6 +67,9 @@ Program deferred_lighting_prog;
 Program null_prog;
 Program depth_prog;
 Program debug_depth_prog;
+Program ambient_prog;
+Program ssao_prog;
+Program blur_prog;
 int debug_gbuffer_mode = 0;
 
 
@@ -76,8 +85,13 @@ int special_texture_handle = 0;
 
 sound::FMODDriver sound_driver;
 
+
 /* Level One */
 Level level_one;
+
+boost::random::mt19937 generator;
+boost::random::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
+
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -85,6 +99,7 @@ Level level_one;
   return name + "[" + std::to_string(static_cast<int>(index)) + "]";
   }
 */
+
 
 static void applyRoomLogic(GLFWwindow *window)
 {
@@ -113,6 +128,12 @@ static void applyRoomLogic(GLFWwindow *window)
     }
 }
 
+inline std::string str_array(const std::string &array_name, int index)
+{
+    return array_name + "[" + boost::lexical_cast<std::string>(index) + "]";
+
+}
+
 inline vec3 make_color(int red, int green, int blue)
 {
     return vec3(red/255.0, green/255.0, blue/255.0);
@@ -124,7 +145,6 @@ inline vec3 make_color(int hex)
                 ((hex >> 8) & 0xFF) / 255.0, 
                 ((hex & 0xFF)) / 255.0);
 }
-
 
 static void bufferMovement(GLFWwindow *window,
                            const std::vector<Entity> &entities,
@@ -350,6 +370,9 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     case GLFW_KEY_8:
         debug_gbuffer_mode = 7;
         break;
+    case GLFW_KEY_9:
+        debug_gbuffer_mode = 8;
+        break;
     } // end of switch
 }
 
@@ -375,6 +398,12 @@ draw::Drawable *import_drawable(std::string file_name)
     return import_drawable(file_name, &useless);
 }
 
+static void shader_init_error(int code)
+{
+    std::cerr << "SHADER INITIALIZATION ERROR" << std::endl;
+    exit(code);
+}
+
 static void init_gl() 
 {
     LOG(glGetString(GL_VERSION));
@@ -389,7 +418,9 @@ static void init_gl()
     std::string header = "resources/shaders/";
     deferred_geom_prog.setShaderNames(header + "deferred_geometry_vert.glsl",
                                       header + "deferred_geometry_frag.glsl");
-    deferred_geom_prog.init();
+    if (!deferred_geom_prog.init()) {
+        shader_init_error(-1);
+    }
     deferred_geom_prog.addAttribute("vertPos");
     deferred_geom_prog.addAttribute("vertNor");
     deferred_geom_prog.addAttribute("vertTex");
@@ -407,10 +438,14 @@ static void init_gl()
     deferred_geom_prog.addUniform("uCalcTBN");
     deferred_geom_prog.addUniform("uInstanced");
     deferred_geom_prog.addUniform("uHighlight");
+    deferred_geom_prog.addUniform("NEAR");
+    deferred_geom_prog.addUniform("FAR");
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
-    gbuffer_debug_prog.init();
+    if (!gbuffer_debug_prog.init()) {
+        shader_init_error(-1);
+    }
     gbuffer_debug_prog.addAttribute("vertPos");
     gbuffer_debug_prog.addAttribute("vertTex");
     gbuffer_debug_prog.addUniform("gPosition");
@@ -420,7 +455,9 @@ static void init_gl()
     
     deferred_lighting_prog.setShaderNames(header + "deferred_lighting_vert.glsl",
                                           header + "deferred_lighting_frag.glsl");
-    deferred_lighting_prog.init();
+    if (!deferred_lighting_prog.init()) {
+        shader_init_error(-1);
+    }
     deferred_lighting_prog.addAttribute("vertPos");
     deferred_lighting_prog.addAttribute("vertTex");
     deferred_lighting_prog.addUniform("light.position");
@@ -435,6 +472,7 @@ static void init_gl()
     deferred_lighting_prog.addUniform("gNormal");
     deferred_lighting_prog.addUniform("gDiffuse");
     deferred_lighting_prog.addUniform("gSpecular");
+    deferred_lighting_prog.addUniform("occlusion");
     deferred_lighting_prog.addUniform("uDrawMode");
     deferred_lighting_prog.addUniform("viewPos");
     deferred_lighting_prog.addUniform("M");
@@ -448,7 +486,9 @@ static void init_gl()
 
     null_prog.setShaderNames(header + "null_vert.glsl",
                              header + "null_frag.glsl");
-    null_prog.init();
+    if (!null_prog.init()) {
+        shader_init_error(-1);
+    }
     null_prog.addAttribute("vertPos");
     null_prog.addUniform("M");
     null_prog.addUniform("V");
@@ -457,7 +497,9 @@ static void init_gl()
     depth_prog.setShaderNames(header + "cube_depth.vs.glsl",
                               header + "cube_depth.fs.glsl",
                               header + "cube_depth.gs.glsl");
-    depth_prog.init();
+    if (!depth_prog.init()) {
+        shader_init_error(-1);
+    }
     depth_prog.addAttribute("vertPos");
     depth_prog.addAttribute("iM");
     depth_prog.addUniform("M");
@@ -473,11 +515,52 @@ static void init_gl()
 
     debug_depth_prog.setShaderNames(header + "debug_depth.vs.glsl",
                                     header + "debug_depth.fs.glsl");
-    debug_depth_prog.init();
+    if (!debug_depth_prog.init()) {
+        shader_init_error(-1);
+    }
     debug_depth_prog.addAttribute("vertPos");
     debug_depth_prog.addAttribute("vertTex");
     debug_depth_prog.addUniform("depthTexture");
  
+    ambient_prog.setShaderNames(header + "ambient_lighting.vs.glsl",
+                                header + "ambient_lighting.fs.glsl");
+    if (!ambient_prog.init()) {
+        shader_init_error(-1);
+    }
+    ambient_prog.addAttribute("vertPos");
+    ambient_prog.addAttribute("vertTex");
+    ambient_prog.addUniform("gDiffuse");
+    ambient_prog.addUniform("intensity");
+    ambient_prog.addUniform("occlusion");
+
+    ssao_prog.setShaderNames(header + "ssao.vs.glsl",
+                             header + "ssao.fs.glsl");
+    if (!ssao_prog.init()) {
+        shader_init_error(-1);
+    }
+    ssao_prog.addAttribute("vertPos");
+    ssao_prog.addAttribute("vertTex");
+    ssao_prog.addUniform("gViewSpacePositionDepth");
+    ssao_prog.addUniform("ssaoNoise");
+    ssao_prog.addUniform("gNormal");
+    ssao_prog.addUniform("screen_width");
+    ssao_prog.addUniform("screen_height");
+    ssao_prog.addUniform("P");
+    ssao_prog.addUniform("V");
+    for (int i = 0; i < 64; i++) {
+        ssao_prog.addUniform(str_array("samples", i).c_str());
+    }
+
+    blur_prog.setShaderNames(header + "blur.vs.glsl",
+                             header + "blur.fs.glsl");
+    if (!blur_prog.init()) {
+        shader_init_error(-1);
+    }
+    blur_prog.addAttribute("vertPos");
+    blur_prog.addAttribute("vertTex");
+    blur_prog.addUniform("ssaoInput");
+
+    CHECK_GL_ERRORS();
 
     GLSL::checkVersion();
 }
@@ -509,6 +592,7 @@ static uint getUniqueColor(int index)
 static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config, 
                       Map &map, CellType type) 
 {
+    CHECK_GL_ERRORS();
     draw::Drawable *drawable = new draw::Drawable(config);
     uint cols = map.getColumns();
     uint rows = map.getRows();
@@ -545,6 +629,7 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
             }
         }
     }
+    CHECK_GL_ERRORS();
 }
 
 static void init_floors(std::vector<Entity*> *floors, Map &map) 
@@ -571,6 +656,7 @@ static void init_floors(std::vector<Entity*> *floors, Map &map)
 
 static void init_walls(std::vector<Entity*> *walls, Map &map) 
 {
+    CHECK_GL_ERRORS();
     ModelConfig config;
     resource::load_config(&config, "resources/wall.yaml");
     gen_cubes(walls, config, map, WALL);
@@ -692,7 +778,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
     draw::ShadowMap sm;
     sm.cubemap = 0;
     sm.fbo = 0;
-    
+#if 1    
     for (auto it = map.getMajorLightPositions().cbegin(); 
          it != map.getMajorLightPositions().cend();
          it++) {
@@ -701,10 +787,11 @@ static void init_lights(std::vector<PointLight> *point_lights,
             pl.shadowMap = shadow_maps->size() - 1;
         }
         pl.position = *it;
+        pl.position.y() += 0.5;
         point_lights->push_back(pl);
 
     }
-
+#endif
 
     PointLight smallpl;
     smallpl.ambient = pl.ambient;
@@ -714,7 +801,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
     smallpl.intensity = smallpl.constant = 1.0;
     smallpl.linear = 0.7;
     smallpl.quadratic = 1.8;
-
+#if 1
     for (auto it = map.getMinorLightPositions().cbegin(); 
          it != map.getMinorLightPositions().cend();
          it++) {
@@ -725,6 +812,7 @@ static void init_lights(std::vector<PointLight> *point_lights,
         smallpl.position = *it;
         point_lights->push_back(smallpl);
     }
+#endif
 
     PointLight tinypl = smallpl;
     tinypl.shadow = true;
@@ -767,6 +855,7 @@ std::unique_ptr<Entity> init_sphere_light_volume()
 void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, const MatrixStack &V,
                                  uint width, uint height, float light_far_plane)
 {
+    CHECK_GL_ERRORS();
     glUniformMatrix4fv(deferred_lighting_prog.getUniform("P"), 
                        1, GL_FALSE, P.topMatrix().data());
     glUniformMatrix4fv(deferred_lighting_prog.getUniform("V"), 
@@ -776,6 +865,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
     glUniform1i(deferred_lighting_prog.getUniform("gNormal"), 1); // TEXTURE1
     glUniform1i(deferred_lighting_prog.getUniform("gDiffuse"), 2); // TEXTURE2
     glUniform1i(deferred_lighting_prog.getUniform("gSpecular"), 3); // TEXTURE3
+    glUniform1i(deferred_lighting_prog.getUniform("occlusion"),4); // TEXTURE4
  
     glUniform3fv(deferred_lighting_prog.getUniform("light.position"), 1, 
                  pl.position.data());
@@ -785,6 +875,7 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
                  pl.diffuse.data());
     glUniform3fv(deferred_lighting_prog.getUniform("light.specular"), 1, 
                  pl.specular.data());
+    CHECK_GL_ERRORS();
     glUniform1f(deferred_lighting_prog.getUniform("light.quadratic"),
                 pl.quadratic);
     glUniform1f(deferred_lighting_prog.getUniform("light.linear"),
@@ -798,7 +889,9 @@ void set_light_volume_parameters(const PointLight &pl,const MatrixStack &P, cons
     glUniform2f(deferred_lighting_prog.getUniform("uScreenSize"), 
                 static_cast<float>(width), static_cast<float>(height));
     glUniform1f(deferred_lighting_prog.getUniform("far_plane"), light_far_plane);
-    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 4);
+    glUniform1i(deferred_lighting_prog.getUniform("depthMap"), 5);
+
+    CHECK_GL_ERRORS();
 }
 
 static void init_camera(const Map& map)
@@ -807,6 +900,31 @@ static void init_camera(const Map& map)
     fp_camera->translations += (vec3(0, -1.1f, 0));
     ov_camera->translations = -(map.getPlayerStart());
     ov_camera->translations += (vec3(0, -30.0f, 0));
+}
+
+static void init_ssao_kernel(std::vector<vec3> *kernel)
+{
+    for (int i = 0; i < 64; i++) {
+        vec3 sample(randomFloats(generator) * 2.0f - 1.0f, 
+                    randomFloats(generator) * 2.0f - 1.0f,
+                    randomFloats(generator));
+        sample.normalize();
+        sample *= randomFloats(generator);
+        float scale = float(i) / 64.0f;
+        scale = math::lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        kernel->push_back(sample);
+    }
+}
+
+static void init_ssao_noise(std::vector<vec3> *noise)
+{
+    for (int i = 0; i < 16; i++) {
+        vec3 noise_vec(randomFloats(generator) * 2.0f - 1.0f,
+                   randomFloats(generator) * 2.0f - 1.0f,
+                   0.0f);
+        noise->push_back(noise_vec);
+    }
 }
 
 int main(void)
@@ -819,22 +937,26 @@ int main(void)
     if (!glfwInit()) {
         exit(EXIT_FAILURE);
     }
-
+    CHECK_GL_ERRORS();
     // Window hints
 //    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 //    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
+    CHECK_GL_ERRORS();
+
     window = glfwCreateWindow(init_w, init_h, "Simple example", NULL, NULL);
     if (!window) {
+        CHECK_GL_ERRORS();
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-
+    CHECK_GL_ERRORS();
     glfwMakeContextCurrent(window);
+    CHECK_GL_ERRORS();
     glfwSwapInterval(1);
-
+    CHECK_GL_ERRORS();
     // set callbacks
     glfwSetWindowSizeCallback(window, resize_window);
     glfwSetKeyCallback(window, key_callback);
@@ -843,22 +965,30 @@ int main(void)
     
     // init level_one
     level_one.initLevelOne();
+    CHECK_GL_ERRORS();
 
     // init drawables
     FreeImage_Initialise();
     std::cout << "FreeImage_" << FreeImage_GetVersion() << std::endl;
     uint handle;
-
+    CHECK_GL_ERRORS();
     Map map(map_cols, map_rows);
     //map.loadMapFromFile("resources/maps/our_map.txt");
     //map.loadMapFromImage("resources/maps/map_level_0_L_onelight.tga");
     map.loadMapFromImage("resources/maps/map_level_0_L.tga");
     std::vector<Entity*> floors;
     std::vector<Entity*> walls;
+    CHECK_GL_ERRORS();
     init_walls(&walls, map);
+    CHECK_GL_ERRORS();
     init_floors(&floors, map);
+    CHECK_GL_ERRORS();
     std::vector<Entity> entities;
     init_entities(&entities, "resources/tree.yaml");
+    CHECK_GL_ERRORS();
+//    init_entities(&entities, "resources/computer_archive.yaml");
+
+    CHECK_GL_ERRORS();
 
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     std::vector<PointLight> point_lights;
@@ -892,7 +1022,7 @@ int main(void)
 
     // test sound 
     // sound_driver.testSound();
-
+    CHECK_GL_ERRORS();
     LOG("gbuffer stuff");
     Gbuffer gbuffer;
     gbuffer.init(width, height);
@@ -902,7 +1032,11 @@ int main(void)
     draw::Quad depth_quad;
     depth_quad.GenerateData(debug_depth_prog.getAttribute("vertPos"),
                             debug_depth_prog.getAttribute("vertTex"));
-
+    CHECK_GL_ERRORS();
+    draw::Quad ambient_quad;
+    ambient_quad.GenerateData(ambient_prog.getAttribute("vertPos"),
+                              ambient_prog.getAttribute("vertTex"));
+    CHECK_GL_ERRORS();
     MatrixStack P, M, V;
 
     // Prepare for instancing
@@ -915,7 +1049,7 @@ int main(void)
     glGenVertexArrays(1, &universal_vao);
     glBindVertexArray(universal_vao);
 
-
+    CHECK_GL_ERRORS();
     // Allocate buffers for depth maps
     const GLuint shadow_width = 1024, shadow_height = 1024;
     for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
@@ -934,14 +1068,37 @@ int main(void)
     // Set the flag so that the first iteration of the game loop will
     // generate the depth cube map data
     bool generate_shadowmaps = true;
-    
+
+
+    // Set up SSAO stuff
+    std::vector<vec3> ssaoKernel;
+    init_ssao_kernel(&ssaoKernel);
+    std::vector<vec3> ssaoNoise;
+    init_ssao_noise(&ssaoNoise);
+    CHECK_GL_ERRORS();
+    SSAO ssao(&gbuffer);
+    ssao.init(width, height);
+    ssao.generateNoiseTexture(ssaoNoise);
+
+    CHECK_GL_ERRORS();
+    draw::Quad ssao_quad;
+    ssao_quad.GenerateData(ssao_prog.getAttribute("vertPos"), 
+                           ssao_prog.getAttribute("vertTex"));
+    CHECK_GL_ERRORS();
+    draw::Quad blur_quad;
+    blur_quad.GenerateData(blur_prog.getAttribute("vertPos"), 
+                           blur_prog.getAttribute("vertTex"));
+    int frameCount = 0;
+    CHECK_GL_ERRORS();
+
     // Time
     double currTime = glfwGetTime();
     double prevTime_mov = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
         currTime = glfwGetTime();
-
+//        std::cout << ++frameCount << std::endl;
+        CHECK_GL_ERRORS();
         float ratio;
         glfwGetFramebufferSize(window, &width, &height);
         glDepthMask(GL_TRUE);
@@ -949,16 +1106,17 @@ int main(void)
 
         // Room Logic
         applyRoomLogic(window);
+        CHECK_GL_ERRORS();
 
         P.pushMatrix();
         camera->applyProjectionMatrix(&P);
         V.pushMatrix();
         camera->applyViewMatrix(&V);
-
+        CHECK_GL_ERRORS();
         gbuffer.startFrame();
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+        CHECK_GL_ERRORS();
         // If the depth cube maps do not exist or have been invalidated, regenerate them
         if (generate_shadowmaps) {
             generate_shadowmaps = false;
@@ -1001,15 +1159,15 @@ int main(void)
 
                     glUniform1i(depth_prog.getUniform("uInstanced"), 1);
                     if (walls.size() > 0) {
-//                        glCullFace(GL_FRONT);
+                        glCullFace(GL_FRONT);
                         wall_batch.drawAllDepth(&depth_prog);
-//                        glCullFace(GL_BACK);
+                        glCullFace(GL_BACK);
                     }                                  
                     if (floors.size() > 0) {
                         floor_batch.drawAllDepth(&depth_prog);
                     }
                     glUniform1i(depth_prog.getUniform("uInstanced"), 0);
-
+                    glCullFace(GL_FRONT);
                     for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
                         M.worldTranslate(it->getPosition(), it->getRotation());
@@ -1020,6 +1178,7 @@ int main(void)
                         it->getDrawable().drawDepth(&depth_prog, &M);
                         M.popMatrix();
                     }
+
 
                     /*for (int i = 0; i < level_one.getNumRooms(); ++i) {
                         std::vector<Entity> b_entities;
@@ -1052,13 +1211,14 @@ int main(void)
                     }*/
                     
 //                    glCullFace(GL_BACK);
+
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glViewport(0, 0, width, height); 
                 }
             }
             depth_prog.unbind();
         } // END OF DEPTH MAP GENERATION
-        
+        CHECK_GL_ERRORS();
         // Geometry pass
         deferred_geom_prog.bind();
         gbuffer.bind();
@@ -1071,7 +1231,8 @@ int main(void)
         glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
         glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
         glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
-
+        glUniform1f(deferred_geom_prog.getUniform("NEAR"), camera->getNearPlane());
+        glUniform1f(deferred_geom_prog.getUniform("FAR"), camera->getFarPlane());
 
         // Draw walls with instancing
         if (walls.size() > 0) {
@@ -1094,9 +1255,8 @@ int main(void)
             glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);
         }
 
-
         glBindVertexArray(universal_vao);
-
+        CHECK_GL_ERRORS();
 
         for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
@@ -1110,6 +1270,7 @@ int main(void)
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
+
 
         /* attempt for g_buffer */
         for (int i = 0; i < level_one.getNumRooms(); ++i) {
@@ -1165,8 +1326,43 @@ int main(void)
         }
 
         // Second step: per-light calculations
-        glDepthMask(GL_FALSE);
         deferred_geom_prog.unbind();
+        glDepthMask(GL_FALSE);
+
+        // Compute SSAO texture
+        ssao.bindOcclusionStage();
+        ssao_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        CHECK_GL_ERRORS();
+        glUniform1i(ssao_prog.getUniform("gViewSpacePositionDepth"), 0);
+        glUniform1i(ssao_prog.getUniform("gNormal"), 1);
+        glUniform1i(ssao_prog.getUniform("ssaoNoise"), 2);
+        glUniform1i(ssao_prog.getUniform("screen_width"), width);
+        glUniform1i(ssao_prog.getUniform("screen_height"), height);
+        for (int i = 0; i < 64; i++) {
+            glUniform3fv(ssao_prog.getUniform(str_array("samples", i).c_str()), 1, 
+                         ssaoKernel[i].data());
+        }
+        glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
+        glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+
+        ssao_quad.Render();
+        
+        ssao_prog.unbind();
+//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//        ssao.debugCopySSAO(width, height);
+        CHECK_GL_ERRORS();
+        ssao.bindBlurStage();
+        blur_prog.bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
+        blur_quad.Render();
+        blur_prog.unbind();
+//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//        ssao.debugCopyBlur(width, height);
+        CHECK_GL_ERRORS();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, gbuffer.fbo);
 
         Eigen::Matrix4f matV = V.topMatrix();
         Eigen::Matrix4f matP = P.topMatrix();
@@ -1221,7 +1417,7 @@ int main(void)
             glDrawBuffer(GL_NONE);
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
-
+            CHECK_GL_ERRORS();
             glClear(GL_STENCIL_BUFFER_BIT);
             glStencilFunc(GL_ALWAYS, 0, 0);
             glStencilMask(0xff);
@@ -1238,36 +1434,48 @@ int main(void)
 
             // Point light pass
             deferred_lighting_prog.bind();
-
+            CHECK_GL_ERRORS();
             gbuffer.bindTextures();
             gbuffer.bindFinalBuffer();
+            CHECK_GL_ERRORS();
 
             // Prepare to use shadows
             draw::ShadowMap &sm = shadow_maps[it->shadowMap];
-            glActiveTexture(GL_TEXTURE4);
+            glActiveTexture(GL_TEXTURE5);
             glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
-
+            CHECK_GL_ERRORS();
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 //            glDisable(GL_STENCIL_TEST);
 
+            // Use blurred SSAO texture
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
+            
+            CHECK_GL_ERRORS();
+
             glDisable(GL_DEPTH_TEST);
+            CHECK_GL_ERRORS();
 
             glEnable(GL_BLEND);
             glBlendEquation(GL_FUNC_ADD);
             glBlendFunc(GL_ONE, GL_ONE);
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
+            CHECK_GL_ERRORS();
 
             set_light_volume_parameters(*it, P, V, width, height, shadow_far);
+            CHECK_GL_ERRORS();
 
 
             sphere->getDrawable().drawAsLightVolume(&deferred_lighting_prog, &M, camera);
+            CHECK_GL_ERRORS();
 
 
 
             glDepthFunc(GL_LESS);
             glCullFace(GL_BACK);
             glDisable(GL_BLEND);
+            CHECK_GL_ERRORS();
 
             M.popMatrix();
             deferred_lighting_prog.unbind();
@@ -1277,10 +1485,32 @@ int main(void)
 //        LOG("Drew: " << light_draw_count << " lights this frame");
         glDisable(GL_STENCIL_TEST);
 
+        ambient_prog.bind();
+//        gbuffer.bindTextures();
+        gbuffer.bindFinalBuffer();
+        CHECK_GL_ERRORS();
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_ONE, GL_ONE);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gbuffer.gcol);
+        glUniform1i(ambient_prog.getUniform("gDiffuse"), 0); // TEXTURE0
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
+        glUniform1i(ambient_prog.getUniform("occlusion"), 1); // TEXTURE1
+        glUniform1f(ambient_prog.getUniform("intensity"), 0.2);
+        ambient_quad.Render();
+        glDisable(GL_BLEND);
+
+        gbuffer.unbindFinalBuffer();
+        ambient_prog.unbind();
+
+        CHECK_GL_ERRORS();
         // glEnable(GL_FRAMEBUFFER_SRGB);
         gbuffer.copyFinalBuffer(width, height);
         // glDisable(GL_FRAMEBUFFER_SRGB);
-        gbuffer.copyDepthBuffer(width, height);               
+        gbuffer.copyDepthBuffer(width, height);       
+        CHECK_GL_ERRORS();
 
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);
@@ -1290,34 +1520,35 @@ int main(void)
         glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
         deferred_lighting_prog.unbind();
 
-        // Final pass
 
-        // if (currTime > prevTime_mov + .01) {
-            if (camera == fp_camera ) {
-                Eigen::Vector3f campos = -camera->translations;
-                uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-                // bufferMovement(window, entities, map, col, row);
-                float factor = lastFPS;
-                if (factor <= 0) {
-                    factor = 1;
-                }
-                // float mov = 1/(currTime - prevTime_mov + .01) * 1/factor;
-                bufferMov_rooms(window, level_one, map, col, row, 1.0f);
+        if (camera == fp_camera ) {
+            Eigen::Vector3f campos = -camera->translations;
+            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
+            // bufferMovement(window, entities, map, col, row);
+            float factor = lastFPS;
+            if (factor <= 0) {
+                factor = 1;
+            }
+            // float mov = 1/(currTime - prevTime_mov + .01) * 1/factor;
+            bufferMov_rooms(window, level_one, map, col, row, 1.0f);
 
-            }
-            else {
-                bufferMovement(window, entities, map, -1, -1);
-            }
-            prevTime_mov = currTime;       
-        // }
+        }
+        else {
+            bufferMovement(window, entities, map, -1, -1);
+        }
+        prevTime_mov = currTime;       
+
+
 
         V.popMatrix();
         P.popMatrix();
 
-        findFPS(); 
+        findFPS();        
+        CHECK_GL_ERRORS();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        CHECK_GL_ERRORS();
 //        break;
     }
 

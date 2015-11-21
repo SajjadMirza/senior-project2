@@ -46,6 +46,9 @@ public:
     float collisionRadius() const { return camera_default_collision_radius; }
 
     bool collides(const Entity &e);
+
+    float getFarPlane();
+    float getNearPlane();
 	
 protected:
     float aspect;
