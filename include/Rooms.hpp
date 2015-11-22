@@ -106,10 +106,10 @@ public:
 
     Comp();
     ~Comp();
-private:
-    std::string yaml_comp;
 
     std::vector<labtop_screen> lt_screen_list;
+private:
+    std::string yaml_comp;
 };
 
 class Lounge : public Room

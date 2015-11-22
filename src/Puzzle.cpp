@@ -215,7 +215,7 @@ void LogicPuzzle::notifyKey(char c) {
 void LogicPuzzle::draw(Program *prog, MatrixStack *P, MatrixStack *MV,
                        Camera *cam, draw::Text *text, GLFWwindow *window) {
     if (display_text) {
-        text->draw(*prog, *window, info, 0, 0);
+        text->draw(*prog, *window, info, 0, 0, 75.0f);
     }
 
     for (auto it = entities.begin(); it != entities.end(); it++) {
@@ -278,7 +278,7 @@ void PatternPuzzle::notifySelect(Entity *selected_entity) {
 void PatternPuzzle::draw(Program *prog, MatrixStack *P, MatrixStack *MV,
                          Camera *cam, draw::Text *text, GLFWwindow *window) {
     if (getSuccess() && display_text) {
-        text->draw(*prog, *window, "You have successfully beaten the pattern puzzle", 0, 0);
+        text->draw(*prog, *window, "You have successfully beaten the pattern puzzle", 0, 0, 75.0f);
     }
 
     if (isActive()) {
