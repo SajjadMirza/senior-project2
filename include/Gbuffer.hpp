@@ -7,8 +7,8 @@
 
 class Gbuffer {
     // attachment points
-    static const int num_attachments = 6;
-    GLuint attachments[6]; // initialized in init
+    static const int num_attachments = 7;
+    GLuint attachments[7]; // initialized in init
 public:
     // handle to Frame Buffer Object
     GLuint fbo; 
@@ -21,6 +21,7 @@ public:
     GLuint gfinal;
     GLuint gvposd; // view space position and depth
     GLuint gvnor;
+    GLuint gid;
 
     bool init(uint width, uint height);
     void bind();

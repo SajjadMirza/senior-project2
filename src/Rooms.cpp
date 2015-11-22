@@ -4,6 +4,10 @@
 #include <GameMath.hpp>
 #include <Camera.hpp>
 #include <log.hpp>
+#include <EntityDatabase.hpp>
+
+
+extern EntityDatabase entityDatabase;
 
 Level::Level()
 {
@@ -304,5 +308,9 @@ static void init_entities_R(std::vector<Entity> *entities, std::string model_con
         e.setName(it->model);
         
         entities->push_back(e);
+    }
+
+    for (int i = 0; i < entities->size(); i++) {
+        entityDatabase.registerEntity(&(*entities)[i]);
     }
 }

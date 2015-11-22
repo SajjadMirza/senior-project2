@@ -42,7 +42,13 @@ inline bool check_gl_errors()
     return error_occured;
 }
 
-#if 0
+#define CHECK_ERRORS_GLOBAL 1
+
+#if !defined(CHECK_ERRORS_THIS_FILE)
+#define CHECK_ERRORS_THIS_FILE 0
+#endif
+
+#if CHECK_ERRORS_THIS_FILE && CHECK_ERRORS_GLOBAL
 #define CHECK_GL_ERRORS() assert(!check_gl_errors())
 #else
 #define CHECK_GL_ERRORS()

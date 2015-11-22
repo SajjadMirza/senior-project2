@@ -7,6 +7,7 @@ layout (location = 2) out vec4 gDiffuse;
 layout (location = 3) out float gSpecular;
 layout (location = 4) out vec4 gViewSpacePositionDepth;
 layout (location = 5) out vec3 gViewSpaceNormal;
+layout (location = 6) out float gID;
 
 in vec3 fragPos;
 in vec3 fragNor;
@@ -23,6 +24,7 @@ uniform int uNormFlag;
 uniform int uCalcTBN;
 uniform float NEAR;
 uniform float FAR;
+uniform int ID;
 
 float LinearizeDepth(float depth)
 {
@@ -34,6 +36,8 @@ uniform int uHighlight;
 
 void main()
 {  
+//    gID = uint(1);
+    gID = ID / 255.0;
     gViewSpacePositionDepth = (V * vec4(fragPos, 1.0));
     gViewSpacePositionDepth.a = LinearizeDepth(gl_FragCoord.z);
     gPosition = fragPos;
@@ -66,6 +70,7 @@ void main()
 
 //    gDiffuse.rgb = vec3(0.0f, 1.0f, 0.0f);
     gDiffuse.rgb = texture2D(texture0, fragTex).rgb;
+//    gDiffuse.rgb = vec3(float(ID + 100) / 255.0);
     if (uHighlight == 1) {
         gDiffuse.rgb = vec3(1.0, -1.0, 1.0);
     }

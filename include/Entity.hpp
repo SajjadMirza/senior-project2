@@ -5,6 +5,9 @@
 
 #include <draw/Drawable.hpp>
 #include <BoundingBox.hpp>
+#include <stdint.h>
+
+typedef uint16_t EntityID;
 
 class Entity {
 private:
@@ -20,13 +23,13 @@ private:
     bool simple_draw;
 public:
     bool selected;
-    uint id;
+    EntityID id;
     Entity();
     Entity(draw::Drawable *d);
     virtual ~Entity();
     
     void setName(std::string str);
-    std::string getName();
+    const std::string& getName() const;
 
     void attachDrawable(draw::Drawable *drawable);
     void clearDrawable();

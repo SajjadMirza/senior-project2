@@ -1,8 +1,6 @@
 #include <Entity.hpp>
 #include <algorithm>
 
-static int entity_uid_counter = 1;
-
 Entity::Entity() : name(""),
                    pos(0, 0, 0), 
                    rot(Eigen::Matrix4f::Identity()),
@@ -10,7 +8,7 @@ Entity::Entity() : name(""),
                    drawable(NULL),
                    use_bounding_box(false),
                    selected(false),
-                   id(entity_uid_counter++),
+                   id(0),
                    simple_draw(false)
                    
 {
@@ -23,7 +21,7 @@ Entity::Entity(draw::Drawable *d) : name(""),
                                     drawable(d),
                                     use_bounding_box(false),
                                     selected(false),
-                                    id(entity_uid_counter++),
+                                    id(0),
                                     simple_draw(false)
 {
 }
@@ -34,7 +32,7 @@ void Entity::setName(std::string str) {
     name = str;
 }
 
-std::string Entity::getName() {
+const std::string& Entity::getName() const {
     return name;
 }
 

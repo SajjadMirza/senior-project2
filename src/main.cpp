@@ -8,6 +8,10 @@
 
 #include <cmath>
 
+// Error checking
+#define CHECK_ERRORS_THIS_FILE 1
+#include <errors.hpp>
+
 #define FRUSTUM_CULLING 0
 
 // Internal headers
@@ -33,7 +37,8 @@
 #include <Geometry.hpp>
 #include <GameMath.hpp>
 #include <SSAO.hpp>
-#include <errors.hpp>
+
+#include <EntityDatabase.hpp>
 
 
 draw::Text text("testfont.ttf", 24);
@@ -72,9 +77,10 @@ Program ssao_prog;
 Program blur_prog;
 int debug_gbuffer_mode = 0;
 
+EntityDatabase entityDatabase;
 
-const uint init_w = 1600;
-const uint init_h = 900;
+const uint init_w = 1280;
+const uint init_h = 720;
 uint new_w = init_w;
 uint new_h = init_h;
 
@@ -91,6 +97,8 @@ Level level_one;
 
 boost::random::mt19937 generator;
 boost::random::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
+
+Entity *last_selected_entity = NULL;
 
 
 /*
@@ -440,6 +448,8 @@ static void init_gl()
     deferred_geom_prog.addUniform("uHighlight");
     deferred_geom_prog.addUniform("NEAR");
     deferred_geom_prog.addUniform("FAR");
+    deferred_geom_prog.addUniform("ID");
+    
 
     gbuffer_debug_prog.setShaderNames(header + "gbuffer_debug_vert.glsl",
                                       header + "gbuffer_debug_frag.glsl");
@@ -666,6 +676,7 @@ static void init_walls(std::vector<Entity*> *walls, Map &map)
 
 static void init_entities(std::vector<Entity> *entities, std::string model_config_file) 
 {
+    assert(entities->empty());
     std::vector<ModelConfig> configs;
     resource::load_model_configs(&configs, model_config_file);
     
@@ -739,6 +750,11 @@ static void init_entities(std::vector<Entity> *entities, std::string model_confi
         e.setName(it->model);
         
         entities->push_back(e);
+//        entityDatabase.registerEntity(&entities->back());
+    }
+
+    for (int i = 0; i < entities->size(); i++) {
+        entityDatabase.registerEntity(&(*entities)[i]);
     }
 }
 
@@ -939,10 +955,12 @@ int main(void)
     }
     CHECK_GL_ERRORS();
     // Window hints
-//    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+//    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+//   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 //    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    glEnable(GL_DEBUG_OUTPUT);
 
     CHECK_GL_ERRORS();
 
@@ -985,6 +1003,7 @@ int main(void)
     CHECK_GL_ERRORS();
     std::vector<Entity> entities;
     init_entities(&entities, "resources/tree.yaml");
+    
     CHECK_GL_ERRORS();
 //    init_entities(&entities, "resources/computer_archive.yaml");
 
@@ -1234,6 +1253,9 @@ int main(void)
         glUniform1f(deferred_geom_prog.getUniform("NEAR"), camera->getNearPlane());
         glUniform1f(deferred_geom_prog.getUniform("FAR"), camera->getFarPlane());
 
+        // All walls and floor should have ID 0
+        glUniform1i(deferred_geom_prog.getUniform("ID"), 0);
+
         // Draw walls with instancing
         if (walls.size() > 0) {
             glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 1);
@@ -1267,6 +1289,7 @@ int main(void)
             M.scale(it->getScale());
             glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                M.topMatrix().data());
+            glUniform1i(deferred_geom_prog.getUniform("ID"), it->id);
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
         }
@@ -1284,6 +1307,7 @@ int main(void)
                 M.scale(it->getScale());
                 glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                    M.topMatrix().data());
+                glUniform1i(deferred_geom_prog.getUniform("ID"), it->id);
                 it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
                 M.popMatrix();
             }
@@ -1301,6 +1325,7 @@ int main(void)
                 M.scale(it->getScale());
                 glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                    M.topMatrix().data());
+                glUniform1i(deferred_geom_prog.getUniform("ID"), it->id);
                 it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
                 M.popMatrix();
                 glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
@@ -1319,10 +1344,53 @@ int main(void)
                 M.scale(it->getScale());
                 glUniformMatrix4fv(deferred_geom_prog.getUniform("M"), 1, GL_FALSE, 
                                    M.topMatrix().data());
+                glUniform1i(deferred_geom_prog.getUniform("ID"), it->id);
                 it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
                 M.popMatrix();
                 glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
             }
+        }
+
+        if (selection_flag) {
+            selection_flag = false;
+            if (last_selected_entity != NULL) {
+                last_selected_entity->selected = false;
+                last_selected_entity = NULL;
+            }
+            glBindFramebuffer(GL_FRAMEBUFFER, gbuffer.fbo);
+            CHECK_GL_ERRORS();
+            glReadBuffer(GL_COLOR_ATTACHMENT7);
+            CHECK_GL_ERRORS();
+            glFlush();
+            CHECK_GL_ERRORS();
+            glFinish();
+            CHECK_GL_ERRORS();
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            CHECK_GL_ERRORS();
+            GLint x = floor(selection_coords.x());
+            GLint y = floor(selection_coords.y());
+            y = height - y;
+            uint8_t data[4];
+            memset(data, 0, 4);
+            glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            CHECK_GL_ERRORS();
+            LOG("READ PIXEL: " << x << ", " << y << " with value " 
+                << static_cast<int>(data[0]) << " " 
+                << static_cast<int>(data[1]) << " " 
+                << static_cast<int>(data[2]) << " " 
+                << static_cast<int>(data[3]));
+            int id = *data;
+            Entity *e = entityDatabase.lookup(id);
+            LOG("Searched for entity with ID: " << id << " yielded pointer: " << e);
+            if (e != NULL) {
+                LOG("Entity lookup with ID: " << id << " yielded ID: " << e->id);
+//                assert(e->id == id);
+                e->selected = true;
+                const std::string &name = e->getName();
+                LOG("Selected entity " << id << ": " << name.c_str());
+                last_selected_entity = e;
+            }
+            
         }
 
         // Second step: per-light calculations
@@ -1509,7 +1577,8 @@ int main(void)
         // glEnable(GL_FRAMEBUFFER_SRGB);
         gbuffer.copyFinalBuffer(width, height);
         // glDisable(GL_FRAMEBUFFER_SRGB);
-        gbuffer.copyDepthBuffer(width, height);       
+        CHECK_GL_ERRORS();
+//        gbuffer.copyDepthBuffer(width, height);       
         CHECK_GL_ERRORS();
 
         deferred_lighting_prog.bind();

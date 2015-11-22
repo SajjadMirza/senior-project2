@@ -1,6 +1,8 @@
 #include <Gbuffer.hpp>
 #include <iostream>
 #include <log.hpp>
+
+#define CHECK_ERRORS_THIS_FILE 1
 #include <errors.hpp>
 
 
@@ -13,6 +15,7 @@ bool Gbuffer::init(uint width, uint height)
     // Skipping GL_COLOR_ATTACHMENT4 because that's for the final buffer
     attachments[4] = GL_COLOR_ATTACHMENT5;
     attachments[5] = GL_COLOR_ATTACHMENT6;
+    attachments[6] = GL_COLOR_ATTACHMENT7;
 
 
     glGenFramebuffers(1, &fbo);
@@ -97,10 +100,52 @@ bool Gbuffer::init(uint width, uint height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, gvnor, 0);
+    CHECK_GL_ERRORS();
+    // Entity IDs
+    glGenTextures(1, &gid);
+    glBindTexture(GL_TEXTURE_2D, gid);
+    LOG("GBUFFER ENTITY ID TEXTURE: " << gid);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE,
+                 NULL);
+    CHECK_GL_ERRORS();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT7, GL_TEXTURE_2D, gid, 0);
 
     // - Finally check if framebuffer is complete
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
         ERROR("FRAMEBUFFER PROBLEM!!!");
+        switch (fbStatus) {
+        case GL_FRAMEBUFFER_UNDEFINED:
+            ERROR("GL_FRAMEBUFFER_UNDEFINED");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            ERROR("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            ERROR("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            ERROR("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+            ERROR("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+            break;
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            ERROR("GL_FRAMEBUFFER_UNSUPPORTED");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+            ERROR("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+            ERROR("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+            break;
+        case 0:
+            ERROR("OTHER ERROR");
+            break;
+        }
+        
         exit(1);
     }
 
@@ -195,14 +240,6 @@ void Gbuffer::unbindFinalBuffer()
 
 void Gbuffer::copyFinalBuffer(uint width, uint height)
 {
-/*
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-    glReadBuffer(GL_COLOR_ATTACHMENT1);
-    glDrawBuffer(GL_COLOR_ATTACHMENT4);
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
-                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
-*/
     CHECK_GL_ERRORS();
     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
