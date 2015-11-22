@@ -1532,12 +1532,7 @@ int main(void)
             Comp* temp_h;
             screen_prog.bind();
                 temp_h = dynamic_cast<Comp*>(level_one.getRooms()[1]);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, temp_h->tex_c[0].tex.tid);
-                glUniform1i(screen_prog.getUniform("texture0"), 0);
-
                 screen_quad.Render();
-                glBindTexture(GL_TEXTURE_2D, 0);
             screen_prog.unbind();
         }*/
 

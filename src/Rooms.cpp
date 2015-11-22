@@ -5,6 +5,10 @@
 #include <Camera.hpp>
 #include <log.hpp>
 
+#include <string>
+#include <fstream>
+#include <streambuf>
+
 Level::Level()
 {
     num_rooms = 0;
@@ -214,16 +218,37 @@ Comp::Comp() : Room()
     triggerPos = vec2(20, 6);
 
     /* Manually setup textures */
-    std::string header = "resources/textures/";
+    std::string header = "resources/text/";
 
-    texture_comp temp;
-    temp.name = "Computer";
-    temp.tex = draw::Texture();
-    temp.tex.filename = header + temp.name + ".jpg";
-    temp.tex.type = draw::TexType::NONE;
-    resource::load_texture_from_file(temp.tex.filename, &temp.tex.tid);
+    boost::filesystem::path p(header);
+    std::string ext = ".txt";
+    std::vector<boost::filesystem::path> files;
 
-    tex_c.push_back(temp);
+    get_all(p, ext, files);
+
+    for (int i = 0; i < files.size(); ++i) {
+        std::string file_name = header + files[i].string();
+
+        std::ifstream t(file_name);
+
+        labtop_screen ls;
+
+        ls.name = file_name.substr(header.size(), file_name.size());
+
+        std::string txt((std::istreambuf_iterator<char>(t)),
+                 std::istreambuf_iterator<char>());
+
+        ls.terminal_txt = txt;
+
+        lt_screen_list.push_back(ls);
+    }
+
+    /*for(int i = 0; i < lt_screen_list.size(); ++i) {
+        LOG("Number: " << i);
+        LOG("Name: " << lt_screen_list[i].name);
+        LOG("Text: \n" << lt_screen_list[i].terminal_txt);
+        LOG("End of current file");
+    }*/
 }
 
 Comp::~Comp()
@@ -317,4 +342,22 @@ static void init_entities_R(std::vector<Entity> *entities, std::string model_con
         
         entities->push_back(e);
     }
+}
+
+// return the filenames of all files that have the specified extension
+// in the specified directory and all subdirectories
+void get_all(const boost::filesystem::path& root, const std::string& ext, std::vector<boost::filesystem::path>& ret)
+{
+    if(!boost::filesystem::exists(root) || !boost::filesystem::is_directory(root)) return;
+
+    boost::filesystem::recursive_directory_iterator it(root);
+    boost::filesystem::recursive_directory_iterator endit;
+
+    while(it != endit)
+    {
+        if(boost::filesystem::is_regular_file(*it) && it->path().extension() == ext) ret.push_back(it->path().filename());
+        ++it;
+
+    }
+
 }

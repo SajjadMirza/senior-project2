@@ -1,0 +1,42 @@
+Repeating facility message...
+
+Hello guest! 
+
+This facility is funded by Trinitech to provide innovation through the pursuit 
+of science. We use the most cutting edge technology to bring happiness to all
+of mankind. As you explore this facility, please do not disturb the staff from 
+their important work and follow your guide!
+
+Trinitech, unlocking the gifts of nature. 
+
+                                                 .
+                                      .         ;  
+         .              .              ;%     ;;   
+           ,           ,                :;%  %;   
+            :         ;                   :;%;'     .,   
+   ,.        %;     %;            ;        %;'    ,;
+     ;       ;%;  %%;        ,     %;    ;%;    ,%'
+      %;       %;%;      ,  ;       %;  ;%;   ,%;' 
+       ;%;      %;        ;%;        % ;%;  ,%;'
+        `%;.     ;%;     %;'         `;%%;.%;'
+         `:;%.    ;%%. %@;        %; ;@%;%'
+            `:%;.  :;bd%;          %;@%;'
+              `@%:.  :;%.         ;@@%;'   
+                `@%.  `;@%.      ;@@%;         
+                  `@%%. `@%%    ;@@%;        
+                    ;@%. :@%%  %@@%;       
+                      %@bd%%%bd%%:;     
+                        #@%%%%%:;;
+                        %@@%%%::;
+                        %@@@%(o);  . '         
+                        %@@@o%;:(.,'         
+                    `.. %@@@o%::;         
+                       `)@@@o%::;         
+                        %@@(o)::;        
+                       .%@@@@%::;         
+                       ;%@@@@%::;.          
+                      ;%@@@@%%:;;;. 
+                  ...;%@@@@@%%:;;;;,..    Gilo97
+
+...
+Press enter to return to home or q to exit terminal.
