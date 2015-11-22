@@ -38,7 +38,7 @@ transforms:
   translations:
     xaxis: 42.5
     zaxis: 23.0
-    yaxis: 0.55
+    yaxis: 0.45
   scale: 0.5 
 ---
 model: coke
