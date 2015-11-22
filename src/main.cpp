@@ -75,6 +75,7 @@ Program debug_depth_prog;
 Program ambient_prog;
 Program ssao_prog;
 Program blur_prog;
+Program screen_prog;
 int debug_gbuffer_mode = 0;
 
 EntityDatabase entityDatabase;
@@ -569,6 +570,14 @@ static void init_gl()
     blur_prog.addAttribute("vertPos");
     blur_prog.addAttribute("vertTex");
     blur_prog.addUniform("ssaoInput");
+
+    screen_prog.setShaderNames(header + "screen.vs.glsl",
+                               header + "screen.fs.glsl");
+    if (!screen_prog.init()) {
+        shader_init_error(-1);
+    }
+    screen_prog.addAttribute("vertPos");
+    screen_prog.addAttribute("vertTex");
 
     CHECK_GL_ERRORS();
 
@@ -1110,6 +1119,10 @@ int main(void)
     int frameCount = 0;
     CHECK_GL_ERRORS();
 
+    draw::Quad screen_quad;
+    screen_quad.GenerateData(screen_prog.getAttribute("vertPos"), 
+                             screen_prog.getAttribute("vertTex"));
+
     // Time
     double currTime = glfwGetTime();
     double prevTime_mov = glfwGetTime();
@@ -1187,7 +1200,7 @@ int main(void)
                     }
                     glUniform1i(depth_prog.getUniform("uInstanced"), 0);
                     glCullFace(GL_FRONT);
-                    for (auto it = entities.begin(); it != entities.end(); it++) {
+                    /*for (auto it = entities.begin(); it != entities.end(); it++) {
                         M.pushMatrix();
                         M.worldTranslate(it->getPosition(), it->getRotation());
                         M.multMatrix(it->getRotation());
@@ -1196,10 +1209,10 @@ int main(void)
                                            M.topMatrix().data());
                         it->getDrawable().drawDepth(&depth_prog, &M);
                         M.popMatrix();
-                    }
+                    }*/
 
 
-                    /*for (int i = 0; i < level_one.getNumRooms(); ++i) {
+                    for (int i = 0; i < level_one.getNumRooms(); ++i) {
                         std::vector<Entity> b_entities;
                         b_entities = (level_one.getRooms())[i]->boundaries;
 
@@ -1227,7 +1240,7 @@ int main(void)
                             it->getDrawable().drawDepth(&depth_prog, &M);
                             M.popMatrix();
                         }
-                    }*/
+                    }
                     
 //                    glCullFace(GL_BACK);
 
@@ -1280,7 +1293,7 @@ int main(void)
         glBindVertexArray(universal_vao);
         CHECK_GL_ERRORS();
 
-        for (auto it = entities.begin(); it != entities.end(); it++) {
+        /*for (auto it = entities.begin(); it != entities.end(); it++) {
 //            LOG("ENTITY: " << it->getName());
             M.pushMatrix();
             // M.multMatrix(it->getRotation());
@@ -1292,7 +1305,7 @@ int main(void)
             glUniform1i(deferred_geom_prog.getUniform("ID"), it->id);
             it->getDrawable().drawDeferred(&deferred_geom_prog, &M, camera);
             M.popMatrix();
-        }
+        }*/
 
 
         /* attempt for g_buffer */
@@ -1580,6 +1593,10 @@ int main(void)
         CHECK_GL_ERRORS();
 //        gbuffer.copyDepthBuffer(width, height);       
         CHECK_GL_ERRORS();
+
+        /*screen_prog.bind();
+        screen_quad.Render();
+        screen_prog.unbind();*/
 
         deferred_lighting_prog.bind();
         glEnable(GL_DEPTH_TEST);
