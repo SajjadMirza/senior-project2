@@ -12,8 +12,8 @@ textures:
     Door/door_specular.jpg
 transforms:
   translations:
-    xaxis: 37.5
-    zaxis: 10.5
+    xaxis: 26.5
+    zaxis: 2.5
     yaxis: 0.9
   scale: 1.0  
 ---
@@ -30,8 +30,8 @@ textures:
     Door/door_specular_r.jpg
 transforms:
   translations:
-    xaxis: 37.5
-    zaxis: 10.5
+    xaxis: 26.5
+    zaxis: 2.5
     yaxis: -0.1
   scale: 1.0  
 ...

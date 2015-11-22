@@ -44,7 +44,7 @@ namespace draw {
 	Text::~Text() {}
 
 	// folow coords of 0,0 is middle, .9, .9 is top right corner, -.9, -.9, is bottom left corner
-	void Text::draw(Program& prog, GLFWwindow& window, std::string display_txt, float x_s, float y_s) {
+	void Text::draw(Program& prog, GLFWwindow& window, std::string display_txt, float x_s, float y_s, float enter_val) {
 		int str_size = display_txt.size();
 
 		glUniform1i(prog.getUniform("uTextToggle"), 1);
@@ -89,7 +89,7 @@ namespace draw {
 	    	renderText(cn_str, sx + x_s - .5 * str_size * .07, sy + y_s, sx, sy);
 	    }
 	    else {   */
-    	renderText(cn_str, sx + x_s, sy + y_s, sx, sy);
+    	renderText(cn_str, sx + x_s, sy + y_s, sx, sy, enter_val);
 	    //} 
 
     	glEnable(GL_DEPTH_TEST);
@@ -99,13 +99,13 @@ namespace draw {
 		glUniform1i(prog.getUniform("uTextToggle"), 0);
 	}
 
-	void Text::renderText(const char *text, float x, float y, float sx, float sy) {
+	void Text::renderText(const char *text, float x, float y, float sx, float sy, float enter_val) {
 		float orig_x = x;
 		float advancer = g->advance.x >> 6;
 
 	    for(const char *p = text; *p; p++) {
 	    	if (*p == '\n') {
-	    		y -= (advancer)/75.0f;
+	    		y -= (advancer)/enter_val;
 	    		x = orig_x;
 	    		continue;
 	    	}

@@ -42,6 +42,7 @@
 
 
 draw::Text text("testfont.ttf", 24);
+draw::Text text_terminal("Glass_TTY_VT220.ttf", 16);
 draw::Text text_lava("testfont_3.ttf", 18);
 draw::Text text_end("testfont_3.ttf", 18);
 
@@ -236,7 +237,7 @@ static void findFPS() {
 static void draw_text(GLFWwindow& window) {
     std::ostringstream convert; 
     convert << "FPS " << lastFPS;
-    text.draw(deferred_lighting_prog, window, convert.str(), -0.95f, 0.9f);
+    text.draw(deferred_lighting_prog, window, convert.str(), -0.95f, 0.9f, 75.0f);
 }
 
 static void error_callback(int error, const char* description) {
@@ -578,6 +579,10 @@ static void init_gl()
     }
     screen_prog.addAttribute("vertPos");
     screen_prog.addAttribute("vertTex");
+    screen_prog.addUniform("texture0");
+
+    screen_prog.addAttribute("wordCoords");
+    screen_prog.addUniform("uTextToggle");
 
     CHECK_GL_ERRORS();
 
@@ -1594,16 +1599,33 @@ int main(void)
 //        gbuffer.copyDepthBuffer(width, height);       
         CHECK_GL_ERRORS();
 
-        /*screen_prog.bind();
-        screen_quad.Render();
-        screen_prog.unbind();*/
+        /* Attempt to forward render a quad */
+        /*Comp* temp_h;
+        if (level_one.getRooms()[1]->room_t == Room::RoomType::COMP) {
+            Comp* temp_h;
+            screen_prog.bind();
+                temp_h = dynamic_cast<Comp*>(level_one.getRooms()[1]);
+                
+                screen_quad.Render();
+                
+                glEnable(GL_DEPTH_TEST);
+                glDisable(GL_CULL_FACE);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+
+                std::ostringstream convert; 
+                convert << "Rawr from the world\nHAHAHA\nh\nh\nh\nh\nh\nh\nh\nh\nh\nh";
+                text_terminal.draw(screen_prog, *window, convert.str(), -0.95f, 0.90f, 200.0f);
+    
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            screen_prog.unbind();
+        }*/
 
         deferred_lighting_prog.bind();
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
-        draw_text(*window);
-        glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
+            draw_text(*window);
+            glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
         deferred_lighting_prog.unbind();
 
 

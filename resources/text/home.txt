@@ -1,0 +1,15 @@
+Hello guest user! This is a terminal about information involving this facility!
+How may I help you today?
+
+1. What is the purpose of this facility.
+2. Employees of this facility.
+3. Map of facility.
+4. System access manual.
+5. Company message for all employees.
+6. Root Access.
+
+NOTE - Some options only visible to authorized users
+
+...
+Type number on your keyboard to access info.
+Type q on your keyboard to exit this terminal.

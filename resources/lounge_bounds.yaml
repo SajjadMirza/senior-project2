@@ -12,8 +12,8 @@ textures:
     Door/door_specular.jpg
 transforms:
   translations:
-    xaxis: 27.5
-    zaxis: 22.5
+    xaxis: 41.5
+    zaxis: 26.5
     yaxis: 0.9
   scale: 1.0  
 ---
@@ -30,116 +30,8 @@ textures:
     Door/door_specular_r.jpg
 transforms:
   translations:
-    xaxis: 27.5
-    zaxis: 22.5
+    xaxis: 41.5
+    zaxis: 26.5
     yaxis: -0.1
-  scale: 1.0  
----
-model: cube_3
-file: cube.obj
-directory: resources/models/cube/
-format: obj
-textures:
-  diffuse:
-    Door/door.png
-  normal:
-    Door/door_normal.jpg
-  specular:
-    Door/door_specular.jpg
-transforms:
-  translations:
-    xaxis: 23.5
-    zaxis: 18.5
-    yaxis: 0.9
-  scale: 1.0  
----
-model: cube_4
-file: cube.obj
-directory: resources/models/cube/
-format: obj
-textures:
-  diffuse:
-    Door/door_r.png
-  normal:
-    Door/door_normal_r.jpg
-  specular:
-    Door/door_specular_r.jpg
-transforms:
-  translations:
-    xaxis: 23.5
-    zaxis: 18.5
-    yaxis: -0.1
-  scale: 1.0  
----
-model: cube_5
-file: cube.obj
-directory: resources/models/cube/
-format: obj
-textures:
-  diffuse:
-    Door/door.png
-  normal:
-    Door/door_normal.jpg
-  specular:
-    Door/door_specular.jpg
-transforms:
-  translations:
-    xaxis: 22.5
-    zaxis: 27.5
-    yaxis: 0.9
-  scale: 1.0  
----
-model: cube_6
-file: cube.obj
-directory: resources/models/cube/
-format: obj
-textures:
-  diffuse:
-    Door/door_r.png
-  normal:
-    Door/door_normal_r.jpg
-  specular:
-    Door/door_specular_r.jpg
-transforms:
-  translations:
-    xaxis: 22.5
-    zaxis: 27.5
-    yaxis: -0.1
-  scale: 1.0  
----
-model: cube_7
-file: cube.obj
-directory: resources/models/cube/
-format: obj
-textures:
-  diffuse:
-    Door/door.png
-  normal:
-    Door/door_normal.jpg
-  specular:
-    Door/door_specular.jpg
-transforms:
-  translations:
-    xaxis: 18.5
-    zaxis: 22.5
-    yaxis: 0.9
-  scale: 1.0  
----
-model: cube_8
-file: cube.obj
-directory: resources/models/cube/
-format: obj
-textures:
-  diffuse:
-    Door/door_r.png
-  normal:
-    Door/door_normal_r.jpg
-  specular:
-    Door/door_specular_r.jpg
-transforms:
-  translations:
-    xaxis: 18.5
-    zaxis: 22.5
-    yaxis: -0.1
-  scale: 1.0  
+  scale: 1.0   
 ...

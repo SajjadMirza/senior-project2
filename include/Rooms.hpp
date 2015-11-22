@@ -3,8 +3,11 @@
 
 #include <common.hpp>
 #include <draw/Text.hpp>
+#include <draw/Texture.hpp>
 #include <Entity.hpp>
 #include <stack>
+
+#include <boost/filesystem.hpp>
 
 #define SIZE 3
 
@@ -95,8 +98,16 @@ private:
 class Comp : public Room
 {
 public:
+    typedef struct 
+    {
+        std::string name;
+        std::string terminal_txt;
+    } labtop_screen;
+
     Comp();
     ~Comp();
+
+    std::vector<labtop_screen> lt_screen_list;
 private:
     std::string yaml_comp;
 };
@@ -112,5 +123,6 @@ private:
 
 static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file);
+static void get_all(const boost::filesystem::path& root, const std::string& ext, std::vector<boost::filesystem::path>& ret);
 
 #endif
