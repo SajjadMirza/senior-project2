@@ -17,6 +17,11 @@
 #define COMP_SERVER_4 5
 #define COMP_SERVER_5 6
 
+#define LIGHT_W 0
+#define LIGHT_R 1
+#define LIGHT_G 2
+#define LIGHT_B 3
+
 class Level;
 class Room;
 class Hanoi;
@@ -147,8 +152,11 @@ class Lounge : public Room
 public:
     Lounge();
     ~Lounge();
+
+    void select(Entity *last_selected_entity);
 private:
     std::string yaml_lounge;
+    int Light_state;
 };
 
 static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }

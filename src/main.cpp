@@ -107,6 +107,7 @@ int term_idx = 0;
 
 Hanoi* temp_h;
 Comp* temp_c;
+Lounge* temp_l;
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -157,6 +158,9 @@ static void applyRoomLogic(GLFWwindow *window)
                 }
                 temp_c->done(disable_controls);
                 break;
+                case Room::RoomType::LOUNGE:
+                temp_l = dynamic_cast<Lounge*>(temp);
+                temp_l->select(last_selected_entity);
                 default:
                 break;
             }
@@ -467,6 +471,11 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
                 case GLFW_KEY_7:
                     if (action == GLFW_RELEASE) {
                         term_idx = temp_c->terminal_idx(disable_controls, 7);
+                    }
+                    break;
+                case GLFW_KEY_8:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(disable_controls, 8);
                     }
                     break;
                 case GLFW_KEY_ENTER:

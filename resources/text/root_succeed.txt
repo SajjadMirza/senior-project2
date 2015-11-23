@@ -8,6 +8,7 @@ NOTE - For security reasons, all interations are logged.
 5. (root) Company message for all employees.
 6. (root) Experiment Status.
 7. (root) Turn on all Lights.
+8. (root) Reveal Detailed Map.
 
 ...
 Type number on your keyboard to access info.

@@ -476,7 +476,7 @@ transforms:
     yaxis: 0.0
   scale: 0.35 
 ---
-model: switch
+model: switch_special
 file: portalbutton.obj
 directory: resources/models/lounge_room/Switch/
 format: obj
@@ -497,7 +497,7 @@ transforms:
     yaxis: 0.5
   scale: 0.001 
 ---
-model: book
+model: book_special
 file: Book.obj
 directory: resources/models/lounge_room/Book/
 format: obj
@@ -679,5 +679,120 @@ transforms:
     xaxis: 47.0
     zaxis: 21.4
     yaxis: 0.355
+  scale: 0.625 
+---
+model: Picture_1_special
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_1_13.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 180.0
+  translations:
+    xaxis: 46.0
+    zaxis: 27.5
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_5_special
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_5_23.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 180.0
+  translations:
+    xaxis: 45.0
+    zaxis: 27.5
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_3_special
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_3_68.jpeg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 49.5
+    zaxis: 21.0
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_2_special
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_2_50.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 49.5
+    zaxis: 22.0
+    yaxis: 1.1
+  scale: 0.625 
+---
+model: Picture_4_special
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    president_4_54.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  translations:
+    xaxis: 49.5
+    zaxis: 23.0
+    yaxis: 1.1
   scale: 0.625 
 ...

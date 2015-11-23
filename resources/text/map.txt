@@ -3,7 +3,7 @@
 /******************************************************/
 
 As a Reminder, this map is only a general map. 
-Detailed map is in the lounge.
+Detailed map is in the lounge after root user requests it.
 
                        ************........
                        * Computer *       .
