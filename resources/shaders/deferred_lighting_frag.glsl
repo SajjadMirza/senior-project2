@@ -88,6 +88,7 @@ void main()
         
         vec2 texCoord = gl_FragCoord.xy / uScreenSize;
         float fragOcc = texture(occlusion, texCoord).r;
+        fragOcc = 1.0;
         vec3 fragPos = texture(gPosition, texCoord).rgb;
         float dist = length(light.position - fragPos);
         float attenuation = 1.0 / (1.0 + light.linear * dist + light.quadratic * dist * dist);

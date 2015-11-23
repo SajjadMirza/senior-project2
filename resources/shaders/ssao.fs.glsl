@@ -13,7 +13,7 @@ uniform int screen_height;
 uniform vec3 samples[64];
 
 int kernelSize = 16;
-float radius = 1.0;
+float radius = 0.25;
 
 vec2 noiseScale = vec2(float(screen_width) / 4.0f, float(screen_height) / 4.0f);
 
@@ -25,6 +25,8 @@ void main()
 {
     vec3 fragPos = texture(gViewSpacePositionDepth, fragTex).xyz;
     vec3 fragNor = texture(gNormal, fragTex).rgb;
+    fragNor = fragNor * 2.0 - 1.0;
+    fragNor = normalize(fragNor);
 //    fragNor = (transpose(vec4(fragNor, 1.0)) * V).xyz
 //    fragNor = (V * vec4(fragNor, 1.0)).xyz;
     vec3 randomVec = texture(ssaoNoise, fragTex * noiseScale).xyz;
@@ -52,7 +54,9 @@ void main()
     }
     
     occlusion = 1.0 - (occlusion / kernelSize);
-
+    
+    occlusion = pow(occlusion, 2.0);
+  
     ssao_out = occlusion;
 //    ssao_out = 0.5;
 }
