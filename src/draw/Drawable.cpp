@@ -9,6 +9,11 @@
 #include <log.hpp>
 
 using draw::Node;
+using draw::Texture;
+using draw::TextureBundle;
+using draw::TexType;
+using draw::TexTable;
+
 
 void assimp_to_eigen_matrix(Eigen::Matrix4f *dst, const aiMatrix4x4 &src) {
     Eigen::Matrix4f &m = *dst;
@@ -34,7 +39,52 @@ void assimp_to_eigen_matrix(Eigen::Matrix4f *dst, const aiMatrix4x4 &src) {
    
 }
 
-Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *node, const aiScene *scene) {
+static void inspect_assimp_material(aiMaterial *mat)
+{
+    uint diffuse_count = mat->GetTextureCount(aiTextureType_DIFFUSE);
+    LOG("Material has DIFFUSE textures " << diffuse_count);
+    uint specular_count = mat->GetTextureCount(aiTextureType_SPECULAR);
+    LOG("Material has SPECULAR textures " << specular_count);
+    uint normals_count = mat->GetTextureCount(aiTextureType_NORMALS);
+    LOG("Material has NORMALS textures " << normals_count);
+    uint none_count = mat->GetTextureCount(aiTextureType_NONE);
+    LOG("Material has NONE textures " << none_count);
+
+}
+
+static void get_textures_from_material(TextureBundle *texs, TexTable *loaded_texs, 
+                                       const aiMaterial *mat, const std::string &directory)
+{
+    uint diffuse_count = mat->GetTextureCount(aiTextureType_DIFFUSE);
+    if (diffuse_count > 0) {
+        LOG("Found DIFFUSE textures on material!");
+        if (diffuse_count > 1) {
+            WARN("Found " << diffuse_count << " DIFFUSE textures, ignoring all but the first.");
+        }
+        aiString str;
+        mat->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+        std::string filename = std::string(str.C_Str());
+        bool skip = false;
+        auto search = loaded_texs->find(filename);
+        if (search != loaded_texs->end()) {
+            skip = true;
+            LOG("Found that DIFFUSE material texture " << filename << " already exists!");
+            texs->diffuse = search->second;
+        }
+        if (!skip) {
+            LOG("Material DIFFUSE texture: " << filename << " does not exist, loading it");
+            Texture dt;
+            dt.filename = filename;
+            dt.type = TexType::DIFFUSE;
+            resource::load_texture_from_file(directory+"/"+dt.filename, &dt.tid);
+            LOG("Material DIFFUSE texture ID: " << dt.tid);
+            texs->diffuse = dt;
+            loaded_texs->insert(TexTable::value_type(filename, dt));
+        }
+    }
+}
+
+Node *deepcopy_assimp_tree(draw::Drawable *parent_drawable, const aiNode *node, const aiScene *scene) {
     Node *n = new Node();
     LOG("copy 1");
     // copy transformation matrix
@@ -48,8 +98,16 @@ Node *deepcopy_assimp_tree(const draw::Drawable *parent_drawable, const aiNode *
         draw::Shape s;
         LOG("copy 2.2");
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+        TextureBundle texs = parent_drawable->texs;
+        if (mesh->mMaterialIndex >= 0) {
+            LOG("copy 2.2.1 mesh has material index");
+            aiMaterial *mat = scene->mMaterials[mesh->mMaterialIndex];
+//            inspect_assimp_material(mat);
+            get_textures_from_material(&texs, &parent_drawable->textures,
+                                       mat, parent_drawable->directory);
+        }
         LOG("copy 2.3");
-        s.init(parent_drawable->texs, *mesh);
+        s.init(texs, *mesh);
         LOG("Copy 2.4");
         n->meshes.push_back(s);
         LOG("Copy 2.5");
@@ -96,6 +154,7 @@ namespace draw {
         name = config.model;
         // load textures to Drawable
         const ModelTextureConfig &texconf = config.textures;
+        directory = config.directory;
         if (!texconf.diffuse.empty()) {
             Texture dt;
             dt.filename = texconf.diffuse;
@@ -103,6 +162,7 @@ namespace draw {
             resource::load_texture_from_file(config.directory+"/"+texconf.diffuse,
                                              &dt.tid);
             texs.diffuse = dt;
+            this->textures.insert(TexTable::value_type(dt.filename, dt));
         }
 
         if (!texconf.normal.empty()) {
@@ -112,6 +172,7 @@ namespace draw {
             resource::load_texture_from_file(config.directory+"/"+texconf.normal,
                                              &dt.tid);
             texs.normal = dt;
+            this->textures.insert(TexTable::value_type(dt.filename, dt));
         }
 
         if (!texconf.specular.empty()) {
@@ -121,6 +182,7 @@ namespace draw {
             resource::load_texture_from_file(config.directory+"/"+texconf.specular,
                                              &dt.tid);
             texs.specular = dt;
+            this->textures.insert(TexTable::value_type(dt.filename, dt));
         }
 
         LOG("loading scene through assimp");

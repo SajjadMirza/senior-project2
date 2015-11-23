@@ -48,7 +48,7 @@ namespace draw {
     };
       
 
-    typedef std::unordered_map<std::string, Texture> TexTable;
+    typedef std::map<std::string, Texture> TexTable;
 };
 
 #endif

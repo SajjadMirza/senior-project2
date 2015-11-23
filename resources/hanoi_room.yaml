@@ -9,7 +9,7 @@ textures:
   normal:
     normal.jpg
   specular: 
-    specuar.jpg
+    specular.jpg
 overrides:
   radius: 0.5
   center: position
@@ -32,7 +32,7 @@ textures:
   normal:
     normal.jpg
   specular: 
-    specuar.jpg
+    specular.jpg
 overrides:
   radius: 0.0
   center: position
@@ -55,7 +55,7 @@ textures:
   normal:
     normal.jpg
   specular: 
-    specuar.jpg
+    specular.jpg
 overrides:
   radius: 0.5
   center: position
@@ -78,7 +78,7 @@ textures:
   normal:
     normal.jpg
   specular: 
-    specuar.jpg
+    specular.jpg
 overrides:
   radius: 0.0
   center: position
@@ -101,7 +101,7 @@ textures:
   normal:
     normal.jpg
   specular: 
-    specuar.jpg
+    specular.jpg
 overrides:
   radius: 0.5
   center: position
@@ -124,7 +124,7 @@ textures:
   normal:
     normal.jpg
   specular: 
-    specuar.jpg
+    specular.jpg
 overrides:
   radius: 0.0
   center: position

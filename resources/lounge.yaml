@@ -21,9 +21,9 @@ transforms:
   scale: 0.03 
 ---
 model: pool_table
-file: Objects/TournamentTable.lwo
-directory: resources/models/lounge_room/Pool_Table/
-format: lwo
+file: TournamentTable2.obj
+directory: resources/models/lounge_room/Pool_Table
+format: obj
 textures:
   diffuse:
     Images/Wood.bmp
@@ -208,7 +208,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
@@ -232,7 +232,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
@@ -255,7 +255,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
@@ -279,7 +279,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
@@ -302,7 +302,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
@@ -326,7 +326,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
@@ -349,7 +349,7 @@ textures:
   normal:
     sodabottleclosed01large_n.dds
   specular:
-    table_specular.jpg
+    SpecularMap.png
 overrides:
   radius: 0.0
   center: position
