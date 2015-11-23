@@ -1,0 +1,6 @@
+INCORRECT - TRY AGAIN!!!
+
+It takes you some time before you may access the computer again.
+
+...
+Press enter to go back to the question or q to quit.

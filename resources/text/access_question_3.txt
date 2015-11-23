@@ -1,0 +1,12 @@
+Which species includes the tallest tree on earth?
+
+1. Sequoiadendron giganteum
+2. Eucalyptus regnans
+3. Picea sitchensis
+4. Pseudotsuga menziesii var. menziesii
+5. All of the above
+6. None of the above
+
+...
+Type number on your keyboard togive answer.
+Type q on your keyboard to exit this terminal.

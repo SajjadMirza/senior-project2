@@ -10,6 +10,12 @@
 #include <boost/filesystem.hpp>
 
 #define SIZE 3
+#define LABTOP 1
+#define COMP_SERVER_1 2
+#define COMP_SERVER_2 3
+#define COMP_SERVER_3 4
+#define COMP_SERVER_4 5
+#define COMP_SERVER_5 6
 
 class Level;
 class Room;
@@ -107,10 +113,11 @@ public:
     Comp();
     ~Comp();
 
-    int select(GLFWwindow *window);
-    int terminal_idx();
-    int terminal_idx(int num);
-    int up_level();
+    int select(Entity *last_selected_entity);
+    int terminal_idx_h(int disable_controls);
+    int terminal_idx(int disable_controls, int num);
+    int up_level(int disable_controls);
+    void done(int disable_controls);
 
     std::vector<labtop_screen> lt_screen_list;
 private:
@@ -118,10 +125,19 @@ private:
     int access_idx(int num);
     int root_idx(int num);
     int home_root_idx(int num);
+    int server_answer(int num, int sev);
 
     std::string yaml_comp;
-    int computer_idx;
+
     int term_idx;
+    int term_idx_s1;
+    int term_idx_s2;
+    int term_idx_s3;
+    int term_idx_s4;
+    int term_idx_s5;
+
+    std::vector<bool> exit_list;
+
     bool root;
 };
 

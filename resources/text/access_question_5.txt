@@ -1,0 +1,10 @@
+Which of the following operations occurs last?
+
+1. Primitive Assembly
+2. Stencil Test
+3. Tessellation
+4. Perspective divide
+
+...
+Type number on your keyboard togive answer.
+Type q on your keyboard to exit this terminal.

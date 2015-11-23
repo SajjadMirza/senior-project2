@@ -218,18 +218,17 @@ Comp::Comp() : Room()
 
     init_entities_R(&boundaries, yaml_bounds);
     init_entities_R(&entities, yaml_comp);
-
-    computer_idx = -1;
+    
     term_idx = -1;
+    term_idx_s1 = -1;
+    term_idx_s2 = -1;
+    term_idx_s3 = -1;
+    term_idx_s4 = -1;
+    term_idx_s5 = -1;
     root = false;
 
-    int i = 0;
-    for (auto it = entities.begin(); it != entities.end(); it++) {
-        Entity e = *it;
-        if (e.getName() == "Computer") {
-            computer_idx = i;
-        }
-        ++i;
+    for (int i = 0; i < 5; ++i) {
+        exit_list.push_back(false);
     }
 
     triggerPos = vec2(20, 6);
@@ -259,13 +258,6 @@ Comp::Comp() : Room()
 
         lt_screen_list.push_back(ls);
     }
-
-    /*for(int i = 0; i < lt_screen_list.size(); ++i) {
-        LOG("Number: " << i);
-        LOG("Name: " << lt_screen_list[i].name);
-        LOG("Text: \n" << lt_screen_list[i].terminal_txt);
-        LOG("End of current file");
-    }*/
 }
 
 Comp::~Comp()
@@ -273,11 +265,31 @@ Comp::~Comp()
     
 }
 
-int Comp::select(GLFWwindow *window)
+int Comp::select(Entity *last_selected_entity)
 {
     if (state_t == ACTIVE || state_t == SUCCESS) {
-        if (entities[computer_idx].selected) {
-            return 1;
+        if (last_selected_entity != NULL && last_selected_entity->selected) {
+            if (last_selected_entity->getName() == "Computer") {
+                return LABTOP;
+            }
+            else if (last_selected_entity->getName() == "computer_server_1") {
+                return COMP_SERVER_1;
+            }
+            else if (last_selected_entity->getName() == "computer_server_2") {
+                return COMP_SERVER_2;
+            }
+            else if (last_selected_entity->getName() == "computer_server_3") {
+                return COMP_SERVER_3;
+            }
+            else if (last_selected_entity->getName() == "computer_server_4") {
+                return COMP_SERVER_4;
+            }
+            else if (last_selected_entity->getName() == "computer_server_5") {
+                return COMP_SERVER_5;
+            }
+            else {
+                return 0;
+            }
         }
         else {
             return 0;
@@ -285,9 +297,9 @@ int Comp::select(GLFWwindow *window)
     }
 }
 
-int Comp::terminal_idx()
+int Comp::terminal_idx_h(int disable_controls)
 {
-    if (term_idx == -1) {
+    if (term_idx == -1 && disable_controls == LABTOP) {
         for (int i = 0; i < lt_screen_list.size(); ++i) {
             if (lt_screen_list[i].name == "home.txt") {
                 term_idx = i;
@@ -295,14 +307,93 @@ int Comp::terminal_idx()
             }
         }
     }
-    else {
-        return term_idx;
+    else if (term_idx_s1 == -1 && disable_controls == COMP_SERVER_1) {
+        for (int i = 0; i < lt_screen_list.size(); ++i) {
+            if (lt_screen_list[i].name == "access_question_1.txt") {
+                term_idx_s1 = i;
+                return i;
+            }
+        }
     }
+    else if (term_idx_s2 == -1 && disable_controls == COMP_SERVER_2) {
+        for (int i = 0; i < lt_screen_list.size(); ++i) {
+            if (lt_screen_list[i].name == "access_question_2.txt") {
+                term_idx_s2 = i;
+                return i;
+            }
+        }
+    }
+    else if (term_idx_s3 == -1 && disable_controls == COMP_SERVER_3) {
+        for (int i = 0; i < lt_screen_list.size(); ++i) {
+            if (lt_screen_list[i].name == "access_question_3.txt") {
+                term_idx_s3 = i;
+                return i;
+            }
+        }
+    }
+    else if (term_idx_s4 == -1 && disable_controls == COMP_SERVER_4) {
+        for (int i = 0; i < lt_screen_list.size(); ++i) {
+            if (lt_screen_list[i].name == "access_question_4.txt") {
+                term_idx_s4 = i;
+                return i;
+            }
+        }
+    }
+    else if (term_idx_s5 == -1 && disable_controls == COMP_SERVER_5) {
+        for (int i = 0; i < lt_screen_list.size(); ++i) {
+            if (lt_screen_list[i].name == "access_question_5.txt") {
+                term_idx_s5 = i;
+                return i;
+            }
+        }
+    }
+
+    if (disable_controls == LABTOP) {
+        return term_idx; 
+    }
+    if (disable_controls == COMP_SERVER_1) {
+        return term_idx_s1; 
+    }
+    if (disable_controls == COMP_SERVER_2) {
+        return term_idx_s2; 
+    }
+    if (disable_controls == COMP_SERVER_3) {
+        return term_idx_s3; 
+    }
+    if (disable_controls == COMP_SERVER_4) {
+        return term_idx_s4; 
+    }
+    if (disable_controls == COMP_SERVER_5) {
+        return term_idx_s5; 
+    }
+
 }
 
-int Comp::terminal_idx(int num) 
+int Comp::terminal_idx(int disable_controls, int num) 
 {
-    std::string search = lt_screen_list[term_idx].name;
+    std::string search;
+    switch(disable_controls) 
+    {
+        case LABTOP:
+            search = lt_screen_list[term_idx].name;
+            break;
+        case COMP_SERVER_1:
+            search = lt_screen_list[term_idx_s1].name;
+            break;
+        case COMP_SERVER_2:
+            search = lt_screen_list[term_idx_s2].name;
+            break;
+        case COMP_SERVER_3:
+            search = lt_screen_list[term_idx_s3].name;
+            break;
+        case COMP_SERVER_4:
+            search = lt_screen_list[term_idx_s4].name;
+            break;
+        case COMP_SERVER_5:
+            search = lt_screen_list[term_idx_s5].name;
+            break;
+    }
+
     if (search == "home.txt") {
         return home_idx(num);
     }
@@ -315,21 +406,79 @@ int Comp::terminal_idx(int num)
     else if (search == "root_succeed.txt") {
         return home_root_idx(num);
     }
+    else if (search == "access_question_1.txt") {
+        return server_answer(num, COMP_SERVER_1);
+    }
+    else if (search == "access_question_2.txt") {
+        return server_answer(num, COMP_SERVER_2);
+    }
+    else if (search == "access_question_3.txt") {
+        return server_answer(num, COMP_SERVER_3);
+    }
+    else if (search == "access_question_4.txt") {
+        return server_answer(num, COMP_SERVER_4);
+    }
+    else if (search == "access_question_5.txt") {
+        return server_answer(num, COMP_SERVER_5);
+    }
     return term_idx;
 }
 
-int Comp::up_level()
+int Comp::up_level(int disable_controls)
 {
     std::string search = "";
 
+    int num;
+    switch(disable_controls) 
+    {
+        case LABTOP:
+            num = term_idx;
+            break;
+        case COMP_SERVER_1:
+            num = term_idx_s1;
+            break;
+        case COMP_SERVER_2:
+            num = term_idx_s2;
+            break;
+        case COMP_SERVER_3:
+            num = term_idx_s3;
+            break;
+        case COMP_SERVER_4:
+            num = term_idx_s4;
+            break;
+        case COMP_SERVER_5:
+            num = term_idx_s5;
+            break;
+    }
+
     for (int i = 0; i < lt_screen_list.size(); ++i) {
-        if (i == term_idx) {
+        if (i == num) {
             search = lt_screen_list[i].name;
             i = lt_screen_list.size();
         }
     }
 
-    if (search == "root_facility_purpose.txt" ||
+    if (search == "access_fail.txt") {
+        switch(disable_controls) 
+        {
+            case COMP_SERVER_1:
+                search = "access_question_1.txt";
+                break;
+            case COMP_SERVER_2:
+                search = "access_question_2.txt";
+                break;
+            case COMP_SERVER_3:
+                search = "access_question_3.txt";
+                break;
+            case COMP_SERVER_4:
+                search = "access_question_4.txt";
+                break;
+            case COMP_SERVER_5:
+                search = "access_question_5.txt";
+                break;
+        }
+    }
+    else if (search == "root_facility_purpose.txt" ||
         search == "root_employee.txt" ||
         search == "root_message.txt" ||
         search == "root_experiment.txt" ||
@@ -362,8 +511,47 @@ int Comp::up_level()
 
     for (int i = 0; i < lt_screen_list.size(); ++i) {
         if (lt_screen_list[i].name == search) {
-            term_idx = i;
+            switch(disable_controls) 
+            {
+                case LABTOP:
+                    term_idx = i;
+                    break;
+                case COMP_SERVER_1:
+                    term_idx_s1 = i;
+                    break;
+                case COMP_SERVER_2:
+                    term_idx_s2 = i;
+                    break;
+                case COMP_SERVER_3:
+                    term_idx_s3 = i;
+                    break;
+                case COMP_SERVER_4:
+                    term_idx_s4 = i;
+                    break;
+                case COMP_SERVER_5:
+                    term_idx_s5 = i;
+                    break;
+            }
             return i;
+        }
+    }
+}
+
+void Comp::done(int disable_controls)
+{
+    bool esc = true;
+
+    if (disable_controls == 0 && state_t == Room::State::ACTIVE) {
+        for (int i = 0; i < exit_list.size(); ++i) {
+            if (exit_list[i] == false) {
+                esc = false;
+                i = exit_list.size();
+            }
+        }
+
+        if (esc) {
+            state_t = SUCCESS;
+            boundaries.clear();
         }
     }
 }
@@ -504,6 +692,84 @@ int Comp::home_root_idx(int num)
     }
 
     return term_idx;   
+}
+
+int Comp::server_answer(int num, int sev)
+{
+    std::string search = "";
+    std::vector<bool> answers;
+    switch(sev) 
+    {
+        case COMP_SERVER_1:
+            answers = { false, false, true, false, false, false };
+            break;
+        case COMP_SERVER_2:
+            answers = { false, false, false, true, false, false };
+            break;
+        case COMP_SERVER_3:
+            answers = { false, false, false, false, false, true };
+            break;
+        case COMP_SERVER_4:
+            answers = { true, false, false, false, false, false };
+            break;
+        case COMP_SERVER_5:
+            answers = { false, true, false, false };
+            break;
+    }
+
+    if (num - 1 < answers.size()) { 
+        if (answers[num - 1] == true) {
+            search = "access_succeed.txt";
+            exit_list[sev - COMP_SERVER_1] = true;
+        }
+        else {
+            search = "access_fail.txt";
+        }
+    }
+    
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (lt_screen_list[i].name == search) {
+            switch(sev) 
+            {
+                case COMP_SERVER_1:
+                    term_idx_s1 = i; 
+                    break;
+                case COMP_SERVER_2:
+                    term_idx_s2 = i;         
+                    break;
+                case COMP_SERVER_3:
+                    term_idx_s3 = i;         
+                    break;
+                case COMP_SERVER_4:
+                    term_idx_s4 = i;         
+                    break;
+                case COMP_SERVER_5:
+                    term_idx_s5 = i;         
+                    break;
+            }
+            return i;
+        }
+    }
+
+    switch(sev) 
+    {
+        case COMP_SERVER_1:
+            return term_idx_s1; 
+            break;
+        case COMP_SERVER_2:
+            return term_idx_s2;         
+            break;
+        case COMP_SERVER_3:
+            return term_idx_s3;         
+            break;
+        case COMP_SERVER_4:
+            return term_idx_s4;         
+            break;
+        case COMP_SERVER_5:
+            return term_idx_s5;         
+            break;
+    }
 }
 
 Lounge::Lounge() : Room()

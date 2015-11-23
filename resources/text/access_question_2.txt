@@ -1,0 +1,14 @@
+What is the name of this sequence:
+
+..., 5, 8, 13, 21, 34,...
+
+1. Factorials
+2. Triangular sequence
+3. Lucas numbers
+4. Fibonacci sequence
+5. All of the above
+6. None of the above
+
+...
+Type number on your keyboard togive answer.
+Type q on your keyboard to exit this terminal.

@@ -40,9 +40,6 @@
 
 #include <EntityDatabase.hpp>
 
-#define LABTOP 1
-
-
 draw::Text text("testfont.ttf", 24);
 draw::Text text_terminal("Glass_TTY_VT220.ttf", 16);
 draw::Text text_lava("testfont_3.ttf", 18);
@@ -131,19 +128,21 @@ static void applyRoomLogic(GLFWwindow *window)
             (level_one.getRooms())[i]->boundaries.clear();
         }
 
-        if (temp->state_t == Room::State::ACTIVE) {
+        if (temp->state_t == Room::State::ACTIVE || temp->state_t == Room::State::SUCCESS) {
             switch(temp->room_t) 
             {
                 case Room::RoomType::HANOI:
-                temp_h = dynamic_cast<Hanoi*>(temp);
-                temp_h->select(window);
-                temp_h->done();
+                if (temp->state_t == Room::State::ACTIVE) {
+                    temp_h = dynamic_cast<Hanoi*>(temp);
+                    temp_h->select(window);
+                    temp_h->done();
+                }
                 break;
                 case Room::RoomType::COMP:
                 temp_c = dynamic_cast<Comp*>(temp);
-                disable_controls = temp_c->select(window);
+                disable_controls = temp_c->select(last_selected_entity);
                 if (disable_controls) {
-                    term_idx = temp_c->terminal_idx();
+                    term_idx = temp_c->terminal_idx_h(disable_controls);
                     screen_prog.bind();                
                         screen_quad.Render();
                         glEnable(GL_DEPTH_TEST);
@@ -155,6 +154,7 @@ static void applyRoomLogic(GLFWwindow *window)
                         glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
                     screen_prog.unbind();
                 }
+                temp_c->done(disable_controls);
                 break;
                 default:
                 break;
@@ -417,7 +417,13 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
         } // end of switch
     }
     else {
-        if (disable_controls == LABTOP) {
+        if (disable_controls == LABTOP ||
+            disable_controls == COMP_SERVER_1 ||
+            disable_controls == COMP_SERVER_2 ||
+            disable_controls == COMP_SERVER_3 ||
+            disable_controls == COMP_SERVER_4 ||
+            disable_controls == COMP_SERVER_5) 
+        {
             switch (key) {
                 case GLFW_KEY_ESCAPE:
                     if (action == GLFW_PRESS) {
@@ -429,42 +435,42 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
                     break;
                 case GLFW_KEY_1:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(1);
+                        term_idx = temp_c->terminal_idx(disable_controls, 1);
                     }
                     break;
                 case GLFW_KEY_2:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(2);
+                        term_idx = temp_c->terminal_idx(disable_controls, 2);
                     }
                     break;
                 case GLFW_KEY_3:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(3);
+                        term_idx = temp_c->terminal_idx(disable_controls, 3);
                     }
                     break;
                 case GLFW_KEY_4:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(4);
+                        term_idx = temp_c->terminal_idx(disable_controls, 4);
                     }
                     break;
                 case GLFW_KEY_5:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(5);
+                        term_idx = temp_c->terminal_idx(disable_controls, 5);
                     }
                     break;
                 case GLFW_KEY_6:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(6);
+                        term_idx = temp_c->terminal_idx(disable_controls, 6);
                     }
                     break;
                 case GLFW_KEY_7:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->terminal_idx(7);
+                        term_idx = temp_c->terminal_idx(disable_controls, 7);
                     }
                     break;
                 case GLFW_KEY_ENTER:
                     if (action == GLFW_RELEASE) {
-                        term_idx = temp_c->up_level();
+                        term_idx = temp_c->up_level(disable_controls);
                     }
                     break;
             }

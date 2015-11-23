@@ -1,0 +1,12 @@
+Which of the following are NOT plants?
+
+1. Amanita phalloides
+2. Taraxacum officinale
+3. Bellis perennis
+4. Pseudotsuga menziesii var. menziesii
+5. All of the above
+6. None of the above
+
+...
+Type number on your keyboard togive answer.
+Type q on your keyboard to exit this terminal.
