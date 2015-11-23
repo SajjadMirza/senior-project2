@@ -1,0 +1,11 @@
+Repeating facility message...
+
+Welcome to United States Defense Research Institute Luna-03. The purpose of this
+facility is to conduct scientific research and technological development
+critical to the defense and security of the American people. The primary
+experiment of note is the High-Energy Coplanar Non-Newtonian SALSA Vectorized
+Atomic Instrumented Tachyon Stabilizer Arboretum. Please observe all standard
+safety protocols under Executive Order no. 35582-A.
+
+...
+Press enter to return to home or q to exit terminal.

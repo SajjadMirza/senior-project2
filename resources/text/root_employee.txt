@@ -1,0 +1,20 @@
+/******************************************************/
+                    EMPLOYEE CATALOG
+/******************************************************/
+
+ID      Name               Position             Status
+236146  Elena C. Knight    Electrical Engineer  Deceased
+236178  Phyllis D. Ashley  Computer Scientist   Deceased
+236929  John D. Collins    Ecolologist          Deceased
+237234  Wayne J. Wilken    Atsronomer           Deceased 
+237313  Vlad Repin         Technichin           Deceased
+237315  Alan S. Young      Security             Deceased
+238455  Rhonda J. Sparks   Security             Deceased
+241665  Protagonist        Scientist            Missing
+&#RGUIFREr92grhrt034)(DQWu
+/******************************************************/
+           WARNING: FILE CORRUPTION DETECTED!!!
+/******************************************************/
+
+...
+Command aborted. Press enter to return to home or q to exit terminal.

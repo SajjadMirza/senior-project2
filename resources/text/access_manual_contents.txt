@@ -1,0 +1,11 @@
+System access manual links...
+
+1. Life
+2. Pattern Recognition
+3. Relative heights of Earth Trees
+4. Plants
+5. Computer Graphics
+
+...
+Type number on your keyboard to access info.
+Press enter to return to home or q to exit terminal.

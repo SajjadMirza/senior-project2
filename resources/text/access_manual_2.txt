@@ -1,0 +1,13 @@
+Pattern Recognition...
+
+In mathematical terms, the sequence Fn of Fibonacci numbers is defined by the 
+recurrence relation:
+
+    F(n) = F(n-1) + F(n-2),
+    
+    with seed values
+
+    F(1) = 1, F(2) = 1  
+
+...
+Press enter to return to access manual or q to exit terminal.

@@ -1,0 +1,14 @@
+You are logged in as root. This is the administration console.
+NOTE - For security reasons, all interations are logged.
+
+1. (root) What is the purpose of this facility.
+2. (root) Employees of this facility.
+3. (root) Map of facility - no changes
+4. (root) System access manual - no changes
+5. (root) Company message for all employees.
+6. (root) Experiment Status.
+7. (root) Turn on all Lights.
+
+...
+Type number on your keyboard to access info.
+Type q on your keyboard to exit this terminal.

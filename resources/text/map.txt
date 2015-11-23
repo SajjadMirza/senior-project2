@@ -1,0 +1,29 @@
+/******************************************************/
+                    FACILITY MAP
+/******************************************************/
+
+As a Reminder, this map is only a general map. 
+Detailed map is in the lounge.
+
+                       ************........
+                       * Computer *       .
+     ..................* Room     *       ...........
+     .                 ************                 .
+     .                                              .
+  **************                          ***************
+  * Power Room *                          * Lounge Room *
+  **************      ***************     ***************
+            .         * CONTAINMENT *...           .
+            .         ***************  ...         .
+            .                            ..        .
+            .                             . .      .
+            .                               ........
+            ............*************              
+                        * Cryo Room *
+                        *************
+  Legend:
+  * - Room boundaries
+  . - Path
+
+...
+Press enter to return to home or q to exit terminal.

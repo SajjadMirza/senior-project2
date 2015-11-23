@@ -40,6 +40,8 @@
 
 #include <EntityDatabase.hpp>
 
+#define LABTOP 1
+
 
 draw::Text text("testfont.ttf", 24);
 draw::Text text_terminal("Glass_TTY_VT220.ttf", 16);
@@ -102,6 +104,12 @@ boost::random::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
 
 Entity *last_selected_entity = NULL;
 
+draw::Quad screen_quad;
+int disable_controls = 0;
+int term_idx = 0;
+
+Hanoi* temp_h;
+Comp* temp_c;
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -116,6 +124,7 @@ static void applyRoomLogic(GLFWwindow *window)
     for (int i = 0; i < level_one.getNumRooms(); ++i) {
         Room* temp = (level_one.getRooms())[i];
 
+        /* Debugging only */
         if (glfwGetKey(window, GLFW_KEY_SLASH) == GLFW_PRESS) {
             (level_one.getRooms())[i]->state_t = Room::State::SUCCESS;
             LOG("SKIPPING ROOMS");
@@ -126,14 +135,34 @@ static void applyRoomLogic(GLFWwindow *window)
             switch(temp->room_t) 
             {
                 case Room::RoomType::HANOI:
-                Hanoi* temp_h;
                 temp_h = dynamic_cast<Hanoi*>(temp);
                 temp_h->select(window);
                 temp_h->done();
                 break;
+                case Room::RoomType::COMP:
+                temp_c = dynamic_cast<Comp*>(temp);
+                disable_controls = temp_c->select(window);
+                if (disable_controls) {
+                    term_idx = temp_c->terminal_idx();
+                    screen_prog.bind();                
+                        screen_quad.Render();
+                        glEnable(GL_DEPTH_TEST);
+                        glDisable(GL_CULL_FACE);
+                        glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                        std::ostringstream convert; 
+                        convert << temp_c->lt_screen_list[term_idx].terminal_txt;
+                        text_terminal.draw(screen_prog, *window, convert.str(), -0.95f, 0.90f, 200.0f);
+                        glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+                    screen_prog.unbind();
+                }
+                break;
                 default:
                 break;
             }
+        }
+
+        if (temp->state_t == Room::State::SUCCESS) {
+            /* Allow computer access for comp_room */
         }
     }
 }
@@ -257,32 +286,33 @@ static Eigen::Vector3f selection_coords;
 static bool selection_flag = false;
 
 static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-    if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
-        camera->mouseReleased();
-        return;
+    if (!disable_controls) {
+        if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
+            camera->mouseReleased();
+            return;
+        }
+
+        if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_RIGHT) {
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            selection_coords(0) = xpos;
+            selection_coords(1) = ypos;
+            std::cout << "right click at" << xpos << " " << ypos << std::endl;
+            selection_flag = true;
+            camera->mouseReleased();
+            return;
+        }
+
+        if (action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT) {
+            bool shift = mods & GLFW_MOD_SHIFT;
+            bool ctrl = mods & GLFW_MOD_CONTROL;
+            bool alt = mods & GLFW_MOD_ALT;
+            double x, y;
+            glfwGetCursorPos(window, &x, &y);
+
+            camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);
+        }
     }
-
-    if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_RIGHT) {
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        selection_coords(0) = xpos;
-        selection_coords(1) = ypos;
-        std::cout << "right click at" << xpos << " " << ypos << std::endl;
-        selection_flag = true;
-        camera->mouseReleased();
-        return;
-    }
-
-    if (action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT) {
-        bool shift = mods & GLFW_MOD_SHIFT;
-        bool ctrl = mods & GLFW_MOD_CONTROL;
-        bool alt = mods & GLFW_MOD_ALT;
-        double x, y;
-        glfwGetCursorPos(window, &x, &y);
-
-        camera->mouseClicked(std::floor(x), std::floor(y), shift, ctrl, alt);
-    }
-
 }
 
 static void cursor_pos_callback(GLFWwindow *window, double x, double y) 
@@ -292,98 +322,154 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y)
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) 
 {
-    switch (key) {
-    case GLFW_KEY_G:
-        logic->notifyKey('G');
-        pattern->notifyKey('G');
-        break;
-    case GLFW_KEY_F:
-        logic->notifyKey('F');
-        break;
-    case GLFW_KEY_LEFT_SHIFT:
-    case GLFW_KEY_RIGHT_SHIFT:
-        if (action == GLFW_RELEASE) {
-            camera->modifierReleased();
-        }
-        break;
-    case GLFW_KEY_LEFT_CONTROL:
-    case GLFW_KEY_RIGHT_CONTROL:
-        if (action == GLFW_RELEASE) {
-            camera->modifierReleased();
-        }
-        break;
-    case GLFW_KEY_M:
-        if (action == GLFW_RELEASE) {
-            if (camera == fp_camera) {
-                camera = ov_camera;
-                camera->setAspect((float)new_w / (float)new_h);
+    if (!disable_controls) {
+        switch (key) {
+        case GLFW_KEY_G:
+            logic->notifyKey('G');
+            pattern->notifyKey('G');
+            break;
+        case GLFW_KEY_F:
+            logic->notifyKey('F');
+            break;
+        case GLFW_KEY_LEFT_SHIFT:
+        case GLFW_KEY_RIGHT_SHIFT:
+            if (action == GLFW_RELEASE) {
+                camera->modifierReleased();
             }
-            else {
-                camera = fp_camera;
-                camera->setAspect((float)new_w / (float)new_h);
+            break;
+        case GLFW_KEY_LEFT_CONTROL:
+        case GLFW_KEY_RIGHT_CONTROL:
+            if (action == GLFW_RELEASE) {
+                camera->modifierReleased();
+            }
+            break;
+        case GLFW_KEY_M:
+            if (action == GLFW_RELEASE) {
+                if (camera == fp_camera) {
+                    camera = ov_camera;
+                    camera->setAspect((float)new_w / (float)new_h);
+                }
+                else {
+                    camera = fp_camera;
+                    camera->setAspect((float)new_w / (float)new_h);
+                }
+            }
+            break;
+        case GLFW_KEY_N:
+            if (action == GLFW_RELEASE) {
+                if (highlight == false) {
+                    highlight = true;
+                }
+                else {
+                    highlight = false;
+                }
+            }
+            break;
+        case GLFW_KEY_ESCAPE:
+            if (action == GLFW_PRESS) {
+                glfwSetWindowShouldClose(window, GL_TRUE);
+            }
+            break;
+        case GLFW_KEY_P:
+            if (action == GLFW_RELEASE) {
+                std::cout << camera->translations << std::endl;
+            }
+            break;
+        case GLFW_KEY_T:
+            camera->translations = Eigen::Vector3f(-5.0f, -0.7f, -22.0f);
+            break;
+        case GLFW_KEY_Y:
+            camera->translations = Eigen::Vector3f(-27.0f, -0.7f, -12.0f);
+            break;
+        case GLFW_KEY_U:
+            camera->translations = Eigen::Vector3f(-29.0f, -0.7f, -22.0f);
+            break;
+        case GLFW_KEY_I:
+            camera->translations = Eigen::Vector3f(-24.0f, -0.7f, -42.0f);
+            break;
+        case GLFW_KEY_1:
+            debug_gbuffer_mode = 0;
+            break;
+        case GLFW_KEY_2:
+            debug_gbuffer_mode = 1;
+            break;
+        case GLFW_KEY_3:
+            debug_gbuffer_mode = 2;
+            break;
+        case GLFW_KEY_4:
+            debug_gbuffer_mode = 3;
+            break;
+        case GLFW_KEY_5:
+            debug_gbuffer_mode = 4;
+            break;
+        case GLFW_KEY_6:
+            debug_gbuffer_mode = 5;
+            break;
+        case GLFW_KEY_7:
+            debug_gbuffer_mode = 6;
+            break;
+        case GLFW_KEY_8:
+            debug_gbuffer_mode = 7;
+            break;
+        case GLFW_KEY_9:
+            debug_gbuffer_mode = 8;
+            break;
+        } // end of switch
+    }
+    else {
+        if (disable_controls == LABTOP) {
+            switch (key) {
+                case GLFW_KEY_ESCAPE:
+                    if (action == GLFW_PRESS) {
+                        glfwSetWindowShouldClose(window, GL_TRUE);
+                    }
+                    break;
+                case GLFW_KEY_Q:
+                    last_selected_entity->selected = false;
+                    break;
+                case GLFW_KEY_1:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(1);
+                    }
+                    break;
+                case GLFW_KEY_2:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(2);
+                    }
+                    break;
+                case GLFW_KEY_3:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(3);
+                    }
+                    break;
+                case GLFW_KEY_4:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(4);
+                    }
+                    break;
+                case GLFW_KEY_5:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(5);
+                    }
+                    break;
+                case GLFW_KEY_6:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(6);
+                    }
+                    break;
+                case GLFW_KEY_7:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->terminal_idx(7);
+                    }
+                    break;
+                case GLFW_KEY_ENTER:
+                    if (action == GLFW_RELEASE) {
+                        term_idx = temp_c->up_level();
+                    }
+                    break;
             }
         }
-        break;
-    case GLFW_KEY_N:
-        if (action == GLFW_RELEASE) {
-            if (highlight == false) {
-                highlight = true;
-            }
-            else {
-                highlight = false;
-            }
-        }
-        break;
-    case GLFW_KEY_ESCAPE:
-        if (action == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, GL_TRUE);
-        }
-        break;
-    case GLFW_KEY_P:
-        if (action == GLFW_RELEASE) {
-            std::cout << camera->translations << std::endl;
-        }
-        break;
-    case GLFW_KEY_T:
-        camera->translations = Eigen::Vector3f(-5.0f, -0.7f, -22.0f);
-        break;
-    case GLFW_KEY_Y:
-        camera->translations = Eigen::Vector3f(-27.0f, -0.7f, -12.0f);
-        break;
-    case GLFW_KEY_U:
-        camera->translations = Eigen::Vector3f(-29.0f, -0.7f, -22.0f);
-        break;
-    case GLFW_KEY_I:
-        camera->translations = Eigen::Vector3f(-24.0f, -0.7f, -42.0f);
-        break;
-    case GLFW_KEY_1:
-        debug_gbuffer_mode = 0;
-        break;
-    case GLFW_KEY_2:
-        debug_gbuffer_mode = 1;
-        break;
-    case GLFW_KEY_3:
-        debug_gbuffer_mode = 2;
-        break;
-    case GLFW_KEY_4:
-        debug_gbuffer_mode = 3;
-        break;
-    case GLFW_KEY_5:
-        debug_gbuffer_mode = 4;
-        break;
-    case GLFW_KEY_6:
-        debug_gbuffer_mode = 5;
-        break;
-    case GLFW_KEY_7:
-        debug_gbuffer_mode = 6;
-        break;
-    case GLFW_KEY_8:
-        debug_gbuffer_mode = 7;
-        break;
-    case GLFW_KEY_9:
-        debug_gbuffer_mode = 8;
-        break;
-    } // end of switch
+    }
 }
 
 draw::Drawable *import_drawable(std::string file_name, uint *handle) 
@@ -1124,7 +1210,6 @@ int main(void)
     int frameCount = 0;
     CHECK_GL_ERRORS();
 
-    draw::Quad screen_quad;
     screen_quad.GenerateData(screen_prog.getAttribute("vertPos"), 
                              screen_prog.getAttribute("vertTex"));
 
@@ -1141,8 +1226,6 @@ int main(void)
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Room Logic
-        applyRoomLogic(window);
         CHECK_GL_ERRORS();
 
         P.pushMatrix();
@@ -1600,17 +1683,17 @@ int main(void)
         CHECK_GL_ERRORS();
 
         /* Attempt to forward render a quad */
-        /*Comp* temp_h;
-        if (level_one.getRooms()[1]->room_t == Room::RoomType::COMP) {
-            Comp* temp_h;
-            screen_prog.bind();
-                temp_h = dynamic_cast<Comp*>(level_one.getRooms()[1]);
-                
+        // Room Logic
+        applyRoomLogic(window);
+        /*if (disable_controls) {
+            screen_prog.bind();                
                 screen_quad.Render();
                 
                 glEnable(GL_DEPTH_TEST);
                 glDisable(GL_CULL_FACE);
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+
+
 
                 std::ostringstream convert; 
                 convert << "Rawr from the world\nHAHAHA\nh\nh\nh\nh\nh\nh\nh\nh\nh\nh";
@@ -1620,29 +1703,31 @@ int main(void)
             screen_prog.unbind();
         }*/
 
-        deferred_lighting_prog.bind();
+        /*deferred_lighting_prog.bind();
             glEnable(GL_DEPTH_TEST);
             glDisable(GL_CULL_FACE);
             glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
             draw_text(*window);
             glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
-        deferred_lighting_prog.unbind();
+        deferred_lighting_prog.unbind();*/
 
 
-        if (camera == fp_camera ) {
-            Eigen::Vector3f campos = -camera->translations;
-            uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
-            // bufferMovement(window, entities, map, col, row);
-            float factor = lastFPS;
-            if (factor <= 0) {
-                factor = 1;
+        if (!disable_controls) {
+            if (camera == fp_camera ) {
+                Eigen::Vector3f campos = -camera->translations;
+                uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
+                // bufferMovement(window, entities, map, col, row);
+                float factor = lastFPS;
+                if (factor <= 0) {
+                    factor = 1;
+                }
+                // float mov = 1/(currTime - prevTime_mov + .01) * 1/factor;
+                bufferMov_rooms(window, level_one, map, col, row, 1.0f);
+
             }
-            // float mov = 1/(currTime - prevTime_mov + .01) * 1/factor;
-            bufferMov_rooms(window, level_one, map, col, row, 1.0f);
-
-        }
-        else {
-            bufferMovement(window, entities, map, -1, -1);
+            else {
+                bufferMovement(window, entities, map, -1, -1);
+            }
         }
         prevTime_mov = currTime;       
 

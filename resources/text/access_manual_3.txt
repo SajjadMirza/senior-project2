@@ -1,0 +1,19 @@
+Relative heights of Earth Trees...
+
+Coast Redwood (Sequoia sempervirens): 115.61 m (379.3 ft), 
+"Hyperion", Redwood National Park, California, United States[2][3][4]
+
+Mountain Ash (Eucalyptus regnans): 99.8 m (327 ft), 
+"Centurion", Arve Valley, Tasmania, Australia[5]
+
+Coast Douglas-Fir (Pseudotsuga menziesii var. menziesii): 99.76 m (327.3 ft), 
+Brummit Creek, Coos County, Oregon, United States[6][7][8]
+
+Sitka Spruce (Picea sitchensis): 96.7 m (317 ft),
+Prairie Creek Redwoods State Park, California, United States[9][10]
+
+Giant Sequoia (Sequoiadendron giganteum): 95.8 m (314 ft), 
+Sequoia National Forest, California, United States[11][12]
+
+...
+Press enter to return to access manual or q to exit terminal.

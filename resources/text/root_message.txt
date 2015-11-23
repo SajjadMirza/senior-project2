@@ -1,0 +1,7 @@
+Repeating employee message...
+
+All personnel should observe heightened safety measures in response to %#@%
+DATA CORRUPTION DETECTED - CANNOT READ FILE 
+
+...
+Press enter to return to home or q to exit terminal.

@@ -1,0 +1,4 @@
+All lights are now on
+
+...
+Command aborted. Press enter to return to home or q to exit terminal.

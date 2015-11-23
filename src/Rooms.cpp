@@ -219,6 +219,19 @@ Comp::Comp() : Room()
     init_entities_R(&boundaries, yaml_bounds);
     init_entities_R(&entities, yaml_comp);
 
+    computer_idx = -1;
+    term_idx = -1;
+    root = false;
+
+    int i = 0;
+    for (auto it = entities.begin(); it != entities.end(); it++) {
+        Entity e = *it;
+        if (e.getName() == "Computer") {
+            computer_idx = i;
+        }
+        ++i;
+    }
+
     triggerPos = vec2(20, 6);
 
     /* Manually setup textures */
@@ -257,7 +270,240 @@ Comp::Comp() : Room()
 
 Comp::~Comp()
 {
+    
+}
 
+int Comp::select(GLFWwindow *window)
+{
+    if (state_t == ACTIVE || state_t == SUCCESS) {
+        if (entities[computer_idx].selected) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+}
+
+int Comp::terminal_idx()
+{
+    if (term_idx == -1) {
+        for (int i = 0; i < lt_screen_list.size(); ++i) {
+            if (lt_screen_list[i].name == "home.txt") {
+                term_idx = i;
+                return i;
+            }
+        }
+    }
+    else {
+        return term_idx;
+    }
+}
+
+int Comp::terminal_idx(int num) 
+{
+    std::string search = lt_screen_list[term_idx].name;
+    if (search == "home.txt") {
+        return home_idx(num);
+    }
+    else if (search == "access_manual_contents.txt") {
+        return access_idx(num);
+    }
+    else if (search == "root.txt") {
+        return root_idx(num);
+    }
+    else if (search == "root_succeed.txt") {
+        return home_root_idx(num);
+    }
+    return term_idx;
+}
+
+int Comp::up_level()
+{
+    std::string search = "";
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (i == term_idx) {
+            search = lt_screen_list[i].name;
+            i = lt_screen_list.size();
+        }
+    }
+
+    if (search == "root_facility_purpose.txt" ||
+        search == "root_employee.txt" ||
+        search == "root_message.txt" ||
+        search == "root_experiment.txt" ||
+        search == "root_lights.txt") 
+    {
+        search = "root_succeed.txt";
+    }
+    else if (search == "facility_purpose.txt" ||
+        search == "employee.txt" ||
+        search == "map.txt" ||
+        search == "access_manual_contents.txt" ||
+        search == "message.txt" ||
+        search == "root.txt") 
+    {
+        if (!root) {
+            search = "home.txt";
+        }
+        else {
+            search = "root_succeed.txt";
+        }
+    }
+    else if (search == "access_manual_1.txt" ||
+             search == "access_manual_2.txt" ||
+             search == "access_manual_3.txt" ||
+             search == "access_manual_4.txt" ||
+             search == "access_manual_5.txt")
+    {
+        search = "access_manual_contents.txt";
+    }
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (lt_screen_list[i].name == search) {
+            term_idx = i;
+            return i;
+        }
+    }
+}
+
+int Comp::home_idx(int num)
+{
+    std::string search = "";
+    switch(num) 
+    {
+        case 1:
+            search = "facility_purpose.txt";
+            break;
+        case 2:
+            search = "employee.txt";
+            break;
+        case 3:
+            search = "map.txt";
+            break;
+        case 4:
+            search = "access_manual_contents.txt";
+            break;
+        case 5:
+            search = "message.txt";
+            break;
+        case 6:
+            search = "root.txt";
+            break;
+    }
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (lt_screen_list[i].name == search) {
+            term_idx = i;
+            return i;
+        }
+    }
+
+    return term_idx;   
+}
+
+int Comp::access_idx(int num)
+{
+    std::string search = "";
+    switch(num) 
+    {
+        case 1:
+            search = "access_manual_1.txt";
+            break;
+        case 2:
+            search = "access_manual_2.txt";
+            break;
+        case 3:
+            search = "access_manual_3.txt";
+            break;
+        case 4:
+            search = "access_manual_4.txt";
+            break;
+        case 5:
+            search = "access_manual_5.txt";
+            break;
+    }
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (lt_screen_list[i].name == search) {
+            term_idx = i;
+            return i;
+        }
+    }
+
+    return term_idx;   
+}
+
+int Comp::root_idx(int num)
+{
+    std::string search = "";
+    switch(num) 
+    {
+        case 1:
+            search = "root_fail.txt";
+            break;
+        case 2:
+            search = "root_fail.txt";
+            break;
+        case 3:
+            search = "root_fail.txt";
+            break;
+        case 4:
+            search = "root_succeed.txt";
+            root = true;
+            break;
+        case 5:
+            search = "root_fail.txt";
+            break;
+    }
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (lt_screen_list[i].name == search) {
+            term_idx = i;
+            return i;
+        }
+    }
+
+    return term_idx;   
+}
+
+int Comp::home_root_idx(int num)
+{
+    std::string search = "";
+    switch(num) 
+    {
+        case 1:
+            search = "root_facility_purpose.txt";
+            break;
+        case 2:
+            search = "root_employee.txt";
+            break;
+        case 3:
+            search = "map.txt";
+            break;
+        case 4:
+            search = "access_manual_contents.txt";
+            break;
+        case 5:
+            search = "root_message.txt";
+            break;
+        case 6:
+            search = "root_experiment.txt";
+            break;
+        case 7:
+            search = "root_lights.txt";
+            break;
+    }
+
+    for (int i = 0; i < lt_screen_list.size(); ++i) {
+        if (lt_screen_list[i].name == search) {
+            term_idx = i;
+            return i;
+        }
+    }
+
+    return term_idx;   
 }
 
 Lounge::Lounge() : Room()

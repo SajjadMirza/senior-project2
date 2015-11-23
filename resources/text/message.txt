@@ -1,0 +1,21 @@
+Repeating employee message...
+
+[TOP SECRET - FACILITY RESEARCH STAFF ONLY]
+
+Just letting you all know about the presidential order for all non-american
+employees in case you forget. Since detailed pictures cannot be displayed on 
+these old terminals, I will do with basic descriptions.
+
+Dwight D. Eisenhower - 1953-1961 - Holding glasses
+John F. Kennedy      - 1961-1963 - Looking down
+Lyndon B. Johnson    - 1963-1969 - Lapel Pin
+Richard Nixon        - 1969-1974 - Holding paper
+Gerald Ford          - 1974-1977 - Holding pipe
+
+With this info, figuring out the root password should be a cake walk.
+
+Your system admin,
+Sajjad Mirza
+
+...
+Press enter to return to home or q to exit terminal.

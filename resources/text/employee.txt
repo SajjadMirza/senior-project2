@@ -1,0 +1,20 @@
+/******************************************************/
+                    EMPLOYEE CATALOG
+/******************************************************/
+
+ID      Name               Position             Status
+236146  Elena C. Knight    Electrical Engineer  Unknown
+236178  Phyllis D. Ashley  Computer Scientist   Unknown
+236929  John D. Collins    Ecolologist          Unknown
+237234  Wayne J. Wilken    Atsronomer           Unknown 
+237313  Vlad Repin         Technichin           Unknown
+237315  Alan S. Young      Security             Unknown
+238455  Rhonda J. Sparks   Security             Unknown
+241665  Protagonist        Scientist            Aboard
+&#RGUIFREr92grhrt034)(DQWu
+/******************************************************/
+           WARNING: FILE CORRUPTION DETECTED!!!
+/******************************************************/
+
+...
+Command aborted. Press enter to return to home or q to exit terminal.

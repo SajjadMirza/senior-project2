@@ -1,0 +1,34 @@
+Repeating experiment status...
+
+[INFO 1959.04.27] USDRI Luna-03 computer system FRANKLIN online.
+[INFO 1959.07.12] USDRI LUna-03 officially inaugarated.
+...
+[INFO 1963.11.02] Construction of HCNSVAITSA confinement wing underway.
+...
+[INFO 1965.03.08] Progress on HCNSVAITSA confinement wing unsatisfactory.
+...
+[INFO 1966.01.03] HCNSVAITSA wing officially inaugarated.
+[INFO 1966.01.05] HCNSVAITSA experiment begins.
+...
+[INFO 1968.09.30] Specimen-00 growth is phenomenal. Particle emission stable.
+...
+[INFO 1975.10.22] HCNSVAITSA specimen-00 particle emission higher than normal.
+...
+[INFO 1976.05.17] Specimen-00 showing abnormal amounts of carbon dioxide
+                  consumption. FRANKLIN altering atmosphere to compensate.
+...
+[INFO 1978.08.13] Solar and Heliospheric Observatory reports signs of impending
+                  solar flare. Initiating standard safety protocols.
+[WARN 1978.08.14] Solar radiation flux nearing safe limit.
+[WARN 1978.08.14] Primary power generator offline. Switching to secondary.
+[WARN 1978.08.14] Specimen-00 particle emission beyond safe limit. Evacuate
+                  confinment wing.
+[WARN 1978.08.14] Catastrophic failure in life-support system. Recommend
+                  personnel evacuate to Cryogenic Chamber.
+[WARN 1978.08.14] Transmitter destroyed. Cannot send distress signal.
+[WARN 1978.08.14] Sealing cryogenic chamber. Personnel casualties at 100%.
+[INFO 1978.08.14] FRANKLIN entering hibernate.
+---- END OF FILE ----
+
+...
+Press enter to return to home or q to exit terminal.

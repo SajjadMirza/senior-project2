@@ -107,9 +107,22 @@ public:
     Comp();
     ~Comp();
 
+    int select(GLFWwindow *window);
+    int terminal_idx();
+    int terminal_idx(int num);
+    int up_level();
+
     std::vector<labtop_screen> lt_screen_list;
 private:
+    int home_idx(int num);
+    int access_idx(int num);
+    int root_idx(int num);
+    int home_root_idx(int num);
+
     std::string yaml_comp;
+    int computer_idx;
+    int term_idx;
+    bool root;
 };
 
 class Lounge : public Room

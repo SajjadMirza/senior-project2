@@ -1,0 +1,4 @@
+You inserted the wrong password. Locked out of system for 1 hour.
+
+...
+Press q to exit terminal.

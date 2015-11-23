@@ -1,0 +1,12 @@
+Root Access: Select the password. 
+WARNING: Failure will result being locked out of the system.
+
+1. 7438560495
+2. 4362738495
+3. 1022563920
+4. 1350695423
+5. 2438415739
+
+...
+Type number on your keyboard to select password.
+Press enter to return to home or q to exit terminal.

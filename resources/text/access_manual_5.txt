@@ -1,0 +1,38 @@
+Computer Graphics...
+
+The Pederson & Mirza A.N.I.M.E. rendering pipeline works in the following order:
+
+    1. Prepare vertex array data, and then render it
+    2. Vertex Processing:
+        * Each vertex is acted upon by a Vertex Shader. Each vertex in the 
+          stream is processed in turn into an output vertex.
+        * Optional primitive tessellation stages.
+        * Optional Geometry Shader primitive processing. The output is a 
+          sequence of primitives.
+    3. Vertex Post-Processing, the outputs of the last stage are adjusted or 
+       shipped to different locations.
+        * Transform Feedback happens here.
+        * Primitive Clipping, the perspective divide, and the viewport transform 
+          to window space.
+    4. Primitive Assembly
+    5. Scan conversion and primitive parameter interpolation, which generates a 
+       number of Fragments.
+    6. A Fragment Shader processes each fragment. Each fragment generates a 
+       number of outputs.
+    7. Per-Sample_Processing:
+        * Scissor Test
+        * Stencil Test
+        * Depth Test
+        * Blending
+        * Logical Operation
+        * Write Mask
+        
+A.N.I.M.E. stands for:
+A - Asynchronous
+N - Normalized
+I - Independent
+M - Matrix
+E - Environment
+
+...
+Press enter to return to access manual or q to exit terminal.
