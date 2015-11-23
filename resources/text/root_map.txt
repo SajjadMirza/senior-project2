@@ -1,0 +1,4 @@
+Detailed map present in lounge room. 
+
+...
+Command aborted. Press enter to return to home or q to exit terminal.

@@ -524,7 +524,8 @@ int Comp::up_level(int disable_controls)
         search == "root_employee.txt" ||
         search == "root_message.txt" ||
         search == "root_experiment.txt" ||
-        search == "root_lights.txt") 
+        search == "root_lights.txt" ||
+        search == "root_map.txt") 
     {
         search = "root_succeed.txt";
     }
@@ -726,6 +727,17 @@ int Comp::home_root_idx(int num)
         case 7:
             search = "root_lights.txt";
             break;
+        case 8:
+            search = "root_map.txt";
+
+            for (int i = 0; i < entities.size(); ++i) {
+                if (entities[i].getName() == "Map") {
+                    vec3 temp = entities[i].getPosition();
+                    entities[i].setPosition(vec3(temp(0), 0.45, temp(2)));
+                }
+            }
+
+            break;
     }
 
     for (int i = 0; i < lt_screen_list.size(); ++i) {
@@ -826,12 +838,96 @@ Lounge::Lounge() : Room()
     init_entities_R(&entities, yaml_lounge);
 
     triggerPos = vec2(38, 12);
+
+    Light_state = LIGHT_W;
 }
 
 Lounge::~Lounge()
 {
 
 }
+
+void Lounge::select(Entity *last_selected_entity) 
+{
+    if (last_selected_entity != NULL) {
+        if (last_selected_entity->getName() == "book_special" && last_selected_entity->selected == true) {
+            for (int i = 0; i < entities.size(); ++i) {
+                if (entities[i].getName() == "book_special") {
+                    entities[i].setPosition(vec3(0, 0, 0));
+                    last_selected_entity->selected = false;
+                    return;
+                }
+            }
+        }
+        else if (last_selected_entity->getName() == "switch_special" && last_selected_entity->selected == true) {
+            for (int i = 0; i < entities.size(); ++i) {
+                if (entities[i].getName() == "switch_special") {
+                    Light_state = (Light_state + 1) % 4;
+
+                    /* Switch Portraits */
+                    if (Light_state == 3 || Light_state == 0) {
+                        int inc = 0;
+                        if (Light_state == 3) {
+                            inc = 1;
+                        }
+
+                        if (Light_state == 0) {
+                            inc = -1;
+                        }
+
+                        for (int i = 0; i < entities.size(); ++i) {
+                            vec3 temp;
+                            if (entities[i].getName() == "Picture_1") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0), temp(1), temp(2) + inc));
+                            }
+                            else if (entities[i].getName() == "Picture_2") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0) + inc, temp(1), temp(2)));
+                            }
+                            else if (entities[i].getName() == "Picture_3") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0) + inc, temp(1), temp(2)));
+                            }
+                            else if (entities[i].getName() == "Picture_4") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0) + inc, temp(1), temp(2)));
+                            }
+                            else if (entities[i].getName() == "Picture_5") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0), temp(1), temp(2) + inc));
+                            }
+                            else if (entities[i].getName() == "Picture_1_special") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0), temp(1), temp(2) - inc));
+                            }
+                            else if (entities[i].getName() == "Picture_2_special") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0) - inc, temp(1), temp(2)));
+                            }
+                            else if (entities[i].getName() == "Picture_3_special") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0) - inc, temp(1), temp(2)));
+                            }
+                            else if (entities[i].getName() == "Picture_4_special") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0) - inc, temp(1), temp(2)));
+                            }
+                            else if (entities[i].getName() == "Picture_5_special") {
+                                temp = entities[i].getPosition();
+                                entities[i].setPosition(vec3(temp(0), temp(1), temp(2) - inc));
+                            }
+                        }
+                    }
+
+                    last_selected_entity->selected = false;
+                    return;
+                }
+            }
+        }
+    }
+}
+
 
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file) 
 {

@@ -312,4 +312,29 @@ transforms:
     zaxis: 8.35
     yaxis: 0.0
   scale: 0.3
+---
+model: Map
+file: Screen.obj
+directory: resources/models/lounge_room/Picture/
+format: obj
+textures:
+  diffuse:
+    Map.jpg
+  normal:
+    Screen_N.jpg
+  specular:
+    Screen_S.jpg
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: -90.0
+  rotations:
+    xaxis: -90.0
+  translations:
+    xaxis: 42.5
+    zaxis: 23.0
+    yaxis: 3.45
+  scale: 0.625 
 ...
