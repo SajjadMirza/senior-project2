@@ -111,23 +111,61 @@ Hanoi::~Hanoi()
 
 }
 
+void Hanoi::select(GLFWwindow *window, Entity *last_selected_entity)
+{
+    if (state_t == ACTIVE) {
+        if (last_selected_entity != NULL) {
+            if (last_selected_entity->getName() == "Switch_1" && last_selected_entity->selected == true) {    
+                if (selected == -1) {
+                    selected = 0;
+                    selection_helper();
+                    last_selected_entity->selected = false;
+                }
+            }
+            else if (last_selected_entity->getName() == "Switch_2" && last_selected_entity->selected == true) {
+                if (selected == -1) {
+                    selected = 1;
+                    selection_helper();
+                    last_selected_entity->selected = false;
+                }
+            }
+            else if (last_selected_entity->getName() == "Switch_3" && last_selected_entity->selected == true) {
+                if (selected == -1) {
+                    selected = 2;
+                    selection_helper();
+                    last_selected_entity->selected = false;
+                }
+            }
+
+        selected = -2;
+        }
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+            selected = -1;
+        } 
+    }
+}
+
 void Hanoi::select(GLFWwindow *window)
 {
     if (state_t == ACTIVE) {
         if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
             if (selected == -1) {
+                LOG("Switch 1");
                 selected = 0;
                 selection_helper();
             }
         }
         else if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
             if (selected == -1) {
+                LOG("Switch 2");
                 selected = 1;
                 selection_helper();
             }
         }
         else if (glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_PRESS) {
             if (selected == -1) {
+                LOG("Switch 3");
                 selected = 2;
                 selection_helper();
             }
@@ -138,6 +176,7 @@ void Hanoi::select(GLFWwindow *window)
             glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE &&
             glfwGetKey(window, GLFW_KEY_BACKSLASH) == GLFW_RELEASE) {
             selected = -1;
+            LOG("off");
         } 
     }
 }
@@ -206,6 +245,9 @@ void Hanoi::done()
 
     if (!esc && success) {
         state_t = SUCCESS;
+        for (int i = 0; i < boundaries.size(); ++i) {
+            boundaries[i].setPosition(vec3(0, 0, 0));
+        }
         boundaries.clear();
     }
 }
@@ -551,7 +593,9 @@ void Comp::done(int disable_controls)
 
         if (esc) {
             state_t = SUCCESS;
-            boundaries.clear();
+            for (int i = 0; i < boundaries.size(); ++i) {
+                boundaries[i].setPosition(vec3(0, 0, 0));
+            }
         }
     }
 }

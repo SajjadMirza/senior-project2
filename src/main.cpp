@@ -134,7 +134,8 @@ static void applyRoomLogic(GLFWwindow *window)
                 case Room::RoomType::HANOI:
                 if (temp->state_t == Room::State::ACTIVE) {
                     temp_h = dynamic_cast<Hanoi*>(temp);
-                    temp_h->select(window);
+                    // temp_h->select(window);
+                    temp_h->select(window, last_selected_entity);
                     temp_h->done();
                 }
                 break;
@@ -1709,13 +1710,15 @@ int main(void)
             screen_prog.unbind();
         }*/
 
-        /*deferred_lighting_prog.bind();
-            glEnable(GL_DEPTH_TEST);
-            glDisable(GL_CULL_FACE);
-            glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
-            draw_text(*window);
-            glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
-        deferred_lighting_prog.unbind();*/
+        if (!disable_controls) {
+            deferred_lighting_prog.bind();
+                glEnable(GL_DEPTH_TEST);
+                glDisable(GL_CULL_FACE);
+                glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
+                draw_text(*window);
+                glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+            deferred_lighting_prog.unbind();
+        }
 
 
         if (!disable_controls) {

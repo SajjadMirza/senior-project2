@@ -87,6 +87,7 @@ public:
 
     std::vector< std::stack<tube> > tube_loc;
 
+    void select(GLFWwindow *window, Entity *last_selected_entity);
     void select(GLFWwindow *window);
     void selection_helper();
     void newPos(int idx_z);
