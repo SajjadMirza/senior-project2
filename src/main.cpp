@@ -739,7 +739,8 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
 
     for (int i = 0; i < cols; i++) {
         for (int j = 0; j < rows; j++) {
-            if (map.getTypeForCell(i, j) == type) {
+            CellType cell_type = map.getTypeForCell(i, j);
+            if (cell_type == type || (type == HALLWAY && cell_type == NOCEIL)) {
                 MapCell &cell = map.get(i, j);
                 std::unique_ptr<Entity> temp(new Entity(drawable));
                 cell.component = std::move(temp); // constructor
@@ -752,6 +753,30 @@ static void gen_cubes(std::vector<Entity*> *cubes, const ModelConfig &config,
                 e.generateBoundingBox();
                 e.setUseBoundingBox(true);
                 cubes->push_back(cell.component.get());
+
+                if (type == WALL) {
+                    std::unique_ptr<Entity> temp(new Entity(drawable));
+                    temp->setName(cell.name + "2");
+                    temp->setCenter(Eigen::Vector3f(0,0,0));
+                    temp->setRadius(0);
+                    temp->setPosition(pos + Eigen::Vector3f(0.0, 1.0, 0.0));
+                    temp->move(Eigen::Vector3f(i, 0, j));
+                    temp->setUseBoundingBox(false);
+                    cell.component2 = std::move(temp);
+                    cubes->push_back(cell.component2.get());
+                }
+
+                if (cell_type == HALLWAY) {
+                    std::unique_ptr<Entity> temp(new Entity(drawable));
+                    temp->setName(cell.name + "2");
+                    temp->setCenter(Eigen::Vector3f(0,0,0));
+                    temp->setRadius(0);
+                    temp->setPosition(pos + Eigen::Vector3f(0.0, 2.8, 0.0));
+                    temp->move(Eigen::Vector3f(i, 0, j));
+                    temp->setUseBoundingBox(false);
+                    cell.component2 = std::move(temp);
+                    cubes->push_back(cell.component2.get());
+                }
             }
         }
     }
@@ -1177,6 +1202,8 @@ int main(void)
     // Prepare for instancing
     draw::ShapeBatch wall_batch;
     setup_batch(&wall_batch, walls);
+//    draw::ShapeBatch upper_wall_batch;
+//    setup_batch(&wall_batch, walls);
     draw::ShapeBatch floor_batch;
     setup_batch(&floor_batch, floors);
 
@@ -1297,6 +1324,7 @@ int main(void)
                     if (walls.size() > 0) {
                         glCullFace(GL_FRONT);
                         wall_batch.drawAllDepth(&depth_prog);
+//                        upper_wall_batch.drawAllDepth(&depth_prog);
                         glCullFace(GL_BACK);
                     }                                  
                     if (floors.size() > 0) {
@@ -1379,6 +1407,7 @@ int main(void)
             glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 1);
             glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 1);
             wall_batch.drawAll(&deferred_geom_prog);
+//            upper_wall_batch.drawAll(&deferred_geom_prog);
             glUniform1i(deferred_geom_prog.getUniform("uCalcTBN"), 0);
             glUniform1i(deferred_geom_prog.getUniform("uNormFlag"), 0);
             glUniform1i(deferred_geom_prog.getUniform("uInstanced"), 0);

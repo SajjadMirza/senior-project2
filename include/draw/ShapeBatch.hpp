@@ -11,6 +11,7 @@ namespace draw {
 
     class ShapeBatch {
         std::vector<Eigen::Matrix4f> transforms;
+        Eigen::Vector3f offset;
     public:
         GLuint vao;
         GLuint trans_vbo;
@@ -22,8 +23,9 @@ namespace draw {
         void addTransform(const Eigen::Matrix4f &trans);
         void drawAll(Program *prog);
         void drawAllDepth(Program *prog);
+        void applyOffset(Eigen::Vector3f offset);
     };
-
+    
 };
 
 #endif
