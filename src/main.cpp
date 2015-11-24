@@ -41,6 +41,8 @@
 #include <EntityDatabase.hpp>
 
 draw::Text text("testfont.ttf", 24);
+draw::Text text_dia("testfont.ttf", 24);
+draw::Text text_f("testfont.ttf", 24);
 draw::Text text_terminal("Glass_TTY_VT220.ttf", 16);
 draw::Text text_lava("testfont_3.ttf", 18);
 draw::Text text_end("testfont_3.ttf", 18);
@@ -108,6 +110,18 @@ int term_idx = 0;
 Hanoi* temp_h;
 Comp* temp_c;
 Lounge* temp_l;
+TreeRoom* temp_t;
+
+bool choose_end = false;
+bool save_tree = false;
+bool kill_tree = false;
+
+bool dialogue_trigger = true;
+std::string displayed_dialogue = "Welcome to our game! Try to get out as soon as possible.\n" \
+                                  "Right clicking on most objects will interact with it.\nThis" \
+                                  "can either be a dialogue response or interacting with the world\n" \
+                                  "Hints: Don't stay in dark places too long. Bad things might happen :)\n" \
+                                  "Press SPACE to get rid of this message.";
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -130,6 +144,8 @@ static void applyRoomLogic(GLFWwindow *window)
         }
 
         if (temp->state_t == Room::State::ACTIVE || temp->state_t == Room::State::SUCCESS) {
+            static bool nex = false;
+
             switch(temp->room_t) 
             {
                 case Room::RoomType::HANOI:
@@ -161,6 +177,34 @@ static void applyRoomLogic(GLFWwindow *window)
                 case Room::RoomType::LOUNGE:
                 temp_l = dynamic_cast<Lounge*>(temp);
                 temp_l->select(last_selected_entity);
+                break;
+                case Room::RoomType::TREE:
+                temp_t = dynamic_cast<TreeRoom*>(temp);
+
+                if (save_tree == true || kill_tree == true) {
+                    temp_t->state_t = Room::State::SUCCESS;
+                }
+
+                if (temp_t->select()) {
+                    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+                        nex = true;
+                    }
+                    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE && nex) {
+                        choose_end = temp_t->next();
+                        nex = false;
+                    }
+
+                    screen_prog.bind();                
+                        glEnable(GL_DEPTH_TEST);
+                        glDisable(GL_CULL_FACE);
+                        glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                        std::ostringstream convert; 
+                        convert << temp_t->select_dialogue();
+                        text_f.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
+                        glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+                    screen_prog.unbind();
+                }
+                break;
                 default:
                 break;
             }
@@ -291,7 +335,7 @@ static Eigen::Vector3f selection_coords;
 static bool selection_flag = false;
 
 static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-    if (!disable_controls) {
+    if (!disable_controls && kill_tree == false && save_tree == false) {
         if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
             camera->mouseReleased();
             return;
@@ -327,8 +371,27 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y)
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) 
 {
-    if (!disable_controls) {
+    if (!disable_controls && kill_tree == false && save_tree == false) {
         switch (key) {
+        case GLFW_KEY_SPACE:
+            if (action == GLFW_RELEASE) {
+                dialogue_trigger = !dialogue_trigger;
+            }
+            break;
+        case GLFW_KEY_Q:
+            if (choose_end == true) {
+                if (save_tree == false && kill_tree == false) {
+                    kill_tree = true;
+                }
+            }
+            break;
+        case GLFW_KEY_E:
+            if (choose_end == true) {
+                if (save_tree == false && kill_tree == false) {
+                    save_tree = true;
+                }
+            }
+            break;
         case GLFW_KEY_G:
             logic->notifyKey('G');
             pattern->notifyKey('G');
@@ -1434,8 +1497,7 @@ int main(void)
 
 
                     for (int i = 0; i < level_one.getNumRooms(); ++i) {
-                        std::vector<Entity> b_entities;
-                        b_entities = (level_one.getRooms())[i]->boundaries;
+                        std::vector<Entity> &b_entities = (level_one.getRooms())[i]->boundaries;
 
                         for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
                             M.pushMatrix();
@@ -1448,8 +1510,7 @@ int main(void)
                             M.popMatrix();
                         }
 
-                        std::vector<Entity> t_entities;
-                        t_entities = (level_one.getRooms())[i]->entities;
+                        std::vector<Entity> &t_entities = (level_one.getRooms())[i]->entities;
 
                         for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
                             M.pushMatrix();
@@ -1532,8 +1593,7 @@ int main(void)
 
         /* attempt for g_buffer */
         for (int i = 0; i < level_one.getNumRooms(); ++i) {
-            std::vector<Entity> b_entities;
-            b_entities = (level_one.getRooms())[i]->boundaries;
+            std::vector<Entity> &b_entities = (level_one.getRooms())[i]->boundaries;
 
             for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
                 M.pushMatrix();
@@ -1547,8 +1607,7 @@ int main(void)
                 M.popMatrix();
             }
 
-            std::vector<Entity> t_entities;
-            t_entities = (level_one.getRooms())[i]->entities;
+            std::vector<Entity> &t_entities = (level_one.getRooms())[i]->entities;
 
             for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
                 if (it->selected) {
@@ -1566,8 +1625,7 @@ int main(void)
                 glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
             }
 
-            std::vector<Entity> t_entities_m;
-            t_entities_m = (level_one.getRooms())[i]->entities_mov;
+            std::vector<Entity> &t_entities_m = (level_one.getRooms())[i]->entities_mov;
 
             for (auto it = t_entities_m.begin(); it != t_entities_m.end(); it++) {
                 if (it->selected) {
@@ -1624,6 +1682,11 @@ int main(void)
                 const std::string &name = e->getName();
                 LOG("Selected entity " << id << ": " << name.c_str());
                 last_selected_entity = e;
+
+                if (e->getName() != displayed_dialogue) {
+                    displayed_dialogue = e->getName();
+                    dialogue_trigger = true;
+                }
             }
             
         }
@@ -1643,14 +1706,14 @@ int main(void)
         CHECK_GL_ERRORS();
         glUniform1i(ssao_prog.getUniform("screen_width"), width);
         glUniform1i(ssao_prog.getUniform("screen_height"), height);
-        for (int i = 0; i < 64; i++) {
+        for (int i = 0; i < 16; i++) {
             glUniform3fv(ssao_prog.getUniform(str_array("samples", i).c_str()), 1, 
                          ssaoKernel[i].data());
         }
         glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
-        ssao_quad.Render();
+        //ssao_quad.Render();
         
         ssao_prog.unbind();
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1662,7 +1725,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
         glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
         CHECK_GL_ERRORS();
-        blur_quad.Render();
+//        blur_quad.Render();
         blur_prog.unbind();
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //        ssao.debugCopyBlur(width, height);
@@ -1858,8 +1921,37 @@ int main(void)
             CHECK_GL_ERRORS();
         }
 
-        CHECK_GL_ERRORS();
-        if (!disable_controls) {
+        if (!disable_controls && dialogue_trigger == true) {
+            screen_prog.bind();                
+                glEnable(GL_DEPTH_TEST);
+                glDisable(GL_CULL_FACE);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                std::ostringstream convert; 
+                convert << displayed_dialogue;
+                text_dia.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            screen_prog.unbind();
+        }
+
+        if (save_tree == true || kill_tree == true) {
+            screen_prog.bind();                
+                glEnable(GL_DEPTH_TEST);
+                glDisable(GL_CULL_FACE);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                std::ostringstream convert; 
+                if (save_tree == true) {
+                    convert << "You save a tree, congrats";
+                }
+                else {
+                    convert << "You killed a tree :(";
+                }
+                text_f.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            screen_prog.unbind();
+        }
+
+
+        if (!disable_controls  && kill_tree == false && save_tree == false) {
             if (camera == fp_camera ) {
                 Eigen::Vector3f campos = -camera->translations;
                 uint col = std::round(campos(0)), row = std::round(campos(2) - 1);

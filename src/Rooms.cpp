@@ -30,8 +30,9 @@ void Level::initLevelOne()
     rooms.push_back(new Hanoi());
     rooms.push_back(new Comp());
     rooms.push_back(new Lounge());
+    rooms.push_back(new TreeRoom());
 
-    num_rooms = 3;
+    num_rooms = 4;
 }
 
 Room::Room()
@@ -58,6 +59,9 @@ void Room::triggerRoom(vec2 comp)
             break;    
             case LOUNGE:
             LOG("ROOM LOUNGE NOW ACTIVE!!!");
+            break; 
+            case TREE:
+            LOG("ROOM TREE NOW ACTIVE!!!");
             break; 
             default:
             LOG("ROOM UNKNOWN NOW ACTIVE!!!");
@@ -928,6 +932,53 @@ void Lounge::select(Entity *last_selected_entity)
     }
 }
 
+TreeRoom::TreeRoom() : Room()
+{
+    room_t = TREE;
+    yaml_tree = "resources/tree_f.yaml";
+    
+    triggerPos = vec2(28, 22);
+
+    init_entities_R(&entities, yaml_tree);
+
+    text_counter = 5;
+
+    dialogue.push_back("I AM TEXT 1 ... press SPACE to continue");
+    dialogue.push_back("I AM TEXT 2 ... press SPACE to continue");
+    dialogue.push_back("I AM TEXT 3 ... press SPACE to continue");
+    dialogue.push_back("I AM TEXT 4 ... press SPACE to continue");
+    dialogue.push_back("ENDING TEXT ... press q for KILL or press e for LIFE");
+
+}
+
+TreeRoom::~TreeRoom()
+{
+
+}
+
+bool TreeRoom::select()
+{
+    if (state_t == Room::State::ACTIVE) {
+        return true;
+    }
+    return false;
+}
+
+std::string TreeRoom::select_dialogue()
+{
+    return dialogue[dialogue.size() - text_counter];
+}
+
+bool TreeRoom::next()
+{
+    if (text_counter > 1) {
+        text_counter--;
+        return false;
+    }
+    else {
+        return true;
+    }
+}
 
 static void init_entities_R(std::vector<Entity> *entities, std::string model_config_file) 
 {

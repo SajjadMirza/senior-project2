@@ -10,7 +10,8 @@ uniform float intensity;
 
 void main() 
 {
-    float fragOcc = texture(occlusion, fragTex).r;
+    // float fragOcc = texture(occlusion, fragTex).r;
+    float fragOcc = 1;
     vec3 fragCol = texture(gDiffuse, fragTex).rgb;
     fragCol *= fragOcc;
     out_color = vec4(fragCol * intensity, 1.0);

@@ -143,11 +143,11 @@ directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Engine_Block_D.tga
+    Engine_Block_D_scaled.tga
   normal:
     Engine_Block_N.tga
   specular: 
-    Engine_Block_S.tga
+    Engine_Block_S_scaled.tga
 overrides:
   radius: 0.0
   center: position
@@ -166,11 +166,11 @@ directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Engine_Block_D.tga
+    Engine_Block_D_scaled.tga
   normal:
     Engine_Block_N.tga
   specular: 
-    Engine_Block_S.tga
+    Engine_Block_S_scaled.tga
 overrides:
   radius: 0.0
   center: position
@@ -189,11 +189,11 @@ directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Engine_Block_D.tga
+    Engine_Block_D_scaled.tga
   normal:
     Engine_Block_N.tga
   specular: 
-    Engine_Block_S.tga
+    Engine_Block_S_scaled.tga
 overrides:
   radius: 0.0
   center: position
@@ -212,11 +212,11 @@ directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Engine_Block_D.tga
+    Engine_Block_D_scaled.tga
   normal:
     Engine_Block_N.tga
   specular: 
-    Engine_Block_S.tga
+    Engine_Block_S_scaled.tga
 overrides:
   radius: 0.0
   center: position
@@ -235,11 +235,11 @@ directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Engine_Block_D.tga
+    Engine_Block_D_scaled.tga
   normal:
     Engine_Block_N.tga
   specular: 
-    Engine_Block_S.tga
+    Engine_Block_S_scaled.tga
 overrides:
   radius: 0.0
   center: position
@@ -258,11 +258,11 @@ directory: resources/models/Hanoi/Engine
 format: obj
 textures:
   diffuse:
-    Engine_Block_D.tga
+    Engine_Block_D_scaled.tga
   normal:
     Engine_Block_N.tga
   specular: 
-    Engine_Block_S.tga
+    Engine_Block_S_scaled.tga
 overrides:
   radius: 0.0
   center: position
