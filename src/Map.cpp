@@ -159,8 +159,8 @@ int Map::loadMapFromImage(const char *filename)
                 minor_light_positions.push_back(base_light_pos + vec3(x, 0, y+1));
                 break;
             case COLOR_BOSS_FLOOR:
-                grid[x][y].type = HALLWAY;
-                grid[x][y].name = "HALLWAY";
+                grid[x][y].type = NOCEIL;
+                grid[x][y].name = "NOCEIL";
                 break;
             case COLOR_START_POS:
                 grid[x][y].type = HALLWAY;

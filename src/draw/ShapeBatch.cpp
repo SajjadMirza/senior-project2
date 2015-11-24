@@ -56,4 +56,22 @@ namespace draw {
         target_shape->instanced_draw_depth(trans_vbo, transforms.size(), prog, vao);
     }
 
+    void ShapeBatch::applyOffset(Eigen::Vector3f offset)
+    {
+        Eigen::Matrix4f offsetMat = Eigen::Matrix4f::Identity();
+        offsetMat.col(3).head<3>() << offset;
+        for (int i = 0; i < transforms.size(); i++) {
+            Eigen::Matrix4f &mat = transforms[i];
+            mat = mat * offsetMat;
+        }
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, trans_vbo);
+        glBufferData(GL_ARRAY_BUFFER, transforms.size() * sizeof(mat4), &transforms[0], GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+    }
+
 };

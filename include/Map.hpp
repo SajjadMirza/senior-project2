@@ -22,12 +22,14 @@ enum CellType {
     HOLE,
     END,
     NODRAW,
+    NOCEIL,
  };
 
 struct MapCell {
     std::string name;
     CellType type;
     std::shared_ptr<Entity> component;
+    std::shared_ptr<Entity> component2;
     MapCell();
     ~MapCell();
 };
