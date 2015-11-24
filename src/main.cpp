@@ -997,7 +997,7 @@ static void init_lights_yaml(std::vector<PointLight> *point_lights,
             pl.shadow = false;
         }
 
-        pl.shadow = false;
+//        pl.shadow = false;
         if (pl.shadow) {
             LOG("Generating shadow map");
             shadow_maps->push_back(sm);
