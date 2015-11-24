@@ -41,6 +41,8 @@
 #include <EntityDatabase.hpp>
 
 draw::Text text("testfont.ttf", 24);
+draw::Text text_dia("testfont.ttf", 24);
+draw::Text text_f("testfont.ttf", 24);
 draw::Text text_terminal("Glass_TTY_VT220.ttf", 16);
 draw::Text text_lava("testfont_3.ttf", 18);
 draw::Text text_end("testfont_3.ttf", 18);
@@ -113,6 +115,13 @@ TreeRoom* temp_t;
 bool choose_end = false;
 bool save_tree = false;
 bool kill_tree = false;
+
+bool dialogue_trigger = true;
+std::string displayed_dialogue = "Welcome to our game! Try to get out as soon as possible.\n" \
+                                  "Right clicking on most objects will interact with it.\nThis" \
+                                  "can either be a dialogue response or interacting with the world\n" \
+                                  "Hints: Don't stay in dark places too long. Bad things might happen :)\n" \
+                                  "Press SPACE to get rid of this message.";
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -191,7 +200,7 @@ static void applyRoomLogic(GLFWwindow *window)
                         glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
                         std::ostringstream convert; 
                         convert << temp_t->select_dialogue();
-                        text.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 150.0f);
+                        text_f.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
                         glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
                     screen_prog.unbind();
                 }
@@ -262,35 +271,33 @@ static void bufferMov_rooms(GLFWwindow *window,
                            const Level &level_one,
                            const Map &map, int col, int row, float mov) 
 {
-    if (!disable_controls && kill_tree == false && save_tree == false) {
-        char c = 0;
-        bool step = false;
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            c = 'w';
-            camera->move(c, level_one, map, col, row, mov);
-            step = true;
-        }
-        
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            c = 'a';
-            camera->move(c, level_one, map, col, row, mov);
-            step = true;
-        }
-        
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            c = 's';
-            camera->move(c, level_one, map, col, row, mov);
-            step = true;
-        }
-        
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            c = 'd';
-            camera->move(c, level_one, map, col, row, mov);
-            step = true;
-        }
-
-        sound_driver.footStep(step);
+    char c = 0;
+    bool step = false;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        c = 'w';
+        camera->move(c, level_one, map, col, row, mov);
+        step = true;
     }
+    
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        c = 'a';
+        camera->move(c, level_one, map, col, row, mov);
+        step = true;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        c = 's';
+        camera->move(c, level_one, map, col, row, mov);
+        step = true;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        c = 'd';
+        camera->move(c, level_one, map, col, row, mov);
+        step = true;
+    }
+
+    sound_driver.footStep(step);
 }
 
 static void findFPS() {
@@ -366,6 +373,11 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 {
     if (!disable_controls && kill_tree == false && save_tree == false) {
         switch (key) {
+        case GLFW_KEY_SPACE:
+            if (action == GLFW_RELEASE) {
+                dialogue_trigger = !dialogue_trigger;
+            }
+            break;
         case GLFW_KEY_Q:
             if (choose_end == true) {
                 if (save_tree == false && kill_tree == false) {
@@ -1557,6 +1569,11 @@ int main(void)
                 const std::string &name = e->getName();
                 LOG("Selected entity " << id << ": " << name.c_str());
                 last_selected_entity = e;
+
+                if (e->getName() != displayed_dialogue) {
+                    displayed_dialogue = e->getName();
+                    dialogue_trigger = true;
+                }
             }
             
         }
@@ -1780,6 +1797,18 @@ int main(void)
             deferred_lighting_prog.unbind();
         }
 
+        if (!disable_controls && dialogue_trigger == true) {
+            screen_prog.bind();                
+                glEnable(GL_DEPTH_TEST);
+                glDisable(GL_CULL_FACE);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                std::ostringstream convert; 
+                convert << displayed_dialogue;
+                text_dia.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            screen_prog.unbind();
+        }
+
         if (save_tree == true || kill_tree == true) {
             screen_prog.bind();                
                 glEnable(GL_DEPTH_TEST);
@@ -1792,13 +1821,13 @@ int main(void)
                 else {
                     convert << "You killed a tree :(";
                 }
-                text.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 150.0f);
+                text_f.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
             screen_prog.unbind();
         }
 
 
-        if (!disable_controls) {
+        if (!disable_controls  && kill_tree == false && save_tree == false) {
             if (camera == fp_camera ) {
                 Eigen::Vector3f campos = -camera->translations;
                 uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
