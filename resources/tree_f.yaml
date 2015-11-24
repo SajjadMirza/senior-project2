@@ -1,0 +1,19 @@
+---
+model: tree
+file: Tree1.3ds
+directory: resources/models/tree1_3ds
+format: 3ds
+textures:
+  diffuse: bark_loo.jpg
+  specular: bark_spec.png
+overrides:
+  radius: 0.5
+  center: position
+transforms:
+  rotations:
+    zaxis: 180.0
+  translations:
+    xaxis: 23.0
+    yaxis: -1.0
+    zaxis: 23.0
+...

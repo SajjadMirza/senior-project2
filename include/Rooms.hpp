@@ -57,6 +57,7 @@ public:
         HANOI,
         COMP,
         LOUNGE,
+        TREE,
         NONE
     };
 
@@ -157,6 +158,21 @@ public:
 private:
     std::string yaml_lounge;
     int Light_state;
+};
+
+class TreeRoom : public Room
+{
+public:
+    TreeRoom();
+    ~TreeRoom();
+
+    bool select();
+    std::string select_dialogue();
+    bool next();
+    int text_counter;
+private:
+    std::string yaml_tree;
+    std::vector<std::string> dialogue;
 };
 
 static bool sortHanoi(const Entity &a, const Entity &b) { return (a.getScale() > b.getScale()); }

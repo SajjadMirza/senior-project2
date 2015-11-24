@@ -108,6 +108,11 @@ int term_idx = 0;
 Hanoi* temp_h;
 Comp* temp_c;
 Lounge* temp_l;
+TreeRoom* temp_t;
+
+bool choose_end = false;
+bool save_tree = false;
+bool kill_tree = false;
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -130,6 +135,8 @@ static void applyRoomLogic(GLFWwindow *window)
         }
 
         if (temp->state_t == Room::State::ACTIVE || temp->state_t == Room::State::SUCCESS) {
+            static bool nex = false;
+
             switch(temp->room_t) 
             {
                 case Room::RoomType::HANOI:
@@ -161,6 +168,34 @@ static void applyRoomLogic(GLFWwindow *window)
                 case Room::RoomType::LOUNGE:
                 temp_l = dynamic_cast<Lounge*>(temp);
                 temp_l->select(last_selected_entity);
+                break;
+                case Room::RoomType::TREE:
+                temp_t = dynamic_cast<TreeRoom*>(temp);
+
+                if (save_tree == true || kill_tree == true) {
+                    temp_t->state_t = Room::State::SUCCESS;
+                }
+
+                if (temp_t->select()) {
+                    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+                        nex = true;
+                    }
+                    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE && nex) {
+                        choose_end = temp_t->next();
+                        nex = false;
+                    }
+
+                    screen_prog.bind();                
+                        glEnable(GL_DEPTH_TEST);
+                        glDisable(GL_CULL_FACE);
+                        glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                        std::ostringstream convert; 
+                        convert << temp_t->select_dialogue();
+                        text.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 150.0f);
+                        glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+                    screen_prog.unbind();
+                }
+                break;
                 default:
                 break;
             }
@@ -227,33 +262,35 @@ static void bufferMov_rooms(GLFWwindow *window,
                            const Level &level_one,
                            const Map &map, int col, int row, float mov) 
 {
-    char c = 0;
-    bool step = false;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        c = 'w';
-        camera->move(c, level_one, map, col, row, mov);
-        step = true;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        c = 'a';
-        camera->move(c, level_one, map, col, row, mov);
-        step = true;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        c = 's';
-        camera->move(c, level_one, map, col, row, mov);
-        step = true;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        c = 'd';
-        camera->move(c, level_one, map, col, row, mov);
-        step = true;
-    }
+    if (!disable_controls && kill_tree == false && save_tree == false) {
+        char c = 0;
+        bool step = false;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            c = 'w';
+            camera->move(c, level_one, map, col, row, mov);
+            step = true;
+        }
+        
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            c = 'a';
+            camera->move(c, level_one, map, col, row, mov);
+            step = true;
+        }
+        
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            c = 's';
+            camera->move(c, level_one, map, col, row, mov);
+            step = true;
+        }
+        
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            c = 'd';
+            camera->move(c, level_one, map, col, row, mov);
+            step = true;
+        }
 
-    sound_driver.footStep(step);
+        sound_driver.footStep(step);
+    }
 }
 
 static void findFPS() {
@@ -291,7 +328,7 @@ static Eigen::Vector3f selection_coords;
 static bool selection_flag = false;
 
 static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-    if (!disable_controls) {
+    if (!disable_controls && kill_tree == false && save_tree == false) {
         if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
             camera->mouseReleased();
             return;
@@ -327,8 +364,22 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y)
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) 
 {
-    if (!disable_controls) {
+    if (!disable_controls && kill_tree == false && save_tree == false) {
         switch (key) {
+        case GLFW_KEY_Q:
+            if (choose_end == true) {
+                if (save_tree == false && kill_tree == false) {
+                    kill_tree = true;
+                }
+            }
+            break;
+        case GLFW_KEY_E:
+            if (choose_end == true) {
+                if (save_tree == false && kill_tree == false) {
+                    save_tree = true;
+                }
+            }
+            break;
         case GLFW_KEY_G:
             logic->notifyKey('G');
             pattern->notifyKey('G');
@@ -1727,6 +1778,23 @@ int main(void)
                 draw_text(*window);
                 glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
             deferred_lighting_prog.unbind();
+        }
+
+        if (save_tree == true || kill_tree == true) {
+            screen_prog.bind();                
+                glEnable(GL_DEPTH_TEST);
+                glDisable(GL_CULL_FACE);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                std::ostringstream convert; 
+                if (save_tree == true) {
+                    convert << "You save a tree, congrats";
+                }
+                else {
+                    convert << "You killed a tree :(";
+                }
+                text.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 150.0f);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            screen_prog.unbind();
         }
 
 
