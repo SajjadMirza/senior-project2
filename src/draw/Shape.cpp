@@ -1,14 +1,15 @@
 #include <draw/Shape.hpp>
 
 #include <tuple>
+
+#define LOG_THIS_FILE 0
 #include <log.hpp>
+
 #include <errors.hpp>
 
 #define LOG_DRAW_CALLS 0
 
-#if 0
-#define LOG(x)
-#endif
+
 
 extern int special_texture_handle;
 

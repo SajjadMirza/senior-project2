@@ -6,6 +6,7 @@
 
 #include <resources.hpp>
 
+#define LOG_THIS_FILE 0
 #include <log.hpp>
 
 using draw::Node;

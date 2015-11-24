@@ -4,9 +4,13 @@
 
 #include <boost/filesystem.hpp>
 
+#define LOG_THIS_FILE 0
+#include <log.hpp>
 
 extern draw::DrawableMap drawable_map;
 extern int special_texture_handle;
+
+
 
 
 namespace resource {

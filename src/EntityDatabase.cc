@@ -1,5 +1,6 @@
 #include <EntityDatabase.hpp>
 
+#define LOG_THIS_FILE 0
 #include <log.hpp>
 
 EntityID EntityDatabase::id_counter = 0;

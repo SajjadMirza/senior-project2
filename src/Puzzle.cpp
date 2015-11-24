@@ -2,6 +2,7 @@
 #include <resources.hpp>
 #include <draw/Drawable.hpp>
 
+#include <log.hpp>
 
 const int num_logic_puzzle_statues = 3;
 const int logic_correct_statue = 1;

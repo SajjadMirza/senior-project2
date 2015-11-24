@@ -919,6 +919,94 @@ static void setup_batch(draw::ShapeBatch *batch, const std::vector<Entity*> &ent
 
 }
 
+const std::string yes("yes");
+
+static void init_lights_yaml(std::vector<PointLight> *point_lights, 
+                             std::vector<draw::ShadowMap> *shadow_maps,
+                             const std::string &path)
+{
+    LOG("Called init_lights_yaml");
+    std::vector<YAML::Node> documents = YAML::LoadAllFromFile(path);
+
+    if (documents.empty()) {
+        return;
+    }
+
+    LOG("Found " << documents.size() << " lights!");
+
+    draw::ShadowMap sm;
+    sm.cubemap = 0;
+    sm.fbo = 0;
+
+    for (auto it = documents.begin(); it != documents.end(); it++) {
+        YAML::Node &doc = *it;
+        PointLight pl;
+        pl.position.x() = doc["position"]["xaxis"].as<float>();
+        pl.position.y() = doc["position"]["yaxis"].as<float>();
+        pl.position.z() = doc["position"]["zaxis"].as<float>();
+        
+        if (doc["attenuation"]) {
+            pl.constant = doc["attenuation"]["constant"].as<float>();
+            pl.linear = doc["attenuation"]["linear"].as<float>();
+            pl.quadratic = doc["attenuation"]["quadratic"].as<float>();
+        }
+        else {
+            pl.constant = 1.0;
+            pl.linear = 0.35;
+            pl.quadratic = 0.9;
+        }
+
+        if (doc["ambient"]) {
+            pl.ambient.x() = doc["ambient"]["red"].as<float>();
+            pl.ambient.y() = doc["ambient"]["grn"].as<float>();
+            pl.ambient.z() = doc["ambient"]["blu"].as<float>();
+        }
+        else {
+            pl.ambient = vec3(0.05, 0.05, 0.05);
+        }
+
+        if (doc["diffuse"]) {
+            pl.diffuse.x() = doc["diffuse"]["red"].as<float>();
+            pl.diffuse.y() = doc["diffuse"]["grn"].as<float>();
+            pl.diffuse.z() = doc["diffuse"]["blu"].as<float>();
+        }
+        else {
+            pl.diffuse = vec3(1.0, 1.0, 1.0);
+        }
+
+        if (doc["specular"]) {
+            pl.specular.x() = doc["specular"]["red"].as<float>();
+            pl.specular.y() = doc["specular"]["grn"].as<float>();
+            pl.specular.z() = doc["specular"]["blu"].as<float>();
+        }
+        else {
+            pl.specular = vec3(1.0, 1.0, 1.0);
+        }
+
+        if (doc["intensity"]) {
+            pl.intensity = doc["intensity"].as<float>();
+        }
+        else {
+            pl.intensity = 1.0;
+        }
+
+        if (doc["shadow"]) {
+            pl.shadow = (doc["shadow"].as<std::string>() == yes);
+        }
+        else {
+            pl.shadow = false;
+        }
+
+        pl.shadow = false;
+        if (pl.shadow) {
+            LOG("Generating shadow map");
+            shadow_maps->push_back(sm);
+            pl.shadowMap = shadow_maps->size() - 1;
+        }
+        point_lights->push_back(pl);
+    }
+}
+
 static void init_lights(std::vector<PointLight> *point_lights, 
                         std::vector<draw::ShadowMap> *shadow_maps, const Map &map)
 {
@@ -1153,7 +1241,8 @@ int main(void)
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     std::vector<PointLight> point_lights;
     std::vector<draw::ShadowMap> shadow_maps;
-    init_lights(&point_lights, &shadow_maps, map);
+//    init_lights(&point_lights, &shadow_maps, map);
+    init_lights_yaml(&point_lights, &shadow_maps, "resources/lights.yaml");
     init_camera(map);
     LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
@@ -1551,6 +1640,7 @@ int main(void)
         glUniform1i(ssao_prog.getUniform("gViewSpacePositionDepth"), 0);
         glUniform1i(ssao_prog.getUniform("gNormal"), 1);
         glUniform1i(ssao_prog.getUniform("ssaoNoise"), 2);
+        CHECK_GL_ERRORS();
         glUniform1i(ssao_prog.getUniform("screen_width"), width);
         glUniform1i(ssao_prog.getUniform("screen_height"), height);
         for (int i = 0; i < 64; i++) {
@@ -1568,8 +1658,10 @@ int main(void)
         CHECK_GL_ERRORS();
         ssao.bindBlurStage();
         blur_prog.bind();
+        CHECK_GL_ERRORS();
         glClear(GL_COLOR_BUFFER_BIT);
         glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
+        CHECK_GL_ERRORS();
         blur_quad.Render();
         blur_prog.unbind();
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1627,6 +1719,7 @@ int main(void)
             null_prog.bind();
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
             glUniformMatrix4fv(null_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
+        CHECK_GL_ERRORS();
 
             glDrawBuffer(GL_NONE);
             glEnable(GL_DEPTH_TEST);
@@ -1638,7 +1731,7 @@ int main(void)
 
             glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
             glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-            
+        CHECK_GL_ERRORS();            
 
 
             sphere->getDrawable().drawAsLightVolume(&null_prog, &M, camera);
@@ -1749,16 +1842,23 @@ int main(void)
         }*/
 
         if (!disable_controls) {
+            CHECK_GL_ERRORS();
             deferred_lighting_prog.bind();
                 glEnable(GL_DEPTH_TEST);
+                CHECK_GL_ERRORS();
                 glDisable(GL_CULL_FACE);
+                CHECK_GL_ERRORS();
                 glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
+                CHECK_GL_ERRORS();
                 draw_text(*window);
+                CHECK_GL_ERRORS();
                 glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
+                CHECK_GL_ERRORS();
             deferred_lighting_prog.unbind();
+            CHECK_GL_ERRORS();
         }
 
-
+        CHECK_GL_ERRORS();
         if (!disable_controls) {
             if (camera == fp_camera ) {
                 Eigen::Vector3f campos = -camera->translations;
@@ -1777,12 +1877,13 @@ int main(void)
             }
         }
         prevTime_mov = currTime;       
-
+        CHECK_GL_ERRORS();
 
 
         V.popMatrix();
         P.popMatrix();
 
+        CHECK_GL_ERRORS();
         findFPS();        
         CHECK_GL_ERRORS();
 

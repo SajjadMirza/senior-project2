@@ -1,5 +1,8 @@
 #include <draw/Text.hpp>
 
+#define CHECK_ERRORS_THIS_FILE 1
+#include <errors.hpp>
+
 namespace draw {
 
 	Text::Text() : txt(""), font_name(""), header("resources/font/"), pix_size(24)
@@ -48,27 +51,29 @@ namespace draw {
 		int str_size = display_txt.size();
 
 		glUniform1i(prog.getUniform("uTextToggle"), 1);
-
+                CHECK_GL_ERRORS();
 	    glActiveTexture(GL_TEXTURE0);
+            CHECK_GL_ERRORS();
 	    glGenTextures(1, &tex);
+        CHECK_GL_ERRORS();
 	    glBindTexture(GL_TEXTURE_2D, tex);
-	   
+	           CHECK_GL_ERRORS();
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	    
+	            CHECK_GL_ERRORS();
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	   
+	           CHECK_GL_ERRORS();
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
+        CHECK_GL_ERRORS();
 	    glGenBuffers(1, &vbo);
 	    glEnableVertexAttribArray(prog.getAttribute("wordCoords"));
 	    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	    glVertexAttribPointer(prog.getAttribute("wordCoords"), 4, GL_FLOAT, GL_FALSE, 0, 0);
-
+        CHECK_GL_ERRORS();
 	    glEnable(GL_BLEND);
     	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+        CHECK_GL_ERRORS();
     	glDisable(GL_DEPTH_TEST);
 
 		int w, h;
@@ -89,13 +94,16 @@ namespace draw {
 	    	renderText(cn_str, sx + x_s - .5 * str_size * .07, sy + y_s, sx, sy);
 	    }
 	    else {   */
+            CHECK_GL_ERRORS();
     	renderText(cn_str, sx + x_s, sy + y_s, sx, sy, enter_val);
+        CHECK_GL_ERRORS();
 	    //} 
 
+        CHECK_GL_ERRORS();
     	glEnable(GL_DEPTH_TEST);
-
+        CHECK_GL_ERRORS();
 	    glDisable(GL_BLEND);
-
+        CHECK_GL_ERRORS();
 		glUniform1i(prog.getUniform("uTextToggle"), 0);
 	}
 
@@ -112,6 +120,7 @@ namespace draw {
 	        if(FT_Load_Char(face, *p, FT_LOAD_RENDER))
 	            continue;
 	 
+                CHECK_GL_ERRORS();
 	        glTexImage2D(
 	          GL_TEXTURE_2D,
 	          0,
@@ -123,7 +132,7 @@ namespace draw {
 	          GL_UNSIGNED_BYTE,
 	          g->bitmap.buffer
 	        );
-	 
+                CHECK_GL_ERRORS();
 	        float x2 = x + g->bitmap_left * sx;
 	        float y2 = -y - g->bitmap_top * sy;
 	        float w = g->bitmap.width * sx;
@@ -137,16 +146,22 @@ namespace draw {
 	        };
 #if 1	
 	        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
+                CHECK_GL_ERRORS();
 #endif
 #if 0
                 glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(box), box);
+                CHECK_GL_ERRORS();
 #endif
 #if 1
+                CHECK_GL_ERRORS();
 	        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                CHECK_GL_ERRORS();
 #endif
 #if 0
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
+                CHECK_GL_ERRORS();
                 glDrawArrays(GL_TRIANGLES, 0, 6);
+                CHECK_GL_ERRORS();
 #endif
 	        x += (g->advance.x >> 6) * sx;
 	        y += (g->advance.y >> 6) * sy;

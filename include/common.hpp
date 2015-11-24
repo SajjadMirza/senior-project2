@@ -44,7 +44,4 @@
 #include <GLSL.hpp>
 #include <Program.hpp>
 
-#include <log.hpp>
-
-
 #endif

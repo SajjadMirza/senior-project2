@@ -3,6 +3,9 @@
 #include <Program.hpp>
 #include <GLSL.hpp>
 
+#define LOG_THIS_FILE 0
+#include <log.hpp>
+
 using namespace std;
 
 Program::Program() :
