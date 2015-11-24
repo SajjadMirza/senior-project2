@@ -1408,8 +1408,7 @@ int main(void)
 
 
                     for (int i = 0; i < level_one.getNumRooms(); ++i) {
-                        std::vector<Entity> b_entities;
-                        b_entities = (level_one.getRooms())[i]->boundaries;
+                        std::vector<Entity> &b_entities = (level_one.getRooms())[i]->boundaries;
 
                         for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
                             M.pushMatrix();
@@ -1422,8 +1421,7 @@ int main(void)
                             M.popMatrix();
                         }
 
-                        std::vector<Entity> t_entities;
-                        t_entities = (level_one.getRooms())[i]->entities;
+                        std::vector<Entity> &t_entities = (level_one.getRooms())[i]->entities;
 
                         for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
                             M.pushMatrix();
@@ -1506,8 +1504,7 @@ int main(void)
 
         /* attempt for g_buffer */
         for (int i = 0; i < level_one.getNumRooms(); ++i) {
-            std::vector<Entity> b_entities;
-            b_entities = (level_one.getRooms())[i]->boundaries;
+            std::vector<Entity> &b_entities = (level_one.getRooms())[i]->boundaries;
 
             for (auto it = b_entities.begin(); it != b_entities.end(); it++) {
                 M.pushMatrix();
@@ -1521,8 +1518,7 @@ int main(void)
                 M.popMatrix();
             }
 
-            std::vector<Entity> t_entities;
-            t_entities = (level_one.getRooms())[i]->entities;
+            std::vector<Entity> &t_entities = (level_one.getRooms())[i]->entities;
 
             for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
                 if (it->selected) {
@@ -1540,8 +1536,7 @@ int main(void)
                 glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 0);
             }
 
-            std::vector<Entity> t_entities_m;
-            t_entities_m = (level_one.getRooms())[i]->entities_mov;
+            std::vector<Entity> &t_entities_m = (level_one.getRooms())[i]->entities_mov;
 
             for (auto it = t_entities_m.begin(); it != t_entities_m.end(); it++) {
                 if (it->selected) {
@@ -1621,14 +1616,14 @@ int main(void)
         glUniform1i(ssao_prog.getUniform("ssaoNoise"), 2);
         glUniform1i(ssao_prog.getUniform("screen_width"), width);
         glUniform1i(ssao_prog.getUniform("screen_height"), height);
-        for (int i = 0; i < 64; i++) {
+        for (int i = 0; i < 16; i++) {
             glUniform3fv(ssao_prog.getUniform(str_array("samples", i).c_str()), 1, 
                          ssaoKernel[i].data());
         }
         glUniformMatrix4fv(ssao_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
         glUniformMatrix4fv(ssao_prog.getUniform("V"), 1, GL_FALSE, V.topMatrix().data());
 
-        ssao_quad.Render();
+        //ssao_quad.Render();
         
         ssao_prog.unbind();
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1638,7 +1633,7 @@ int main(void)
         blur_prog.bind();
         glClear(GL_COLOR_BUFFER_BIT);
         glUniform1i(blur_prog.getUniform("ssaoInput"), 0);
-        blur_quad.Render();
+        //blur_quad.Render();
         blur_prog.unbind();
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //        ssao.debugCopyBlur(width, height);
