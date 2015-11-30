@@ -973,7 +973,7 @@ bool TreeRoom::next()
 {
     if (text_counter > 1) {
         text_counter--;
-        return false;
+        return text_counter == 1;
     }
     else {
         return true;

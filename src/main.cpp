@@ -379,16 +379,22 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             }
             break;
         case GLFW_KEY_Q:
-            if (choose_end == true) {
-                if (save_tree == false && kill_tree == false) {
-                    kill_tree = true;
+            if (action == GLFW_RELEASE) {
+                if (choose_end == true) {
+                    if (save_tree == false && kill_tree == false) {
+                        kill_tree = true;
+                        LOG("KILL");
+                    }
                 }
             }
             break;
         case GLFW_KEY_E:
-            if (choose_end == true) {
-                if (save_tree == false && kill_tree == false) {
-                    save_tree = true;
+            if (action == GLFW_RELEASE) {
+                if (choose_end == true) {
+                    if (save_tree == false && kill_tree == false) {
+                        save_tree = true;
+                        LOG("LIVE");
+                    }
                 }
             }
             break;
