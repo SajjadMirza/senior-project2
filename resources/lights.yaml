@@ -44,4 +44,50 @@ position:
   xaxis: 21.3
   yaxis: 1.0
   zaxis: 25.7
-...  
+---
+ambient:
+  red: 0.0
+  grn: 0.3
+  blu: 0.8
+diffuse:
+  red: 0.0
+  grn: 0.3
+  blu: 0.8
+specular:
+  red: 0.0
+  grn: 0.3
+  blu: 0.8
+intensity: 0.8
+attenuation:
+  constant: 1.0
+  linear: 0.35
+  quadratic: 0.44
+shadow: yes
+position:
+  xaxis: 23.5
+  yaxis: 1.5
+  zaxis: 40.5
+---
+ambient:
+  red: 0.0
+  grn: 0.3
+  blu: 0.8
+diffuse:
+  red: 0.0
+  grn: 0.3
+  blu: 0.8
+specular:
+  red: 0.0
+  grn: 0.3
+  blu: 0.8
+intensity: 0.8
+attenuation:
+  constant: 1.0
+  linear: 0.35
+  quadratic: 0.44
+shadow: yes
+position:
+  xaxis: 23.5
+  yaxis: 1.5
+  zaxis: 47.5
+...
