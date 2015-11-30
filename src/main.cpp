@@ -1695,6 +1695,7 @@ int main(void)
         deferred_geom_prog.unbind();
         glDepthMask(GL_FALSE);
 
+#if USE_SSAO
         // Compute SSAO texture
         ssao.bindOcclusionStage();
         ssao_prog.bind();
@@ -1730,6 +1731,7 @@ int main(void)
 //        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //        ssao.debugCopyBlur(width, height);
         CHECK_GL_ERRORS();
+#endif
 
         glBindFramebuffer(GL_FRAMEBUFFER, gbuffer.fbo);
 
