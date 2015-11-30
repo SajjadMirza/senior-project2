@@ -1912,35 +1912,6 @@ int main(void)
             screen_prog.unbind();
         }*/
 
-        if (!disable_controls) {
-            CHECK_GL_ERRORS();
-            deferred_lighting_prog.bind();
-                glEnable(GL_DEPTH_TEST);
-                CHECK_GL_ERRORS();
-                glDisable(GL_CULL_FACE);
-                CHECK_GL_ERRORS();
-                glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 1);
-                CHECK_GL_ERRORS();
-                draw_text(*window);
-                CHECK_GL_ERRORS();
-                glUniform1i(deferred_lighting_prog.getUniform("uTextToggle"), 0);
-                CHECK_GL_ERRORS();
-            deferred_lighting_prog.unbind();
-            CHECK_GL_ERRORS();
-        }
-
-        if (!disable_controls && dialogue_trigger == true) {
-            screen_prog.bind();                
-                glEnable(GL_DEPTH_TEST);
-                glDisable(GL_CULL_FACE);
-                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
-                std::ostringstream convert; 
-                convert << displayed_dialogue;
-                text_dia.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
-                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
-            screen_prog.unbind();
-        }
-
         if (save_tree == true || kill_tree == true) {
             screen_prog.bind();                
                 glEnable(GL_DEPTH_TEST);
@@ -1958,8 +1929,36 @@ int main(void)
             screen_prog.unbind();
         }
 
+        if (disable_controls == 0) {
+            CHECK_GL_ERRORS();
+            screen_prog.bind();
+            glEnable(GL_DEPTH_TEST);
+            CHECK_GL_ERRORS();
+            glDisable(GL_CULL_FACE);
+            CHECK_GL_ERRORS();
+            glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+            CHECK_GL_ERRORS();
+            std::ostringstream convert_fps; 
+            convert_fps << "FPS " << lastFPS;
+            text.draw(screen_prog, *window, convert_fps.str(), -0.95f, 0.9f, 75.0f);
+            CHECK_GL_ERRORS();
+            glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            CHECK_GL_ERRORS();
+            CHECK_GL_ERRORS();
 
-        if (!disable_controls  && kill_tree == false && save_tree == false) {
+            if (dialogue_trigger == true) {
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                std::ostringstream convert; 
+                convert << displayed_dialogue;
+                text_dia.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+            }
+            screen_prog.unbind();
+        }
+
+
+
+        if (disable_controls == 0 && kill_tree == false && save_tree == false) {
             if (camera == fp_camera ) {
                 Eigen::Vector3f campos = -camera->translations;
                 uint col = std::round(campos(0)), row = std::round(campos(2) - 1);
