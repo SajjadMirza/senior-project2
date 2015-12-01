@@ -319,7 +319,7 @@ directory: resources/models/lounge_room/Picture/
 format: obj
 textures:
   diffuse:
-    Map.jpg
+    map_level_0_big.tga
   normal:
     Screen_N.jpg
   specular:

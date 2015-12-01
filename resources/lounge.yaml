@@ -394,7 +394,7 @@ textures:
   normal:
     chair_n.dds
   specular:
-    table_specular.jpg
+    dining_s.jpg
 overrides:
   radius: 0.25
   center: position
@@ -417,7 +417,7 @@ textures:
   normal:
     chair_n.dds
   specular:
-    table_specular.jpg
+    dining_s.jpg
 overrides:
   radius: 0.25
   center: position
@@ -666,9 +666,9 @@ textures:
   diffuse:
     p_RE1_radio.dds
   normal:
-    table_normal.jpg
+    device_n.jpg
   specular:
-    table_specular.jpg
+    device_s.jpg
 overrides:
   radius: 0.0
   center: position
