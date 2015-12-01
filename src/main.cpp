@@ -117,6 +117,7 @@ bool save_tree = false;
 bool kill_tree = false;
 
 bool dialogue_trigger = true;
+bool tree_trigger = false;
 std::string displayed_dialogue = "Welcome to our game! Try to get out as soon as possible.\n" \
                                   "Right clicking on most objects will interact with it.\nThis" \
                                   "can either be a dialogue response or interacting with the world\n" \
@@ -186,6 +187,7 @@ static void applyRoomLogic(GLFWwindow *window)
                 }
 
                 if (temp_t->select()) {
+                    tree_trigger = true;
                     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
                         nex = true;
                     }
@@ -1940,7 +1942,7 @@ int main(void)
             CHECK_GL_ERRORS();
             CHECK_GL_ERRORS();
 
-            if (dialogue_trigger == true) {
+            if (dialogue_trigger == true && tree_trigger == false) {
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
                 std::ostringstream convert; 
                 convert << displayed_dialogue;

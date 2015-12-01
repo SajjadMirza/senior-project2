@@ -337,5 +337,24 @@ attenuation:
 position:
   xaxis: 47.5
   yaxis: 1.5
-  zaxis: 23.0  
-...  
+  zaxis: 23.0
+--- #begin tree lights
+diffuse:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+specular:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+intensity: 2.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.07
+  quadratic: 0.017
+position:
+  xaxis: 20.0
+  yaxis: 2.5
+  zaxis: 23.0   
+...
