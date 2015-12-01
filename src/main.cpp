@@ -666,6 +666,7 @@ static void init_gl()
 
     deferred_lighting_prog.addAttribute("wordCoords");
     deferred_lighting_prog.addUniform("uTextToggle");
+    deferred_lighting_prog.addUniform("uShadow");
 
     null_prog.setShaderNames(header + "null_vert.glsl",
                              header + "null_frag.glsl");
@@ -1817,11 +1818,17 @@ int main(void)
             gbuffer.bindFinalBuffer();
             CHECK_GL_ERRORS();
 
-            // Prepare to use shadows
-            draw::ShadowMap &sm = shadow_maps[it->shadowMap];
-            glActiveTexture(GL_TEXTURE5);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
-            CHECK_GL_ERRORS();
+            if (it->shadow) {
+                // Prepare to use shadows
+                glUniform1i(deferred_lighting_prog.getUniform("uShadow"), 1);
+                draw::ShadowMap &sm = shadow_maps[it->shadowMap];
+                glActiveTexture(GL_TEXTURE5);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, sm.cubemap);
+                CHECK_GL_ERRORS();
+            }
+            else {
+                glUniform1i(deferred_lighting_prog.getUniform("uShadow"), 0);
+            }
             glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 //            glDisable(GL_STENCIL_TEST);
 

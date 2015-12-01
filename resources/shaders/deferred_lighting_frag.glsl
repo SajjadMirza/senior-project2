@@ -39,6 +39,7 @@ uniform float far_plane;
 out vec4 out_color;
 
 uniform int uTextToggle;
+uniform int uShadow;
 
 float debug_color_depth;
 
@@ -112,7 +113,10 @@ void main()
 //        bias = max(0.1 * (1.0 - dot(fragNor, lightDir)), 0.005);  
         bias = 0.15;
 //        bias = 0.0;
-        float shadow = calc_shadow(fragPos, bias);
+        float shadow = 0.0;
+        if (uShadow == 1) {
+            shadow = calc_shadow(fragPos, bias);
+        }
         
         diffuse *= attenuation;
         specular *= attenuation;
