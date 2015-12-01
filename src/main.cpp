@@ -1752,6 +1752,7 @@ int main(void)
         int light_draw_count = 0;
         glEnable(GL_STENCIL_TEST);
         deferred_lighting_prog.bind();
+
         for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
             float light_radius = calculate_point_light_radius(*it);
             M.pushMatrix();
@@ -1762,7 +1763,6 @@ int main(void)
                 M.popMatrix();
                 continue;
             }
-
 #if FRUSTUM_CULLING
             Eigen::Matrix4f matM = M.topMatrix();
             Eigen::Matrix4f matVM = matV * matM;
@@ -1955,7 +1955,6 @@ int main(void)
             }
             screen_prog.unbind();
         }
-
 
 
         if (disable_controls == 0 && kill_tree == false && save_tree == false) {
