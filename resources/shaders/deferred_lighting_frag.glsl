@@ -99,7 +99,7 @@ void main()
         float spc = texture(gSpecular, texCoord).r;
         vec3 fragSpc = vec3(spc, spc, spc);
 
-        vec3 ambient = fragCol * 0.1 * light.ambient;
+//        vec3 ambient = fragCol * 0.1 * light.ambient;
         vec3 viewDir = normalize(viewPos - fragPos);
         
         vec3 lightDir = normalize(light.position - fragPos);
@@ -117,6 +117,9 @@ void main()
         if (uShadow == 1) {
             shadow = calc_shadow(fragPos, bias);
         }
+        else {
+            debug_color_depth = 0.0;
+        }
         
         diffuse *= attenuation;
         specular *= attenuation;
@@ -126,7 +129,7 @@ void main()
 
         vec3 light = (diffuse * 1.0 + specular * 1.0) * (1.0 - shadow);
         light *= fragOcc;
-//        light *= 1.5;
+        light *= 1.5;
 
 //        vec3 light = (diffuse * 2.0) * (1.0 - shadow);        
 

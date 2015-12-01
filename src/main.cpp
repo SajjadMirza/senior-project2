@@ -1081,26 +1081,19 @@ static void init_lights(std::vector<PointLight> *point_lights,
                         std::vector<draw::ShadowMap> *shadow_maps, const Map &map)
 {
     PointLight pl;
-    
+    LOG("point light size 1 " << point_lights->size());
     pl.ambient = vec3(0.05, 0.05, 0.05);
     pl.diffuse = vec3(1.0, 1.0, 1.0);
     pl.specular = vec3(1.0, 1.0, 1.0);
     pl.intensity = pl.constant = 1.0;
     pl.linear = 0.35;
     pl.quadratic = 0.9;
-    pl.shadow = true;
+    pl.shadow = false;
 
-    draw::ShadowMap sm;
-    sm.cubemap = 0;
-    sm.fbo = 0;
 #if 1    
     for (auto it = map.getMajorLightPositions().cbegin(); 
          it != map.getMajorLightPositions().cend();
          it++) {
-        if (pl.shadow) {
-            shadow_maps->push_back(sm);
-            pl.shadowMap = shadow_maps->size() - 1;
-        }
         pl.position = *it;
         pl.position.y() += 0.5;
         point_lights->push_back(pl);
@@ -1110,44 +1103,38 @@ static void init_lights(std::vector<PointLight> *point_lights,
 
     PointLight smallpl;
     smallpl.ambient = pl.ambient;
-    smallpl.shadow = true;
+    smallpl.shadow = false;
     smallpl.diffuse = make_color(0, 216, 230);
     smallpl.specular = smallpl.diffuse;
     smallpl.intensity = smallpl.constant = 1.0;
     smallpl.linear = 0.7;
     smallpl.quadratic = 1.8;
+
 #if 1
     for (auto it = map.getMinorLightPositions().cbegin(); 
          it != map.getMinorLightPositions().cend();
          it++) {
-        if (smallpl.shadow) {
-            shadow_maps->push_back(sm);
-            smallpl.shadowMap = shadow_maps->size() - 1;
-        }
         smallpl.position = *it;
         point_lights->push_back(smallpl);
     }
 #endif
 
     PointLight tinypl = smallpl;
-    tinypl.shadow = true;
+    tinypl.shadow = false;
     tinypl.diffuse = make_color(230, 30, 30);
     tinypl.specular = tinypl.diffuse;
     tinypl.linear = 4.5;
     tinypl.quadratic = 6.7;
+
 #if 0
     for (auto it = map.getTinyLightPositions().cbegin(); 
          it != map.getTinyLightPositions().cend();
          it++) {
-        if (tinypl.shadow) {
-            shadow_maps->push_back(sm);
-            tinypl.shadowMap = shadow_maps->size() - 1;
-        }
         tinypl.position = *it;
         point_lights->push_back(tinypl);
     }
 #endif
-    
+    LOG("point light size 2 " << point_lights->size());
     LOG("Initialized " << point_lights->size() << " point lights");
 }
 
@@ -1311,8 +1298,8 @@ int main(void)
     std::unique_ptr<Entity> sphere = init_sphere_light_volume();
     std::vector<PointLight> point_lights;
     std::vector<draw::ShadowMap> shadow_maps;
-//    init_lights(&point_lights, &shadow_maps, map);
     init_lights_yaml(&point_lights, &shadow_maps, "resources/lights.yaml");
+    init_lights(&point_lights, &shadow_maps, map);
     init_camera(map);
     LOG("NUMBER OF POINT LIGHTS: " << point_lights.size());
 
@@ -1372,7 +1359,7 @@ int main(void)
 
     CHECK_GL_ERRORS();
     // Allocate buffers for depth maps
-    const GLuint shadow_width = 1024, shadow_height = 1024;
+    const GLuint shadow_width = 512, shadow_height = 512;
     for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
         if (it->shadow) {
             draw::ShadowMap &sm = shadow_maps[it->shadowMap];
@@ -1751,7 +1738,7 @@ int main(void)
         
 
         int light_draw_count = 0;
-        glEnable(GL_STENCIL_TEST);
+//        glEnable(GL_STENCIL_TEST);
         deferred_lighting_prog.bind();
 
         for (auto it = point_lights.begin(); it != point_lights.end(); it++) {
@@ -1786,7 +1773,7 @@ int main(void)
 
             // set up and render sphere
             M.scale(light_radius);
-#if 1
+#if 0
             // Stencil pass
             null_prog.bind();
             glUniformMatrix4fv(null_prog.getUniform("P"), 1, GL_FALSE, P.topMatrix().data());
@@ -1883,7 +1870,7 @@ int main(void)
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, ssao.blurBuffer);
         glUniform1i(ambient_prog.getUniform("occlusion"), 1); // TEXTURE1
-        glUniform1f(ambient_prog.getUniform("intensity"), 0.2);
+        glUniform1f(ambient_prog.getUniform("intensity"), 0.05);
         ambient_quad.Render();
         glDisable(GL_BLEND);
 

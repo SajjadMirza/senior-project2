@@ -86,6 +86,8 @@ void Map::initWalls() {
             }
         }
     }
+
+    LOG("tiny lights: " << tiny_light_positions.size());
 }
 
 static const uint32_t RED_SHIFT    = 16;

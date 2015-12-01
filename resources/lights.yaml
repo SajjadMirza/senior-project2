@@ -1,54 +1,4 @@
----
-ambient:
-  red: 0.3
-  grn: 0.2
-  blu: 0.1
-diffuse:
-  red: 0.8
-  grn: 0.4
-  blu: 0.2
-specular:
-  red: 0.8
-  grn: 0.4
-  blu: 0.2
-intensity: 0.9
-attenuation:
-  constant: 1.0
-  linear: 0.35
-  quadratic: 0.9
-shadow: yes
-position:
-  xaxis: 23.0
-  yaxis: 3.0
-  zaxis: 23.0
----
-ambient:
-  red: 1.0
-  grn: 1.0
-  blu: 1.0
-diffuse:
-  red: 1.0
-  grn: 1.0
-  blu: 1.0
-specular:
-  red: 1.0
-  grn: 1.0
-  blu: 1.0
-intensity: 1.0
-attenuation:
-  constant: 1.0
-  linear: 0.35
-  quadratic: 0.9
-shadow: yes
-position:
-  xaxis: 21.3
-  yaxis: 1.0
-  zaxis: 25.7
----
-ambient:
-  red: 0.0
-  grn: 0.3
-  blu: 0.8
+--- # light 1
 diffuse:
   red: 0.0
   grn: 0.3
@@ -67,11 +17,7 @@ position:
   xaxis: 23.5
   yaxis: 1.5
   zaxis: 40.5
----
-ambient:
-  red: 0.0
-  grn: 0.3
-  blu: 0.8
+--- # light 2
 diffuse:
   red: 0.0
   grn: 0.3
@@ -90,11 +36,7 @@ position:
   xaxis: 23.5
   yaxis: 1.5
   zaxis: 47.5
----
-ambient:
-  red: 0.6
-  grn: 0.3
-  blu: 0.0
+--- # light 3
 diffuse:
   red: 0.6
   grn: 0.3
@@ -111,12 +53,8 @@ attenuation:
 position:
   xaxis: 22.0
   yaxis: 1.5
-  zaxis: 44
----
-ambient:
-  red: 0.2
-  grn: 0.7
-  blu: 0.2
+  zaxis: 44.5
+--- # light 4
 diffuse:
   red: 0.2
   grn: 0.7
@@ -133,5 +71,271 @@ attenuation:
 position:
   xaxis: 25.0
   yaxis: 1.5
-  zaxis: 44   
-...
+  zaxis: 44.5
+--- # light 5
+diffuse:
+  red: 0.8
+  grn: 0.2
+  blu: 0.2
+specular:
+  red: 0.8
+  grn: 0.2
+  blu: 0.2
+intensity: 0.4
+attenuation:
+  constant: 1.0
+  linear: 0.35
+  quadratic: 0.44
+shadow: yes  
+position:
+  xaxis: 17.0
+  yaxis: 1.5
+  zaxis: 42.5
+--- # light 6 
+diffuse:
+  red: 0.8
+  grn: 0.2
+  blu: 0.2
+specular:
+  red: 0.8
+  grn: 0.2
+  blu: 0.2
+intensity: 0.4
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+shadow: yes  
+position:
+  xaxis: 9.0
+  yaxis: 1.5
+  zaxis: 40.5
+--- # light 7
+diffuse:
+  red: 0.8
+  grn: 0.2
+  blu: 0.2
+specular:
+  red: 0.8
+  grn: 0.2
+  blu: 0.2
+intensity: 0.4
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 9.0
+  yaxis: 1.5
+  zaxis: 34.5
+--- # light 8 -- start of hanoi room
+diffuse:
+  red: 1.0
+  grn: 0.3
+  blu: 0.3
+specular:
+  red: 1.0
+  grn: 0.3
+  blu: 0.3
+intensity: 0.85
+attenuation:
+  constant: 1.0
+  linear: 0.09
+  quadratic: 0.032
+shadow: yes  
+position:
+  xaxis: 9.0
+  yaxis: 1.5
+  zaxis: 22.5
+---
+diffuse:
+  red: 0.3
+  grn: 1.0
+  blu: 0.3
+specular:
+  red: 0.3
+  grn: 1.0
+  blu: 0.3
+intensity: 0.85
+attenuation:
+  constant: 1.0
+  linear: 0.09
+  quadratic: 0.032
+shadow: yes  
+position:
+  xaxis: 2.0
+  yaxis: 1.5
+  zaxis: 25.5
+--- # light 9
+diffuse:
+  red: 0.8
+  grn: 0.8
+  blu: 0.8
+specular:
+  red: 0.8
+  grn: 0.8
+  blu: 0.8
+intensity: 0.6
+attenuation:
+  constant: 1.0
+  linear: 0.22
+  quadratic: 0.20
+shadow: yes  
+position:
+  xaxis: 24.0
+  yaxis: 1.5
+  zaxis: 4.5
+--- # light 10
+diffuse:
+  red: 0.8
+  grn: 0.8
+  blu: 0.8
+specular:
+  red: 0.8
+  grn: 0.8
+  blu: 0.8
+intensity: 0.6
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.22
+  quadratic: 0.20
+position:
+  xaxis: 23.0
+  yaxis: 1.5
+  zaxis: 9.5     
+--- # light 11
+diffuse:
+  red: 0.8
+  grn: 0.8
+  blu: 0.4
+specular:
+  red: 0.8
+  grn: 0.8
+  blu: 0.4
+intensity: 0.6
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.22
+  quadratic: 0.20
+position:
+  xaxis: 42.0
+  yaxis: 1.5
+  zaxis: 22.5
+---
+ambient:
+  red: 5.0
+  grn: 5.0
+  blu: 5.0
+diffuse:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+specular:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0  
+intensity: 0.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 46.0
+  yaxis: 1.5
+  zaxis: 26.0
+---
+ambient:
+  red: 5.0
+  grn: 5.0
+  blu: 5.0
+diffuse:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+specular:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0  
+intensity: 0.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 45.0
+  yaxis: 1.5
+  zaxis: 26.0
+---
+ambient:
+  red: 5.0
+  grn: 5.0
+  blu: 5.0
+diffuse:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+specular:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+intensity: 0.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 47.5
+  yaxis: 1.5
+  zaxis: 21.0
+---
+ambient:
+  red: 5.0
+  grn: 5.0
+  blu: 5.0
+diffuse:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+specular:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+intensity: 0.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 47.5
+  yaxis: 1.5
+  zaxis: 22.0
+---
+ambient:
+  red: 5.0
+  grn: 5.0
+  blu: 5.0
+diffuse:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+specular:
+  red: 1.0
+  grn: 1.0
+  blu: 1.0
+intensity: 0.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 47.5
+  yaxis: 1.5
+  zaxis: 23.0  
+...  
