@@ -78,7 +78,7 @@ Program ambient_prog;
 Program ssao_prog;
 Program blur_prog;
 Program screen_prog;
-int debug_gbuffer_mode = 0;
+int debug_gbuffer_mode = 5;
 
 EntityDatabase entityDatabase;
 
@@ -118,11 +118,11 @@ bool kill_tree = false;
 
 bool dialogue_trigger = true;
 bool tree_trigger = false;
-std::string displayed_dialogue = "Welcome to our game! Try to get out as soon as possible.\n" \
+std::string displayed_dialogue = "Welcome to the game Darwin game! .\n" \
                                   "Right clicking on most objects will interact with it.\nThis" \
                                   "can either be a dialogue response or interacting with the world\n" \
-                                  "Hints: Don't stay in dark places too long. Bad things might happen :)\n" \
-                                  "Press SPACE to get rid of this message.";
+                                  "Hints: Follow the lights, they will guide you :)\n" \
+                                  "Press SPACE to get toggle messages.";
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -1607,9 +1607,9 @@ int main(void)
             std::vector<Entity> &t_entities = (level_one.getRooms())[i]->entities;
 
             for (auto it = t_entities.begin(); it != t_entities.end(); it++) {
-                if (it->selected) {
+                /*if (it->selected) {
                     glUniform1i(deferred_geom_prog.getUniform("uHighlight"), 1);
-                }
+                }*/
                 M.pushMatrix();
                 M.worldTranslate(it->getPosition(), it->getRotation());
                 M.multMatrix(it->getRotation());

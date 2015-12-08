@@ -599,7 +599,9 @@ void Comp::done(int disable_controls)
         if (esc) {
             state_t = SUCCESS;
             for (int i = 0; i < boundaries.size(); ++i) {
-                boundaries[i].setPosition(vec3(0, 0, 0));
+                if (boundaries[i].getName() != "special_cube") {
+                    boundaries[i].setPosition(vec3(0, 0, 0));
+                }
             }
         }
     }
@@ -730,6 +732,11 @@ int Comp::home_root_idx(int num)
             break;
         case 7:
             search = "root_lights.txt";
+
+            for (int i = 0; i < boundaries.size(); ++i) {
+                boundaries[i].setPosition(vec3(0, 0, 0));
+            }
+
             break;
         case 8:
             search = "root_map.txt";

@@ -7,7 +7,7 @@ NOTE - For security reasons, all interations are logged.
 4. (root) System access manual - no changes
 5. (root) Company message for all employees.
 6. (root) Experiment Status.
-7. (root) Turn on all Lights.
+7. (root) Open Door to Experiment Chamber.
 8. (root) Reveal Detailed Map.
 
 ...
