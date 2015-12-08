@@ -132,7 +132,7 @@ std::string displayed_dialogue = "Welcome to our game! Try to get out as soon as
 */
 
 
-static void applyRoomLogic(GLFWwindow *window)
+static void applyRoomLogic(GLFWwindow *window, std::vector<PointLight> *point_lights)
 {
     for (int i = 0; i < level_one.getNumRooms(); ++i) {
         Room* temp = (level_one.getRooms())[i];
@@ -177,7 +177,7 @@ static void applyRoomLogic(GLFWwindow *window)
                 break;
                 case Room::RoomType::LOUNGE:
                 temp_l = dynamic_cast<Lounge*>(temp);
-                temp_l->select(last_selected_entity);
+                temp_l->select(last_selected_entity, point_lights);
                 break;
                 case Room::RoomType::TREE:
                 temp_t = dynamic_cast<TreeRoom*>(temp);
@@ -1889,7 +1889,7 @@ int main(void)
 
         /* Attempt to forward render a quad */
         // Room Logic
-        applyRoomLogic(window);
+        applyRoomLogic(window, &point_lights);
         /*if (disable_controls) {
             screen_prog.bind();                
                 screen_quad.Render();
@@ -1932,7 +1932,7 @@ int main(void)
             CHECK_GL_ERRORS();
             glDisable(GL_CULL_FACE);
             CHECK_GL_ERRORS();
-            glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+            /*glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
             CHECK_GL_ERRORS();
             std::ostringstream convert_fps; 
             convert_fps << "FPS " << lastFPS;
@@ -1940,7 +1940,7 @@ int main(void)
             CHECK_GL_ERRORS();
             glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
             CHECK_GL_ERRORS();
-            CHECK_GL_ERRORS();
+            CHECK_GL_ERRORS();*/
 
             if (dialogue_trigger == true && tree_trigger == false) {
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 1);

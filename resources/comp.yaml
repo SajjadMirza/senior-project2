@@ -336,5 +336,28 @@ transforms:
     xaxis: 42.5
     zaxis: 23.0
     yaxis: 3.45
-  scale: 0.625 
+  scale: 0.625
+---
+model: Computer
+file: Screen.obj
+directory: resources/models/comp_room/computer/
+format: obj
+textures:
+  diffuse:
+    Computer_Laptop_Screen_D.tga
+  normal:
+    Computer_Laptop_Screen_N.tga
+  specular:
+    Computer_Laptop_Screen_S.tga
+overrides:
+  radius: 0.0
+  center: position
+transforms:
+  rotations:
+    yaxis: 225.0
+  translations:
+    xaxis: 24.75
+    zaxis: 8.8
+    yaxis: 0.43
+  scale: 0.25  
 ...

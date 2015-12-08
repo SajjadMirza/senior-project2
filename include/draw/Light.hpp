@@ -20,6 +20,10 @@ struct PointLight {
     // Shadow information
     bool shadow;
     uint shadowMap;
+
+    vec3 ambient_copy;
+    vec3 diffuse_copy;
+    vec3 specular_copy;
 };
 
 struct DirectionalLight {

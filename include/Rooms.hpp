@@ -8,6 +8,7 @@
 #include <stack>
 
 #include <boost/filesystem.hpp>
+#include <draw/Light.hpp>
 
 #define SIZE 3
 #define LABTOP 1
@@ -154,7 +155,7 @@ public:
     Lounge();
     ~Lounge();
 
-    void select(Entity *last_selected_entity);
+    void select(Entity *last_selected_entity, std::vector<PointLight> *point_lights);
 private:
     std::string yaml_lounge;
     int Light_state;

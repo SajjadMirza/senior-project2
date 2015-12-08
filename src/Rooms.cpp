@@ -851,7 +851,7 @@ Lounge::~Lounge()
 
 }
 
-void Lounge::select(Entity *last_selected_entity) 
+void Lounge::select(Entity *last_selected_entity, std::vector<PointLight> *point_lights) 
 {
     if (last_selected_entity != NULL) {
         if (last_selected_entity->getName() == "book_special" && last_selected_entity->selected == true) {
@@ -867,6 +867,32 @@ void Lounge::select(Entity *last_selected_entity)
             for (int i = 0; i < entities.size(); ++i) {
                 if (entities[i].getName() == "switch_special") {
                     Light_state = (Light_state + 1) % 4;
+
+                    for (int count = 0; count < point_lights->size(); ++count) {
+                        if ((*point_lights)[count].ambient == vec3(5, 5, 5)) {
+                            if (Light_state == 1) {
+                                (*point_lights)[count].ambient_copy = (*point_lights)[count].ambient;
+                                (*point_lights)[count].diffuse_copy = (*point_lights)[count].diffuse;
+                                (*point_lights)[count].specular_copy = (*point_lights)[count].specular;
+
+                                (*point_lights)[count].diffuse = vec3(0.8, 0.1, 0.05);
+                                (*point_lights)[count].specular = vec3(0.5, 0.1, 0.05);
+                            }
+                            else if (Light_state == 2) {
+                                (*point_lights)[count].diffuse = vec3(0.05, 0.8, 0.1);
+                                (*point_lights)[count].specular = vec3(0.05, 0.5, 0.1);
+                            }
+                            else if (Light_state == 3) {
+                                (*point_lights)[count].diffuse = vec3(0.3, 0.05, 0.65);
+                                (*point_lights)[count].specular = vec3(0.1, 0.05, 0.5);
+                            }
+                            else if (Light_state == 0) {
+                                (*point_lights)[count].ambient = (*point_lights)[count].ambient_copy;
+                                (*point_lights)[count].diffuse = (*point_lights)[count].diffuse_copy;
+                                (*point_lights)[count].specular = (*point_lights)[count].specular_copy;
+                            }
+                        }
+                    }
 
                     /* Switch Portraits */
                     if (Light_state == 3 || Light_state == 0) {

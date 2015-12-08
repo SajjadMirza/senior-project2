@@ -338,6 +338,29 @@ position:
   xaxis: 47.5
   yaxis: 1.5
   zaxis: 23.0
+---
+ambient:
+  red: 5.0
+  grn: 5.0
+  blu: 5.0
+diffuse:
+  red: 0.8
+  grn: 0.8
+  blu: 0.4
+specular:
+  red: 0.8
+  grn: 0.8
+  blu: 0.4
+intensity: 0.8
+shadow: yes
+attenuation:
+  constant: 1.0
+  linear: 0.7
+  quadratic: 1.8
+position:
+  xaxis: 37.5
+  yaxis: 0.6
+  zaxis: 24.0
 --- #begin tree lights
 diffuse:
   red: 1.0
