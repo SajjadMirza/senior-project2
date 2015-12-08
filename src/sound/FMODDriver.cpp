@@ -3,8 +3,9 @@
 #include <log.hpp>
 
 namespace sound {
-
-    const char *sound_test = "resources/sounds/Ode_to_Joy.ogg";
+    //"dvorak-symphony-no9-mvtII.ogg"
+    const char *sound_test = "resources/sounds/dvorak-symphony-no9-mvtII.ogg";
+//    const char *sound_test = "resources/sounds/Ode_to_Joy.ogg";
     const char *sound_foot = "resources/sounds/foot_step_wood.ogg";
     const char *sound_energy = "resources/sounds/energy.ogg";
     const char *sound_start_up = "resources/sounds/start_up.wav";
@@ -45,6 +46,7 @@ namespace sound {
 
         FMOD::Channel *channel;
         system->playSound(audio, NULL, false, &channel);
+        channel->setVolume(0.2);
     }
 
     void FMODDriver::footStep(bool step) {
@@ -82,7 +84,7 @@ namespace sound {
         FMOD::Sound *audio;
         system->createSound(sound_energy, FMOD_LOOP_OFF, 0, &audio);
 
-        hanoi_channel->setVolume(0.3);
+        hanoi_channel->setVolume(0.25);
         system->playSound(audio, NULL, false, &hanoi_channel);
     }
 
@@ -143,7 +145,7 @@ namespace sound {
             FMOD::Sound *audio;
             system->createSound(door, FMOD_LOOP_OFF, 0, &audio);
 
-            door_channel->setVolume(0.2);
+            door_channel->setVolume(0.1);
             system->playSound(audio, NULL, false, &door_channel);
         }
     }
@@ -174,7 +176,7 @@ namespace sound {
             FMOD::Sound *audio;
             system->createSound(button, FMOD_LOOP_OFF, 0, &audio);
 
-            button_channel->setVolume(0.2);
+            button_channel->setVolume(0.15);
             system->playSound(audio, NULL, false, &button_channel);
         }
     }

@@ -1341,7 +1341,7 @@ int main(void)
     glfwGetFramebufferSize(window, &width, &height);
 
     // test sound 
-    // sound_driver.testSound();
+    sound_driver.testSound();
     CHECK_GL_ERRORS();
     LOG("gbuffer stuff");
     Gbuffer gbuffer;
