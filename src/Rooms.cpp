@@ -128,6 +128,7 @@ void Hanoi::select(GLFWwindow *window, Entity *last_selected_entity)
                     selected = 0;
                     selection_helper();
                     last_selected_entity->selected = false;
+                    room_sound_driver->ButtonSound();
                 }
             }
             else if (last_selected_entity->getName() == "Switch_2" && last_selected_entity->selected == true) {
@@ -135,6 +136,7 @@ void Hanoi::select(GLFWwindow *window, Entity *last_selected_entity)
                     selected = 1;
                     selection_helper();
                     last_selected_entity->selected = false;
+                    room_sound_driver->ButtonSound();
                 }
             }
             else if (last_selected_entity->getName() == "Switch_3" && last_selected_entity->selected == true) {
@@ -142,6 +144,7 @@ void Hanoi::select(GLFWwindow *window, Entity *last_selected_entity)
                     selected = 2;
                     selection_helper();
                     last_selected_entity->selected = false;
+                    room_sound_driver->ButtonSound();
                 }
             }
 
@@ -883,6 +886,7 @@ void Lounge::select(Entity *last_selected_entity, std::vector<PointLight> *point
             for (int i = 0; i < entities.size(); ++i) {
                 if (entities[i].getName() == "switch_special") {
                     Light_state = (Light_state + 1) % 4;
+                    room_sound_driver->ButtonSound();
 
                     for (int count = 0; count < point_lights->size(); ++count) {
                         if ((*point_lights)[count].ambient == vec3(5, 5, 5)) {

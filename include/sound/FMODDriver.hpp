@@ -24,6 +24,9 @@ namespace sound {
 
             void DoorSound();
             void DoorCheck();
+
+            void ButtonSound();
+            void ButtonCheck();
     };
 }
 

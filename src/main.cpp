@@ -1994,6 +1994,7 @@ int main(void)
         sound_driver.HanoiCheck();
         sound_driver.StartCheck();
         sound_driver.DoorCheck();
+        sound_driver.ButtonCheck();
 
 
         glfwSwapBuffers(window);

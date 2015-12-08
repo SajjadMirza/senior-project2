@@ -8,14 +8,15 @@ namespace sound {
     const char *sound_foot = "resources/sounds/foot_step_wood.ogg";
     const char *sound_energy = "resources/sounds/energy.ogg";
     const char *sound_start_up = "resources/sounds/start_up.wav";
-    
     const char *door = "resources/sounds/tos-turboliftdoor.ogg";
+    const char *button = "resources/sounds/button.wav";
 
 
     static FMOD::Channel *foot_channel;
     static FMOD::Channel *hanoi_channel;
     static FMOD::Channel *start_channel;
     static FMOD::Channel *door_channel;
+    static FMOD::Channel *button_channel;
 
 
     FMODDriver::FMODDriver() {
@@ -161,6 +162,37 @@ namespace sound {
             }
             else {
                 door_channel->stop();
+            }
+        }
+    }
+
+    void FMODDriver::ButtonSound() {
+        bool playing;
+        button_channel->isPlaying(&playing);
+
+        if (!playing) {
+            FMOD::Sound *audio;
+            system->createSound(button, FMOD_LOOP_OFF, 0, &audio);
+
+            button_channel->setVolume(0.2);
+            system->playSound(audio, NULL, false, &button_channel);
+        }
+    }
+
+    void FMODDriver::ButtonCheck() {
+
+        bool playing;
+        button_channel->isPlaying(&playing);
+
+        if (playing) {
+            float sound;
+            button_channel->getVolume(&sound);
+
+            if (sound > 0) {
+                button_channel->setVolume(sound - 0.015);
+            }
+            else {
+                button_channel->stop();
             }
         }
     }
