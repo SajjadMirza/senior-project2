@@ -9,6 +9,7 @@
 
 #include <boost/filesystem.hpp>
 #include <draw/Light.hpp>
+#include <sound/FMODDriver.hpp>
 
 #define SIZE 3
 #define LABTOP 1
@@ -23,6 +24,8 @@
 #define LIGHT_G 2
 #define LIGHT_B 3
 
+extern sound::FMODDriver* room_sound_driver;
+
 class Level;
 class Room;
 class Hanoi;
@@ -34,7 +37,7 @@ public:
     Level();
     ~Level();
 
-    void initLevelOne();
+    void initLevelOne(sound::FMODDriver *sound_driver);
     int getNumRooms() const { return num_rooms; }
     std::vector<Room*> getRooms() const { return rooms; }
 private:

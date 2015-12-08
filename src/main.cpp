@@ -131,6 +131,7 @@ std::string displayed_dialogue = "Welcome to the game Darwin game! .\n" \
   }
 */
 
+bool comp_first = true;
 
 static void applyRoomLogic(GLFWwindow *window, std::vector<PointLight> *point_lights)
 {
@@ -161,6 +162,10 @@ static void applyRoomLogic(GLFWwindow *window, std::vector<PointLight> *point_li
                 temp_c = dynamic_cast<Comp*>(temp);
                 disable_controls = temp_c->select(last_selected_entity);
                 if (disable_controls) {
+                    if (comp_first) {
+                        sound_driver.StartSound();
+                        comp_first = false;
+                    }
                     term_idx = temp_c->terminal_idx_h(disable_controls);
                     screen_prog.bind();                
                         screen_quad.Render();
@@ -172,6 +177,9 @@ static void applyRoomLogic(GLFWwindow *window, std::vector<PointLight> *point_li
                         text_terminal.draw(screen_prog, *window, convert.str(), -0.95f, 0.90f, 200.0f);
                         glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
                     screen_prog.unbind();
+                }
+                else {
+                    comp_first = true;
                 }
                 temp_c->done(disable_controls);
                 break;
@@ -1270,7 +1278,7 @@ int main(void)
     glfwSetCursorPosCallback(window, cursor_pos_callback);
     
     // init level_one
-    level_one.initLevelOne();
+    level_one.initLevelOne(&sound_driver);
     CHECK_GL_ERRORS();
 
     // init drawables
@@ -1980,6 +1988,11 @@ int main(void)
         CHECK_GL_ERRORS();
         findFPS();        
         CHECK_GL_ERRORS();
+
+        sound_driver.HanoiCheck();
+        sound_driver.StartCheck();
+        sound_driver.DoorCheck();
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

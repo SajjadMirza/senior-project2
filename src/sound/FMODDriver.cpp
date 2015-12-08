@@ -6,8 +6,17 @@ namespace sound {
 
     const char *sound_test = "resources/sounds/Ode_to_Joy.ogg";
     const char *sound_foot = "resources/sounds/foot_step_wood.ogg";
+    const char *sound_energy = "resources/sounds/energy.ogg";
+    const char *sound_start_up = "resources/sounds/start_up.wav";
+    
+    const char *door = "resources/sounds/tos-turboliftdoor.ogg";
+
 
     static FMOD::Channel *foot_channel;
+    static FMOD::Channel *hanoi_channel;
+    static FMOD::Channel *start_channel;
+    static FMOD::Channel *door_channel;
+
 
     FMODDriver::FMODDriver() {
         FMOD_RESULT result;
@@ -57,6 +66,8 @@ namespace sound {
         }
         else {
             if (step == true) {
+                unsigned int lengthms;
+
                 FMOD::Sound *audio;
                 system->createSound(sound_foot, FMOD_LOOP_OFF, 0, &audio);
 
@@ -64,5 +75,93 @@ namespace sound {
                 foot_channel->setVolume(0.3);
             }  
         }     
+    }
+
+    void FMODDriver::EnergySound() {
+        FMOD::Sound *audio;
+        system->createSound(sound_energy, FMOD_LOOP_OFF, 0, &audio);
+
+        hanoi_channel->setVolume(0.3);
+        system->playSound(audio, NULL, false, &hanoi_channel);
+    }
+
+    void FMODDriver::StartSound() {
+        bool playing;
+        start_channel->isPlaying(&playing);
+
+        if (!playing) {
+            FMOD::Sound *audio;
+            system->createSound(sound_start_up, FMOD_LOOP_OFF, 0, &audio);
+
+            start_channel->setVolume(0.2);
+            system->playSound(audio, NULL, false, &start_channel);
+        }
+    }
+
+    void FMODDriver::HanoiCheck() {
+
+        bool playing;
+        hanoi_channel->isPlaying(&playing);
+
+        if (playing) {
+            float sound;
+            hanoi_channel->getVolume(&sound);
+
+            if (sound > 0) {
+                hanoi_channel->setVolume(sound - 0.015);
+            }
+            else {
+                hanoi_channel->stop();
+            }
+        }
+    } 
+
+    void FMODDriver::StartCheck() {
+
+        bool playing;
+        start_channel->isPlaying(&playing);
+
+        if (playing) {
+            float sound;
+            start_channel->getVolume(&sound);
+
+            if (sound > 0) {
+                start_channel->setVolume(sound - 0.015);
+            }
+            else {
+                start_channel->stop();
+            }
+        }
+    } 
+
+    void FMODDriver::DoorSound() {
+        bool playing;
+        door_channel->isPlaying(&playing);
+
+        if (!playing) {
+            FMOD::Sound *audio;
+            system->createSound(door, FMOD_LOOP_OFF, 0, &audio);
+
+            door_channel->setVolume(0.2);
+            system->playSound(audio, NULL, false, &door_channel);
+        }
+    }
+
+    void FMODDriver::DoorCheck() {
+
+        bool playing;
+        door_channel->isPlaying(&playing);
+
+        if (playing) {
+            float sound;
+            door_channel->getVolume(&sound);
+
+            if (sound > 0) {
+                door_channel->setVolume(sound - 0.015);
+            }
+            else {
+                door_channel->stop();
+            }
+        }
     }
 }

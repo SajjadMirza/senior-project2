@@ -6,6 +6,8 @@
 #include <log.hpp>
 #include <EntityDatabase.hpp>
 
+sound::FMODDriver* room_sound_driver;
+
 
 extern EntityDatabase entityDatabase;
 
@@ -25,8 +27,10 @@ Level::~Level()
     }
 }
 
-void Level::initLevelOne()
+void Level::initLevelOne(sound::FMODDriver *sound_driver)
 {
+    room_sound_driver = sound_driver;
+
     rooms.push_back(new Hanoi());
     rooms.push_back(new Comp());
     rooms.push_back(new Lounge());
@@ -197,6 +201,8 @@ void Hanoi::selection_helper() {
                 tube_loc[selected].push(tube_loc[select_idx].top());
                 tube_loc[select_idx].pop();
                 newPos(selected);
+
+                room_sound_driver->EnergySound();
             }
         }
         select_idx = -1;                    
@@ -253,6 +259,7 @@ void Hanoi::done()
             boundaries[i].setPosition(vec3(0, 0, 0));
         }
         boundaries.clear();
+        room_sound_driver->DoorSound();
     }
 }
 
@@ -603,6 +610,7 @@ void Comp::done(int disable_controls)
                     boundaries[i].setPosition(vec3(0, 0, 0));
                 }
             }
+            room_sound_driver->DoorSound();
         }
     }
 }
@@ -736,6 +744,7 @@ int Comp::home_root_idx(int num)
             for (int i = 0; i < boundaries.size(); ++i) {
                 boundaries[i].setPosition(vec3(0, 0, 0));
             }
+            room_sound_driver->DoorSound();
 
             break;
         case 8:
