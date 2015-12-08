@@ -961,6 +961,7 @@ static void init_entities(std::vector<Entity> *entities, std::string model_confi
 
         e.setPosition(pos);
         e.setName(it->model);
+        e.description = it->description;
         
         entities->push_back(e);
 //        entityDatabase.registerEntity(&entities->back());
@@ -1677,10 +1678,11 @@ int main(void)
                 e->selected = true;
                 const std::string &name = e->getName();
                 LOG("Selected entity " << id << ": " << name.c_str());
+                LOG("Selected entity has description: " << e->description);
                 last_selected_entity = e;
 
-                if (e->getName() != displayed_dialogue) {
-                    displayed_dialogue = e->getName();
+                if (e->description != displayed_dialogue) {
+                    displayed_dialogue = e->description;
                     dialogue_trigger = true;
                 }
             }

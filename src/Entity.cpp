@@ -9,7 +9,8 @@ Entity::Entity() : name(""),
                    use_bounding_box(false),
                    selected(false),
                    id(0),
-                   simple_draw(false)
+                   simple_draw(false),
+                   description("hello entity")
                    
 {
 }
@@ -22,7 +23,8 @@ Entity::Entity(draw::Drawable *d) : name(""),
                                     use_bounding_box(false),
                                     selected(false),
                                     id(0),
-                                    simple_draw(false)
+                                    simple_draw(false),
+                                    description("hello entity")
 {
 }
 

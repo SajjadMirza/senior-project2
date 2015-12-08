@@ -1072,6 +1072,7 @@ static void init_entities_R(std::vector<Entity> *entities, std::string model_con
 
         e.setPosition(pos);
         e.setName(it->model);
+        e.description = it->description;
         
         entities->push_back(e);
     }
