@@ -118,11 +118,11 @@ bool kill_tree = false;
 
 bool dialogue_trigger = true;
 bool tree_trigger = false;
-std::string displayed_dialogue = "Welcome to the game Darwin game! .\n" \
-                                  "Right clicking on most objects will interact with it.\nThis" \
-                                  "can either be a dialogue response or interacting with the world\n" \
+std::string displayed_dialogue = "Welcome to the game Darwin!\n" \
+                                  "Try right-clicking on objects.\n" \
+                                  "You might learn something, or interact with it.\n" \
                                   "Hints: Follow the lights, they will guide you :)\n" \
-                                  "Press SPACE to get toggle messages.";
+                                  "Press SPACE to toggle messages.";
 
 /*
   inline static std::string foo(std::string name, int index)
@@ -969,6 +969,7 @@ static void init_entities(std::vector<Entity> *entities, std::string model_confi
 
         e.setPosition(pos);
         e.setName(it->model);
+        e.description = it->description;
         
         entities->push_back(e);
 //        entityDatabase.registerEntity(&entities->back());
@@ -1685,10 +1686,11 @@ int main(void)
                 e->selected = true;
                 const std::string &name = e->getName();
                 LOG("Selected entity " << id << ": " << name.c_str());
+                LOG("Selected entity has description: " << e->description);
                 last_selected_entity = e;
 
-                if (e->getName() != displayed_dialogue) {
-                    displayed_dialogue = e->getName();
+                if (e->description != displayed_dialogue) {
+                    displayed_dialogue = e->description;
                     dialogue_trigger = true;
                 }
             }

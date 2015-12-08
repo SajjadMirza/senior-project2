@@ -46,6 +46,7 @@ struct ModelConfig {
     std::string file;
     std::string directory;
     std::string format;
+    std::string description;
     boost::optional<float> radius_override;
     bool use_position_center_override;
     ModelTextureConfig textures;

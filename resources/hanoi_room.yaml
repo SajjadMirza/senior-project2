@@ -1,7 +1,7 @@
 ---
 model: cylinder_1
 file: cylinder.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/cylinder
 format: obj
 textures:
@@ -25,7 +25,7 @@ transforms:
 ---
 model: cylinder_1_2
 file: cylinder.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/cylinder
 format: obj
 textures:
@@ -49,7 +49,7 @@ transforms:
 ---
 model: cylinder_2
 file: cylinder.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/cylinder
 format: obj
 textures:
@@ -73,7 +73,7 @@ transforms:
 ---
 model: cylinder_2_2
 file: cylinder.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/cylinder
 format: obj
 textures:
@@ -97,7 +97,7 @@ transforms:
 ---
 model: cylinder_3
 file: cylinder.obj
-#description: Its powered! If I can get all the energy rings to this power cell, the door might open.
+description: Its powered! If I can get all the energy rings to this power cell, the door might open.
 directory: resources/models/cylinder
 format: obj
 textures:
@@ -121,7 +121,7 @@ transforms:
 ---
 model: cylinder_3
 file: cylinder.obj
-#description: Its powered! If I can get all the energy rings to this power cell, the door might open.
+description: Its powered! If I can get all the energy rings to this power cell, the door might open.
 directory: resources/models/cylinder
 format: obj
 textures:
@@ -145,7 +145,7 @@ transforms:
 ---
 model: Engine_3
 file: Engine_Block.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/Hanoi/Engine
 format: obj
 textures:
@@ -169,7 +169,7 @@ transforms:
 ---
 model: Engine_4
 file: Engine_Block.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/Hanoi/Engine
 format: obj
 textures:
@@ -193,7 +193,7 @@ transforms:
 ---
 model: Engine_1
 file: Engine_Block.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/Hanoi/Engine
 format: obj
 textures:
@@ -217,7 +217,7 @@ transforms:
 ---
 model: Engine_2
 file: Engine_Block.obj
-#description: Looks unpowered...
+description: Looks unpowered...
 directory: resources/models/Hanoi/Engine
 format: obj
 textures:
@@ -241,7 +241,7 @@ transforms:
 ---
 model: Engine_5
 file: Engine_Block.obj
-#description: Its powered! If I can get all the energy rings to this power cell, the door might open.
+description: Its powered! If I can get all the energy rings to this power cell, the door might open.
 directory: resources/models/Hanoi/Engine
 format: obj
 textures:
@@ -265,7 +265,7 @@ transforms:
 ---
 model: Engine_6
 file: Engine_Block.obj
-#description: Its powered! If I can get all the energy rings to this power cell, the door might open.
+description: Its powered! If I can get all the energy rings to this power cell, the door might open.
 directory: resources/models/Hanoi/Engine
 format: obj
 textures:
@@ -331,7 +331,7 @@ transforms:
 ---
 model: Switch_3
 file: portalbutton.obj
-#description: look! I found a rules document. It says: No ring may be placed on top of a smaller ring.
+description: "look! I found a rules document. It says: No ring may be placed on top of a smaller ring."
 directory: resources/models/lounge_room/Switch
 format: obj
 textures:

@@ -88,6 +88,14 @@ namespace resource {
         conf.directory = doc["directory"].as<std::string>();
         conf.format = doc["format"].as<std::string>();
 
+        if (doc["description"]) {
+            conf.description = doc["description"].as<std::string>();
+        }
+        else {
+            conf.description = "temp description";
+        }
+        conf.description = "foo bar baz";
+
         if (doc["overrides"]) {
             YAML::Node overrides = doc["overrides"];
             if (overrides["radius"]) {
@@ -197,6 +205,14 @@ namespace resource {
             conf.file = doc["file"].as<std::string>();
             conf.directory = doc["directory"].as<std::string>();
             conf.format = doc["format"].as<std::string>();
+
+            if (doc["description"]) {
+                conf.description = doc["description"].as<std::string>();
+            }
+            else {
+                conf.description = "";
+            }
+//            conf.description = "foo bar baz";
 
             if (doc["overrides"]) {
                 YAML::Node overrides = doc["overrides"];

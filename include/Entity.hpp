@@ -24,6 +24,7 @@ private:
 public:
     bool selected;
     EntityID id;
+    std::string description;
     Entity();
     Entity(draw::Drawable *d);
     virtual ~Entity();
