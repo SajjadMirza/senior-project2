@@ -118,11 +118,11 @@ bool kill_tree = false;
 
 bool dialogue_trigger = true;
 bool tree_trigger = false;
-std::string displayed_dialogue = "Welcome to the game Darwin game! .\n" \
-                                  "Right clicking on most objects will interact with it.\nThis" \
-                                  "can either be a dialogue response or interacting with the world\n" \
+std::string displayed_dialogue = "Welcome to the game Darwin!\n" \
+                                  "Try right-clicking on objects.\n" \
+                                  "You might learn something, or interact with it.\n" \
                                   "Hints: Follow the lights, they will guide you :)\n" \
-                                  "Press SPACE to get toggle messages.";
+                                  "Press SPACE to toggle messages.";
 
 /*
   inline static std::string foo(std::string name, int index)

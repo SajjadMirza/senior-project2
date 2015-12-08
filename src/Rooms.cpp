@@ -976,11 +976,17 @@ TreeRoom::TreeRoom() : Room()
 
     text_counter = 5;
 
-    dialogue.push_back("I AM TEXT 1 ... press SPACE to continue");
+    dialogue.push_back("Ah, I see one of you survived. \nYou must be wondering why all this happened.\npress SPACE to continue");
+    dialogue.push_back("To be honest, I could not control it myself. \nMy roots began to grow too quickly. \nMy radiation field kept growing in intensity. \nEventually it tore the facility apart.\npress SPACE to continue");
+    dialogue.push_back("My choloroplasts are in overdrive, you know. \nThe oxygen level of this facility is rising. \nSoon it will be toxic for you.\npress SPACE to continue");
+    dialogue.push_back("I doubt you will be able to find a way out, once you destroy me... \nbut you do seem quite resourceful. \nAlternatively, I would be glad to talk over a game of chess. \nPerhaps there is a peaceful solution?\npress SPACE to continue");
+    dialogue.push_back("The choice is yours.\npress q for KILL or press e for LIFE");
+
+/*    dialogue.push_back("I AM TEXT 1 ... press SPACE to continue");
     dialogue.push_back("I AM TEXT 2 ... press SPACE to continue");
     dialogue.push_back("I AM TEXT 3 ... press SPACE to continue");
     dialogue.push_back("I AM TEXT 4 ... press SPACE to continue");
-    dialogue.push_back("ENDING TEXT ... press q for KILL or press e for LIFE");
+    dialogue.push_back("ENDING TEXT ... press q for KILL or press e for LIFE");*/
 
 }
 

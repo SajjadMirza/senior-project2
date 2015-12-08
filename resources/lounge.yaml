@@ -1,7 +1,7 @@
 ---
 model: carpet
 file: PersianCarpet.obj
-#description: This carpet looks expensive. If I get out of here, maybe I can pawn in... ssuming I get home of course. 
+description: "This carpet looks expensive. If I get out of here, maybe I can pawn it... assuming I get home of course."
 directory: resources/models/lounge_room/Carpet/
 format: obj
 textures:
@@ -23,7 +23,7 @@ transforms:
 ---
 model: pool_table
 file: TournamentTable2.obj
-#description: I use to be good at pool. Then I took arrow to the knee.
+description: I use to be good at pool. Then I took arrow to the knee.
 directory: resources/models/lounge_room/Pool_Table
 format: obj
 textures:
@@ -46,7 +46,7 @@ transforms:
 model: coke
 file: Nuka_Cola_Fridge.obj
 directory: resources/models/lounge_room/Nuka_Cola_Fridge/
-#description: Damn... All the bottles are empty. I really want a soda.
+description: Damn... All the bottles are empty. I really want a soda.
 format: obj
 textures:
   diffuse:
@@ -70,7 +70,7 @@ transforms:
 model: chair_1
 file: Leather_Chair.obj
 directory: resources/models/lounge_room/Chair_1/
-#description: Looks Comfy. No time for sitting though until I finda way out.
+description: Looks Comfy. No time for sitting though until I finda way out.
 format: obj
 textures:
   diffuse:
@@ -94,7 +94,7 @@ transforms:
 model: chair_2
 file: Leather_Arm_Chair.obj
 directory: resources/models/lounge_room/Chair_2/
-#description: Looks Comfy. No time for sitting though until I finda way out.
+description: Looks Comfy. No time for sitting though until I finda way out.
 format: obj
 textures:
   diffuse:
@@ -118,7 +118,7 @@ transforms:
 model: coffee_table
 file: CoffeeTable.obj
 directory: resources/models/lounge_room/Coffee_Table/
-#description: ordinary coffee table... Made from well polished wood though.
+description: ordinary coffee table... Made from well polished wood though.
 format: obj
 textures:
   diffuse:
@@ -140,7 +140,7 @@ transforms:
 model: dining_table
 file: Modern_Table_obj.obj
 directory: resources/models/lounge_room/tv_table/
-#description: Weird looking table. New age items all look funny to me.
+description: Weird looking table. New age items all look funny to me.
 format: obj
 textures:
   diffuse:
@@ -162,7 +162,7 @@ transforms:
 model: tv
 file: PortableTV_2.obj
 directory: resources/models/lounge_room/tv/
-#description: Can't get a signal. Would be awesome to watch some old toons if I could get a signal.
+description: Can't get a signal. Would be awesome to watch some old toons if I could get a signal.
 format: obj
 textures:
   diffuse:
@@ -186,7 +186,7 @@ transforms:
 model: tv_screen
 file: PortableTV_3.obj
 directory: resources/models/lounge_room/tv/
-#description: Can't get a signal. Would be awesome to watch some old toons if I could get a signal.
+description: Can't get a signal. Would be awesome to watch some old toons if I could get a signal.
 format: obj
 textures:
   diffuse:
@@ -210,7 +210,7 @@ transforms:
 model: coke_1
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -235,7 +235,7 @@ transforms:
 model: coke_2
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -259,7 +259,7 @@ transforms:
 model: coke_3
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -284,7 +284,7 @@ transforms:
 model: coke_4
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -308,7 +308,7 @@ transforms:
 model: coke_5
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -333,7 +333,7 @@ transforms:
 model: coke_6
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -357,7 +357,7 @@ transforms:
 model: coke_7
 file: nuke_cola.obj
 directory: resources/models/lounge_room/coke/
-#description: Nuka Cola. Imported straight from a Fallout mod!
+description: Nuka Cola. Imported straight from a Fallout mod!
 format: obj
 textures:
   diffuse:
@@ -382,7 +382,7 @@ transforms:
 model: jukebox
 file: Jukebox.obj
 directory: resources/models/lounge_room/Jukebox/
-#description: All the disco music. To bad its unpowered.
+description: All the disco music. To bad its unpowered.
 format: obj
 textures:
   diffuse:
@@ -404,7 +404,7 @@ transforms:
 model: dining_chair_1
 file: chair.obj
 directory: resources/models/lounge_room/Dining_Chair/
-#description: Good old dining chair.
+description: Good old dining chair.
 format: obj
 textures:
   diffuse:
@@ -428,7 +428,7 @@ transforms:
 model: dining_chair_2
 file: chair.obj
 directory: resources/models/lounge_room/Dining_Chair/
-#description: Good old dining chair.
+description: Good old dining chair.
 format: obj
 textures:
   diffuse:
@@ -452,7 +452,7 @@ transforms:
 model: radio
 file: Radio.obj
 directory: resources/models/lounge_room/Radio/
-#description: No signal.
+description: No signal.
 format: obj
 textures:
   diffuse:
@@ -476,7 +476,7 @@ transforms:
 model: trash
 file: Trash_Bin.obj
 directory: resources/models/lounge_room/Trash_Bin/
-#description: Maybe I should pick up the botles and recycle them.... Nahhhhh
+description: Maybe I should pick up the botles and recycle them.... Nahhhhh
 format: obj
 textures:
   diffuse:
@@ -521,7 +521,7 @@ transforms:
 model: book_special
 file: Book.obj
 directory: resources/models/lounge_room/Book/
-#description: Ohhhh! A switch is under it... Nice!
+description: Ohhhh! A switch is under it... Nice!
 format: obj
 textures:
   diffuse:
@@ -545,7 +545,7 @@ transforms:
 model: Flag
 file: USA_Flag.obj
 directory: resources/models/lounge_room/USA_Flag/
-#description: Good old America. Hope to be back soon.
+description: Good old America. Hope to be back soon.
 format: obj
 textures:
   diffuse:
@@ -569,7 +569,7 @@ transforms:
 model: Picture_1
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: Telling you the name wouldn't be fun
+description: Telling you the name wouldn't be fun
 format: obj
 textures:
   diffuse:
@@ -593,7 +593,7 @@ transforms:
 model: Picture_5
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: Telling you the name wouldn't be fun
+description: Telling you the name wouldn't be fun
 format: obj
 textures:
   diffuse:
@@ -617,7 +617,7 @@ transforms:
 model: Picture_3
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: Telling you the name wouldn't be fun
+description: Telling you the name wouldn't be fun
 format: obj
 textures:
   diffuse:
@@ -641,7 +641,7 @@ transforms:
 model: Picture_2
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: Telling you the name wouldn't be fun
+description: Telling you the name wouldn't be fun
 format: obj
 textures:
   diffuse:
@@ -665,7 +665,7 @@ transforms:
 model: Picture_4
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: Telling you the name wouldn't be fun
+description: Telling you the name wouldn't be fun
 format: obj
 textures:
   diffuse:
@@ -689,7 +689,7 @@ transforms:
 model: Device
 file: RE1_Jill_radio.obj
 directory: resources/models/lounge_room/Device/
-#description: Shoot. Sajjad and Raymond programmed this. It isn't working!
+description: Shoot. Sajjad and Raymond programmed this. It isn't working!
 format: obj
 textures:
   diffuse:
@@ -713,7 +713,7 @@ transforms:
 model: Picture_1_special
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: 13... part of a code?
+description: 13... part of a code?
 format: obj
 textures:
   diffuse:
@@ -737,7 +737,7 @@ transforms:
 model: Picture_5_special
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: 23... part of a code?
+description: 23... part of a code?
 format: obj
 textures:
   diffuse:
@@ -761,7 +761,7 @@ transforms:
 model: Picture_3_special
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: 68... part of a code?
+description: 68... part of a code?
 format: obj
 textures:
   diffuse:
@@ -785,7 +785,7 @@ transforms:
 model: Picture_2_special
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: 50... part of a code?
+description: 50... part of a code?
 format: obj
 textures:
   diffuse:
@@ -809,7 +809,7 @@ transforms:
 model: Picture_4_special
 file: Screen.obj
 directory: resources/models/lounge_room/Picture/
-#description: 54... part of a code?
+description: 54... part of a code?
 format: obj
 textures:
   diffuse:
