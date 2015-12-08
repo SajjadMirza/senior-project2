@@ -1,4 +1,17 @@
 You inserted the wrong password. Locked out of system for 1 hour.
 
+--- Message from the developer ---
+Your ending...
+
+The computer said 1 hour of wait time, but nothing happened. 
+Then days, months, years... nothign happened.
+
+Turns out the creators didn't program a way to get the root system from 
+unlocking. 
+    
+            GAME OVER
+                              
+press escape to exit out of the game and try again! 
+
 ...
 Press q to exit terminal.
