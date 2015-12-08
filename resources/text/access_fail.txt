@@ -9,8 +9,10 @@ The computer said you could try again...
 after you turn the game off and on again ;P
     
             GAME OVER
-                              
-press escape to exit out of the game and try again! 
+
+... unless you can guess the root password on the laptop.
+
+If not, press escape to exit out of the game and try again! 
 
 ...
 Press enter to go back to the question or q to quit.
