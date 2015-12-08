@@ -124,6 +124,8 @@ std::string displayed_dialogue = "Welcome to the game Darwin!\n" \
                                   "Hints: Follow the lights, they will guide you :)\n" \
                                   "Press SPACE to toggle messages.";
 
+bool FPS_h = false;
+
 /*
   inline static std::string foo(std::string name, int index)
   {
@@ -500,6 +502,16 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
             break;
         case GLFW_KEY_9:
             debug_gbuffer_mode = 8;
+            break;
+        case GLFW_KEY_0:
+            if (action == GLFW_RELEASE) {
+                if (FPS_h == false) {
+                    FPS_h = true;
+                }
+                else {
+                    FPS_h = false;
+                }
+            }
             break;
         } // end of switch
     }
@@ -1946,15 +1958,17 @@ int main(void)
             CHECK_GL_ERRORS();
             glDisable(GL_CULL_FACE);
             CHECK_GL_ERRORS();
-            /*glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
-            CHECK_GL_ERRORS();
-            std::ostringstream convert_fps; 
-            convert_fps << "FPS " << lastFPS;
-            text.draw(screen_prog, *window, convert_fps.str(), -0.95f, 0.9f, 75.0f);
-            CHECK_GL_ERRORS();
-            glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
-            CHECK_GL_ERRORS();
-            CHECK_GL_ERRORS();*/
+            if (FPS_h == true) {
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
+                CHECK_GL_ERRORS();
+                std::ostringstream convert_fps; 
+                convert_fps << "FPS " << lastFPS;
+                text.draw(screen_prog, *window, convert_fps.str(), -0.95f, 0.9f, 75.0f);
+                CHECK_GL_ERRORS();
+                glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
+                CHECK_GL_ERRORS();
+                CHECK_GL_ERRORS();
+            }
 
             if (dialogue_trigger == true && tree_trigger == false) {
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
