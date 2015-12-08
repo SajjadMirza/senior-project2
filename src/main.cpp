@@ -1925,10 +1925,10 @@ int main(void)
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 1);
                 std::ostringstream convert; 
                 if (save_tree == true) {
-                    convert << "You save a tree, congrats";
+                    convert << "The oxygen poisoning will get you eventually.\nBut for now, you've made a friend.\nSee you later, space tree.";
                 }
                 else {
-                    convert << "You killed a tree :(";
+                    convert << "That's the end for the tree.\nNow, how to get off this rock?\nIf only there were a way to open those supplies...";
                 }
                 text_f.draw(screen_prog, *window, convert.str(), -0.95f, 0.70f, 75.0f);
                 glUniform1i(screen_prog.getUniform("uTextToggle"), 0);
