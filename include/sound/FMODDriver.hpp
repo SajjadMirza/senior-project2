@@ -1,4 +1,4 @@
-#ifndef _FMODDriver_H
+#ifndef _FMODDriver_H_
 #define _FMODDriver_H_
 
 #include <common.hpp>
@@ -16,6 +16,14 @@ namespace sound {
             
             void testSound();
             void footStep(bool step);
+            void EnergySound();
+            void HanoiCheck();
+
+            void StartSound();
+            void StartCheck();
+
+            void DoorSound();
+            void DoorCheck();
     };
 }
 
