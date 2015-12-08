@@ -96,6 +96,7 @@ transforms:
 ---
 model: Table
 file: table.obj
+#description: An ordinary computer table
 directory: resources/models/comp_room/Table_Wood/
 format: obj
 textures:
@@ -142,6 +143,7 @@ transforms:
 ---
 model: Camera
 file: camera.obj
+#description: An old camera. Seems to have Decayed over the years.
 directory: resources/models/comp_room/Camera/
 format: obj
 textures:
@@ -163,6 +165,7 @@ transforms:
 ---
 model: gramophone
 file: Gramophone.dae
+#description: Ha, haven't seen one of these since my Grandpa was still alive.
 directory: resources/models/comp_room/Gramophone/
 format: dae
 textures:
@@ -187,6 +190,7 @@ transforms:
 ---
 model: Trash
 file: "trash.obj"
+#description: Recycling is important
 directory: resources/models/comp_room/Trash/
 format: obj
 textures:
@@ -208,6 +212,7 @@ transforms:
 ---
 model: Supplies_1
 file: Supplies.obj
+#description: So many supplies. To bad I wasn't given the ability to open them.
 directory: resources/models/comp_room/Supplies/
 format: obj
 textures:
@@ -229,6 +234,7 @@ transforms:
 ---
 model: Supplies_2
 file: Supplies.obj
+#description: So many supplies. To bad I wasn't given the ability to open them.
 directory: resources/models/comp_room/Supplies/
 format: obj
 textures:
@@ -250,6 +256,7 @@ transforms:
 ---
 model: Supplies_3
 file: Supplies.obj
+#description: So many supplies. To bad I wasn't given the ability to open them.
 directory: resources/models/comp_room/Supplies/
 format: obj
 textures:
@@ -271,6 +278,7 @@ transforms:
 ---
 model: vending_machine
 file: Vending_Machine_1.obj
+#description: Shoot. Not powered... Wish I could drink a soda right about now.
 directory: resources/models/comp_room/Vending_Machine_1/
 format: obj
 textures:
@@ -294,6 +302,7 @@ transforms:
 ---
 model: office_chair
 file: office_chair.obj
+#description: Some weird stains on it... Lets move on.
 directory: resources/models/comp_room/office_chair/
 format: obj
 textures:
@@ -315,6 +324,7 @@ transforms:
 ---
 model: Map
 file: Screen.obj
+#description: Maybe I won't get lost now.
 directory: resources/models/lounge_room/Picture/
 format: obj
 textures:

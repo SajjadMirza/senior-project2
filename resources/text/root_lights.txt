@@ -1,4 +1,4 @@
-All lights are now on
+Experiment door now open.
 
 ...
 Command aborted. Press enter to return to home or q to exit terminal.

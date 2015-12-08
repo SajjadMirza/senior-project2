@@ -1,5 +1,6 @@
 model: hanoi_1
 file: torus.dae
+#description: A big ring of energy.
 directory: resources/models/torus
 format: dae
 textures:
@@ -21,6 +22,7 @@ transforms:
 ---
 model: hanoi_2
 file: torus.dae
+#description: A medium sized ring of energy.
 directory: resources/models/torus
 format: dae
 textures:
@@ -42,6 +44,7 @@ transforms:
 ---
 model: hanoi_3
 file: torus.dae
+#description: A small sized ring of energy.
 directory: resources/models/torus
 format: dae
 textures:

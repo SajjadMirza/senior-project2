@@ -34,4 +34,22 @@ transforms:
     zaxis: 2.5
     yaxis: -0.1
   scale: 1.0  
+---
+model: special_cube
+file: cube.obj
+directory: resources/models/cube/
+format: obj
+textures:
+  diffuse:
+    Door/door_r.png
+  normal:
+    Door/door_normal_r.jpg
+  specular:
+    Door/door_specular_r.jpg
+transforms:
+  translations:
+    xaxis: 42.5
+    zaxis: 26.5
+    yaxis: -0.1
+  scale: 1.0  
 ...
