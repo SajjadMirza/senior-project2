@@ -144,6 +144,7 @@ void Hanoi::select(GLFWwindow *window, Entity *last_selected_entity)
                     selected = 2;
                     selection_helper();
                     last_selected_entity->selected = false;
+                    last_selected_entity->description = "";
                     room_sound_driver->ButtonSound();
                 }
             }

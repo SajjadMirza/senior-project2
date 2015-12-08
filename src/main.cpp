@@ -381,6 +381,9 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y)
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) 
 {
+    if (key == GLFW_KEY_ESCAPE) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
     if (!disable_controls && kill_tree == false && save_tree == false) {
         switch (key) {
         case GLFW_KEY_SPACE:
@@ -1687,6 +1690,7 @@ int main(void)
                 const std::string &name = e->getName();
                 LOG("Selected entity " << id << ": " << name.c_str());
                 LOG("Selected entity has description: " << e->description);
+
                 last_selected_entity = e;
 
                 if (e->description != displayed_dialogue) {
